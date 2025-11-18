@@ -40,6 +40,26 @@ namespace GGemCo2DTcg
                 tables: targetTables
             );
             sender.Register(tableLoadStep);
+
+            var addressableLoaderPrefabUIElementCard = Object.FindFirstObjectByType<AddressableLoaderPrefabUIElementCard>() ?? new GameObject("AddressableLoaderPrefabUIElementCard").AddComponent<AddressableLoaderPrefabUIElementCard>();
+            var uiElementCardLoadStep = new AddressableTaskStep(
+                id: "core.prefab.uielement.card",
+                order: 390,
+                localizedKey: LocalizationConstants.Keys.Loading.TextTypePrefab(),
+                startTask: () => addressableLoaderPrefabUIElementCard.LoadPrefabsAsync(),
+                getProgress: () => addressableLoaderPrefabUIElementCard.GetPrefabLoadProgress()
+            );
+            sender.Register(uiElementCardLoadStep);
+            
+            var addressableLoaderCard = Object.FindFirstObjectByType<AddressableLoaderCard>() ?? new GameObject("AddressableLoaderCard").AddComponent<AddressableLoaderCard>();
+            var cardLoadStep = new AddressableTaskStep(
+                id: "core.image.card.art",
+                order: 400,
+                localizedKey: LocalizationConstants.Keys.Loading.TextTypePrefab(),
+                startTask: () => addressableLoaderCard.LoadPrefabsAsync(),
+                getProgress: () => addressableLoaderCard.GetPrefabLoadProgress()
+            );
+            sender.Register(cardLoadStep);
         }
 
         private void Start()

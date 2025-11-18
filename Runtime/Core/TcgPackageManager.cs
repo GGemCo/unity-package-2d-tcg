@@ -32,11 +32,6 @@ namespace GGemCo2DTcg
             //
             // // Core에 저장 기여자 등록
             // simulationSaveContributor = new SimulationSaveContributor(simulationDirtyTracker, this);
-            if (TableLoaderManagerTcg.Instance != null)
-            {
-                var data = TableLoaderManagerTcg.Instance.TableTcgCard.GetDataByUid(1);
-                GcLogger.Log($"data: {data.uid} / {data.name}");
-            }
         }
         private void Start()
         {

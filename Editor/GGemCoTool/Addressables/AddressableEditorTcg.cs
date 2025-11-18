@@ -1,11 +1,10 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using GGemCo2DCoreEditor;
 using GGemCo2DTcg;
 
 namespace GGemCo2DTcgEditor
 {
-    public class AddressableEditorTcg : DefaultEditorWindow
+    public class AddressableEditorTcg : DefaultEditorWindowTcg
     {
         private const string Title = "Addressable 셋팅하기";
         public float buttonWidth;
@@ -13,6 +12,8 @@ namespace GGemCo2DTcgEditor
         
         private SettingScriptableObjectTcg _settingScriptableObjectTcg;
         private SettingTableTcg _settingTableTcg;
+        private SettingUIElementCard _settingUIElementCard;
+        private SettingTcgCard _settingTcgCard;
         
         public TableTcgCard tableTcgCard;
         
@@ -31,10 +32,13 @@ namespace GGemCo2DTcgEditor
             buttonHeight = 40f;
             _settingScriptableObjectTcg = new SettingScriptableObjectTcg(this);
             _settingTableTcg = new SettingTableTcg(this);
+            _settingUIElementCard = new SettingUIElementCard(this);
+            _settingTcgCard = new SettingTcgCard(this);
         }
 
         private void LoadTables()
         {
+            tableTcgCard = tableLoaderManagerTcg.LoadTableTcgCard();
         }
 
         private void OnGUI()
@@ -45,6 +49,11 @@ namespace GGemCo2DTcgEditor
             EditorGUILayout.BeginHorizontal();
             _settingScriptableObjectTcg.OnGUI();
             _settingTableTcg.OnGUI();
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            _settingUIElementCard.OnGUI();
+            _settingTcgCard.OnGUI();
             EditorGUILayout.EndHorizontal();
             
             EditorGUILayout.Space(20);

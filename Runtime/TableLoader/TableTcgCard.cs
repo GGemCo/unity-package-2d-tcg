@@ -10,7 +10,6 @@ namespace GGemCo2DTcg
         public string name;
         public CardConstants.Type type;
         public CardConstants.Grade grade;
-        public CardConstants.TargetType targetType;
         public int cost;
         public int maxCopiesPerDeck;
         public string imageFileName;
@@ -28,7 +27,6 @@ namespace GGemCo2DTcg
                 name = data["Name"],
                 type = EnumHelper.ConvertEnum<CardConstants.Type>(data["Type"]),
                 grade = EnumHelper.ConvertEnum<CardConstants.Grade>(data["Grade"]),
-                targetType = EnumHelper.ConvertEnum<CardConstants.TargetType>(data["TargetType"]),
                 cost = int.Parse(data["Cost"]),
                 maxCopiesPerDeck = int.Parse(data["MaxCopiesPerDeck"]),
                 imageFileName = data["ImageFileName"],
