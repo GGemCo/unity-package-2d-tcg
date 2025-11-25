@@ -87,8 +87,8 @@ namespace GGemCo2DTcg
             var popupMetadata = new PopupMetadata
             {
                 PopupType = PopupManager.Type.Default,
-                Title = "덱 삭제하기",
-                Message = "정말로 삭제하시겠습니까?",
+                Title = "Tcg_Popup_DeleteDeck",
+                Message = "Tcg_Popup_ConfirmDeleteDeckWarning",
                 MessageColor = Color.red,
                 OnConfirm = OnDelete,
                 ShowCancelButton = true

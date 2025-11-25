@@ -80,5 +80,7 @@ namespace GGemCo2DTcg
         public string GetUIWindowCardInfoByKey(string key) => GetString(LocalizationConstantsTcg.Tables.UIWindowCardInfo, key);
 
         public object GetCardNameByKey(string key) => GetString(LocalizationConstantsTcg.Tables.CardName, key);
+
+        public string GetUIWindowMyDeckByKey(string key) => GetString(LocalizationConstantsTcg.Tables.UIWindowMyDeck, key);
     }
 }

@@ -11,6 +11,7 @@ namespace GGemCo2DTcg
         {
             public const string UIWindowGameMenu = ConfigDefine.NameSDK+"_UIWindowTcgGameMenu";
             public const string UIWindowCardInfo = ConfigDefine.NameSDK+"_UIWindowTcgCardInfo";
+            public const string UIWindowMyDeck = ConfigDefine.NameSDK+"_UIWindowTcgMyDeck";
             
             public const string CardName = ConfigDefine.NameSDK+"_Tcg_Card_Name";
             
@@ -23,7 +24,6 @@ namespace GGemCo2DTcg
                 UIWindowCardInfo,
                 CardName,
             };
-
         }
 
         /// <summary>

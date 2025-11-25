@@ -56,8 +56,7 @@ namespace GGemCo2DTcg
         {
             if (GetCurrentCount() >= MaxSlotCount)
             {
-                // todo 정리 필요. localization
-                SceneGame.Instance.systemMessageManager.ShowMessageWarning($"최대 생성할 수 있는 덱의 개수는 {MaxSlotCount}개 입니다.");
+                SceneGame.Instance.systemMessageManager.ShowMessageWarning("Tcg_System_MaxDeckCount", MaxSlotCount);
                 return -1;
             }
 
@@ -94,8 +93,7 @@ namespace GGemCo2DTcg
             // 같은 카드가 없을 때만 체크
             if (count == -1 && deckSaveData.cardList.Count + 1 > _maxDeckCardCount)
             {
-                // todo 정리 필요. localization
-                SceneGame.Instance.systemMessageManager.ShowMessageWarning($"덱에 넣을 수 있는 최대 카드 개수는 {_maxDeckCardCount}개 입니다.");
+                SceneGame.Instance.systemMessageManager.ShowMessageWarning("Tcg_System_MaxCardCountInDeck", _maxDeckCardCount);
                 return false;
             }
             
@@ -109,8 +107,7 @@ namespace GGemCo2DTcg
             {
                 if (count + 1 > info.maxCopiesPerDeck)
                 {
-                    // todo 정리 필요. localization
-                    SceneGame.Instance.systemMessageManager.ShowMessageWarning($"해당 카드는 최대 {info.maxCopiesPerDeck}개 까지만 추가할 수 있습니다.");
+                    SceneGame.Instance.systemMessageManager.ShowMessageWarning("Tcg_System_MaxCardCopies",info.maxCopiesPerDeck);
                     return false;
                 }
                 deckSaveData.cardList[cardUid] = count + 1;

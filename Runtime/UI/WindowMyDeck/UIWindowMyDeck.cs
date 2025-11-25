@@ -11,13 +11,14 @@ namespace GGemCo2DTcg
     public class UIWindowMyDeck : UIWindow
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)]
-        [Tooltip("새로운 덱 만들기")]
+        [Tooltip("새로운 덱 만들기 버튼")]
         public Button buttonCreateNew;
 
         private MyDeckData _myDeckData;
 
         private UIWindowInputField _windowInputField;
         private UIWindowMyDeckCard _windowMyDeckCard;
+        private string _titleInputField;
         
         protected override void Awake()
         {
@@ -46,6 +47,7 @@ namespace GGemCo2DTcg
             }
             _windowInputField = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowInputField>(UIWindowConstants.WindowUid.InputField);
             _windowMyDeckCard = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
+            _titleInputField = LocalizationManagerTcg.Instance.GetUIWindowMyDeckByKey("Button_Create_New");
         }
 
         public override void OnShow(bool show)
@@ -82,13 +84,10 @@ namespace GGemCo2DTcg
         {
             if (_myDeckData.GetCurrentCount() >= maxCountIcon)
             {
-                // todo 정리 필요. localization
-                SceneGame.systemMessageManager.ShowMessageWarning($"최대 생성할 수 있는 덱의 개수는 {maxCountIcon}개 입니다.");
+                SceneGame.systemMessageManager.ShowMessageWarning("Tcg_System_MaxDeckCount", maxCountIcon);
                 return;
             }
-            
-            // todo 정리 필요. localization
-            _windowInputField.UpdateInfo("덱 생성하기", OnCreateNew);
+            _windowInputField.UpdateInfo(_titleInputField, OnCreateNew);
         }
 
         private void OnCreateNew(string deckName)
