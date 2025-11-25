@@ -1,0 +1,6 @@
+Key,Shared Comments,English(en),English(en) Comments,Korean(ko),Korean(ko) Comments
+"Text_Name","","Name: {0}","","이름: {0}",""
+"Text_Type","","Type: {0}","","타입: {0}",""
+"Text_Grade","","Grade: {0}","","등급: {0}",""
+"Text_Cost","","Cost: {0}","","자원비용: {0}",""
+"Text_MaxCopiesPerDeck","","MaxCopiesPerDeck: {0}","","중복 가능 개수: {0}",""

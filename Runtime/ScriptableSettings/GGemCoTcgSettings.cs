@@ -26,7 +26,7 @@ namespace GGemCo2DTcg
         private void OnValidate()
         {
             // 상호 제약 보정
-            if (minDeckCardCount <= 0) minDeckCardCount = 0;
+            if (minDeckCardCount <= 0) minDeckCardCount = 1;
             if (maxDeckCardCount < minDeckCardCount) maxDeckCardCount = minDeckCardCount;
 
             if (startingHandCardCount <= 0) startingHandCardCount = 0;
@@ -47,12 +47,11 @@ namespace GGemCo2DTcg
         // ──────────────────────────────────────────────────────────────────────────────
         [Header("덱 규칙 (Deck Rules)")]
         [Tooltip("게임을 시작할 수 있는 덱 최소 카드 개수")]
-        [Min(0)]
-        public int minDeckCardCount = 0;
+        public int minDeckCardCount = 1;
 
         [Tooltip("게임을 시작할 수 있는 덱 최대 카드 개수")]
         [Min(0)]
-        public int maxDeckCardCount = 60;
+        public int maxDeckCardCount = 5;
 
         // ──────────────────────────────────────────────────────────────────────────────
         // Hand & Draw

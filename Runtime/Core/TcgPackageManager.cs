@@ -6,7 +6,8 @@ namespace GGemCo2DTcg
     public class TcgPackageManager : MonoBehaviour
     {
         public static TcgPackageManager Instance { get; private set; }
-        
+
+        public SaveDataManagerTcg saveDataManagerTcg;
         private void Awake()
         {
             // 테이블 매니저가 로드 되지 않았다면 return;
@@ -32,6 +33,20 @@ namespace GGemCo2DTcg
             //
             // // Core에 저장 기여자 등록
             // simulationSaveContributor = new SimulationSaveContributor(simulationDirtyTracker, this);
+            InitializeManagers();
+        }
+
+        private void InitializeManagers()
+        {
+            GameObject managerContainer = new GameObject("ManagersTcg");
+            saveDataManagerTcg = CreateManager<SaveDataManagerTcg>(managerContainer);
+        }
+
+        private T CreateManager<T>(GameObject parent) where T : Component
+        {
+            GameObject obj = new GameObject(typeof(T).Name);
+            obj.transform.SetParent(parent.transform);
+            return obj.AddComponent<T>();
         }
         private void Start()
         {

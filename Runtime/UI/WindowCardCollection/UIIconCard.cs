@@ -1,11 +1,13 @@
-﻿using GGemCo2DCore;
+﻿using System.Collections;
+using GGemCo2DCore;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GGemCo2DTcg
 {
-    public class UIElementCard : UIIcon
+    public class UIIconCard : UIIcon, IPointerClickHandler
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)] 
         [Tooltip("이름")]
@@ -29,6 +31,8 @@ namespace GGemCo2DTcg
 
         private StruckTableTcgCard _struckTableTcgCard;
         private TableTcgCard _tableTcgCard;
+        private MyDeckData _myDeckData;
+        private UIWindowMyDeckCard _windowMyDeckCard;
         
         protected override void Awake()
         {
@@ -37,17 +41,26 @@ namespace GGemCo2DTcg
             _struckTableTcgCard = null;
             if (TableLoaderManager.Instance == null) return;
             _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
+            
         }
-        public override bool ChangeInfoByUid(int iconUid, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
+
+        protected override void Start()
         {
-            var info = _tableTcgCard.GetDataByUid(iconUid);
+            base.Start();
+            _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
+            _windowMyDeckCard = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
+        }
+
+        public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
+        {
+            var info = _tableTcgCard.GetDataByUid(deckIndex);
             if (info == null)
             {
-                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {iconUid}");
+                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {deckIndex}");
                 return false;
             }
 
-            uid = iconUid;
+            uid = deckIndex;
             SetCount(iconCount);
             _struckTableTcgCard = info;
             
@@ -114,6 +127,43 @@ namespace GGemCo2DTcg
             {
                 textCount.text = count <= 1 ? "" : $"x{count}";
             }
+        }
+
+        public bool IsType(int dropdownIndex)
+        {
+            // dropdownType 초기화 시 EnumCache<CardConstants.Type>.Values 순서대로 넣었다면,
+            // EnumCache 를 이용해서 역매핑하면 됨.
+            if (dropdownIndex <= 0) return true; // 전체
+            var values = EnumCache<CardConstants.Type>.Values;
+            if (dropdownIndex >= ((ICollection)values).Count) return false;
+            return _struckTableTcgCard.type == values[dropdownIndex];
+        }
+
+        public bool IsGrade(int dropdownIndex)
+        {
+            if (dropdownIndex <= 0) return true;
+            var values = EnumCache<CardConstants.Grade>.Values;
+            if (dropdownIndex >= ((ICollection)values).Count) return false;
+            return _struckTableTcgCard.grade == values[dropdownIndex];
+        }
+
+        public bool IsCost(int dropdownIndex)
+        {
+            if (dropdownIndex <= 0) return true; // 0 → 전체
+            return _struckTableTcgCard.cost == dropdownIndex;
+        }
+        /// <summary>
+        /// 덱이 선택되어있을 때, 카드를 클릭하면 바로 덱에 포함 된다.
+        /// </summary>
+        /// <param name="eventData"></param>
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            // 덱이 선택되어있는지 체크
+            if (!_windowMyDeckCard.IsOpen())
+            {
+                return;
+            }
+            _windowMyDeckCard.AddCardToDeck(uid);
         }
     }
 }

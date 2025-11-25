@@ -52,7 +52,7 @@ namespace GGemCo2DTcgEditor
             EditorGUILayout.EndHorizontal();
             
             EditorGUILayout.BeginHorizontal();
-            _settingUIElementCard.OnGUI();
+            // _settingUIElementCard.OnGUI();
             _settingTcgCard.OnGUI();
             EditorGUILayout.EndHorizontal();
             

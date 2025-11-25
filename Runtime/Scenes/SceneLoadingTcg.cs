@@ -60,6 +60,26 @@ namespace GGemCo2DTcg
                 getProgress: () => addressableLoaderCard.GetPrefabLoadProgress()
             );
             sender.Register(cardLoadStep);
+            
+            var saveDataLoaderTcg = Object.FindFirstObjectByType<SaveDataLoaderTcg>() ?? new GameObject("SaveDataLoaderTcg").AddComponent<SaveDataLoaderTcg>();
+            var saveDataLoadStep = new SaveDataLoadStep(
+                "core.savedata.tcg",
+                order: 381,
+                localizedKey: LocalizationConstants.Keys.Loading.TextTypeSaveData(),
+                saveDataLoader: saveDataLoaderTcg
+            );
+            sender.Register(saveDataLoadStep);
+            
+            var loc = Object.FindFirstObjectByType<LocalizationManagerTcg>() ?? new GameObject("LocalizationManagerTcg").AddComponent<LocalizationManagerTcg>();
+            var localizationLoadStep = new LocalizationLoadStep(
+                "core.localization.tcg",
+                order: 221,
+                localizedKey: LocalizationConstants.Keys.Loading.TextTypeLocalization(),
+                localizationManager: loc,
+                localeCode: PlayerPrefsManager.LoadLocalizationLocaleCode()
+            );
+            sender.Register(localizationLoadStep);
+            
         }
 
         private void Start()

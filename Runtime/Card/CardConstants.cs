@@ -22,6 +22,7 @@
         /// </summary>
         public enum Grade
         {
+            None,
             Common,
             Magic,
             Epic,

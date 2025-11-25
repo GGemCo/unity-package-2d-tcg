@@ -6,13 +6,13 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 카드 콜랙션 윈도우 - 아이콘 드래그 앤 드랍 관리
     /// </summary>
-    public class DragDropStrategyMyCardDeck : IDragDropStrategy
+    public class DragDropStrategyMyDeck : IDragDropStrategy
     {
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
         {
-            UIWindowMyCardDeck uiWindowMyCardDeck = window as UIWindowMyCardDeck;
-            if (uiWindowMyCardDeck == null) return;
-            // GcLogger.Log("skill window. OnEndDragInIcon");
+            UIWindowMyDeck uiWindowMyDeck = window as UIWindowMyDeck;
+            if (uiWindowMyDeck == null) return;
+            // GcLogger.Log(" OnEndDragInIcon");
             UIWindow droppedWindow = droppedUIIcon.window;
             UIWindowConstants.WindowUid droppedWindowUid = droppedUIIcon.windowUid;
             int dropIconSlotIndex = droppedUIIcon.slotIndex;
@@ -22,13 +22,12 @@ namespace GGemCo2DTcg
             {
                 return;
             }
-            GcLogger.Log("UIWindowMyCardDeck HandleDragInWindow");
         }
         public void HandleDragInIcon(UIWindow window, UIIcon droppedUIIcon, UIIcon targetUIIcon)
         {
-            UIWindowMyCardDeck uiWindowMyCardDeck = window as UIWindowMyCardDeck;
-            if (uiWindowMyCardDeck == null) return;
-            // GcLogger.Log("skill window. OnEndDragInIcon");
+            UIWindowMyDeck uiWindowMyDeck = window as UIWindowMyDeck;
+            if (uiWindowMyDeck == null) return;
+            // GcLogger.Log(" OnEndDragInIcon");
             UIWindow droppedWindow = droppedUIIcon.window;
             UIWindowConstants.WindowUid droppedWindowUid = droppedUIIcon.windowUid;
             int dropIconSlotIndex = droppedUIIcon.slotIndex;
@@ -56,7 +55,7 @@ namespace GGemCo2DTcg
                 switch (droppedWindowUid)
                 {
                     case UIWindowConstants.WindowUid.TcgCardCollection:
-                        GcLogger.Log("UIWindowMyCardDeck HandleDragInIcon");
+                        uiWindowMyDeck.AddCardToDeck(targetIconUid, dropIconUid);
                         break;
                 }
             }
