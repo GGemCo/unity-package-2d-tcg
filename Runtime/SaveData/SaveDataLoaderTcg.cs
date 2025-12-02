@@ -11,7 +11,8 @@ namespace GGemCo2DTcg
         public static SaveDataLoaderTcg Instance { get; private set; }
         
         private SaveDataContainerTcg _saveDataContainerTcg;
-        
+        private const string SaveFileName = "SaveDataTcg";
+
         protected override void Awake()
         {
             base.Awake();
@@ -28,7 +29,7 @@ namespace GGemCo2DTcg
         }
         protected override string GetSaveFilePath(int slotIndex)
         {
-            return saveFileController.GetSaveFilePath(slotIndex, "SaveDataTcg");
+            return saveFileController.GetSaveFilePath(slotIndex, SaveFileName);
         }
         /// <summary>
         /// 바로 해제를 위해 추가
