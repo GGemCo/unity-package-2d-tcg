@@ -2,6 +2,7 @@
 using GGemCo2DCore;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace GGemCo2DTcg
@@ -23,6 +24,8 @@ namespace GGemCo2DTcg
         [Tooltip("필터링 리셋 버튼")]
         public Button buttonResetFiltering;
 
+        public UnityEvent onFiltering;
+        
         private UIWindowMyDeck _uiWindowTcgMyDeck;
         private TableTcgCard _tableTcgCard;
         
@@ -137,9 +140,9 @@ namespace GGemCo2DTcg
             {
                 if (!icon) continue;
 
-                var element = icon.GetComponent<UIIconCard>();
-                if (!element) continue;
-                var slot = slots[element.index];
+                var iconCard = icon.GetComponent<UIIconCard>();
+                if (!iconCard) continue;
+                var slot = GetSlotByIndex(iconCard.index);
                 if (!slot) continue;
 
                 bool isVisible = true;
@@ -150,7 +153,7 @@ namespace GGemCo2DTcg
                     bool matchType = false;
                     foreach (var idx in BufferTypeIndices)
                     {
-                        if (!element.IsType(idx)) continue; // 기존에 사용하던 int 인덱스 기반 메서드라고 가정
+                        if (!iconCard.IsType(idx)) continue; // 기존에 사용하던 int 인덱스 기반 메서드라고 가정
                         matchType = true;
                         break;
                     }
@@ -165,7 +168,7 @@ namespace GGemCo2DTcg
                     bool matchGrade = false;
                     foreach (var idx in BufferGradeIndices)
                     {
-                        if (!element.IsGrade(idx)) continue; // UIElementCard에 이 메서드만 추가해 주면 됨
+                        if (!iconCard.IsGrade(idx)) continue; // UIElementCard에 이 메서드만 추가해 주면 됨
                         matchGrade = true;
                         break;
                     }
@@ -180,7 +183,7 @@ namespace GGemCo2DTcg
                     bool matchCost = false;
                     foreach (var idx in BufferCostIndices)
                     {
-                        if (!element.IsCost(idx)) continue; // Cost 드롭다운이 0~10 그대로라면 인덱스 == 코스트
+                        if (!iconCard.IsCost(idx)) continue; // Cost 드롭다운이 0~10 그대로라면 인덱스 == 코스트
                         matchCost = true;
                         break;
                     }
@@ -188,9 +191,10 @@ namespace GGemCo2DTcg
                     if (!matchCost)
                         isVisible = false;
                 }
-
-                slot.SetActive(isVisible);
+                slot.isFiltering = isVisible;
+                slot.gameObject.SetActive(isVisible);
             }
+            onFiltering?.Invoke();
         }
 
         /// <summary>
