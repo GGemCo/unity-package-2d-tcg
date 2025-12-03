@@ -49,7 +49,7 @@ namespace GGemCo2DTcg
         protected override int GetMaxSlotCount()
         {
             return SceneGame.Instance.uIWindowManager
-                .GetUIWindowByUid<UIWindowMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck)?.maxCountIcon ?? 0;
+                .GetUIWindowByUid<UIWindowTcgMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck)?.maxCountIcon ?? 0;
         }
 
         public int AddNewDeck(string deckName)

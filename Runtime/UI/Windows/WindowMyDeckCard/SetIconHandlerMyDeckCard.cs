@@ -10,8 +10,8 @@ namespace GGemCo2DTcg
         public void OnSetIcon(UIWindow window, int slotIndex, int iconUid, int iconCount, int iconLevel, bool isLearned)
         {
             // GcLogger.Log("MyDeckCard OnSetIcon");
-            UIWindowMyDeckCard uiWindowCardCollection = window as UIWindowMyDeckCard;
-            if (uiWindowCardCollection == null) return;
+            UIWindowTcgMyDeckCard uiWindowTcgCardCollection = window as UIWindowTcgMyDeckCard;
+            if (uiWindowTcgCardCollection == null) return;
         }
         public void OnDetachIcon(UIWindow window, int slotIndex)
         {

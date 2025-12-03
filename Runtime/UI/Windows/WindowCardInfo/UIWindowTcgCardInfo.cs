@@ -10,7 +10,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 카드 정보 윈도우
     /// </summary>
-    public class UIWindowCardInfo : UIWindow
+    public class UIWindowTcgCardInfo : UIWindow
     {
         public enum PositionType
         {

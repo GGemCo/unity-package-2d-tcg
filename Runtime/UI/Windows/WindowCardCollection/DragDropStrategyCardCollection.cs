@@ -6,34 +6,19 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 카드 콜랙션 윈도우 - 아이콘 드래그 앤 드랍 관리
     /// </summary>
-    public class DragDropStrategyMyDeckCard : IDragDropStrategy
+    public class DragDropStrategyCardCollection : IDragDropStrategy
     {
-        public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
-        {
-            UIWindowMyDeckCard uiWindowMyDeck = window as UIWindowMyDeckCard;
-            if (uiWindowMyDeck == null) return;
-            // GcLogger.Log("OnEndDragInIcon");
-            UIWindow droppedWindow = droppedUIIcon.window;
-            UIWindowConstants.WindowUid droppedWindowUid = droppedUIIcon.windowUid;
-            int dropIconSlotIndex = droppedUIIcon.slotIndex;
-            int dropIconUid = droppedUIIcon.uid;
-            int dropIconCount = droppedUIIcon.GetCount();
-            if (dropIconUid <= 0)
-            {
-                return;
-            }
-            uiWindowMyDeck.AddCardToDeck(dropIconUid);
-        }
         public void HandleDragInIcon(UIWindow window, UIIcon droppedUIIcon, UIIcon targetUIIcon)
         {
-            UIWindowMyDeckCard uiWindowMyDeck = window as UIWindowMyDeckCard;
-            if (uiWindowMyDeck == null) return;
-            // GcLogger.Log("OnEndDragInIcon");
+            UIWindowTcgCardCollection uiWindowTcgCardCollection = window as UIWindowTcgCardCollection;
+            if (uiWindowTcgCardCollection == null) return;
+            // GcLogger.Log("skill window. OnEndDragInIcon");
             UIWindow droppedWindow = droppedUIIcon.window;
             UIWindowConstants.WindowUid droppedWindowUid = droppedUIIcon.windowUid;
             int dropIconSlotIndex = droppedUIIcon.slotIndex;
             int dropIconUid = droppedUIIcon.uid;
             int dropIconCount = droppedUIIcon.GetCount();
+            
             if (dropIconUid <= 0)
             {
                 return;
@@ -55,9 +40,10 @@ namespace GGemCo2DTcg
             {
                 switch (droppedWindowUid)
                 {
-                    case UIWindowConstants.WindowUid.TcgCardCollection:
-                        // GcLogger.Log("UIWindowMyCardDeck HandleDragInIcon");
-                        uiWindowMyDeck.AddCardToDeck(dropIconUid);
+                    case UIWindowConstants.WindowUid.TcgMyDeckCard:
+                        var uiWindowMyDeckCard = droppedWindow as UIWindowTcgMyDeckCard;
+                        // uiWindowMyDeckCard?.RemoveCard(dropIconSlotIndex);
+                        uiWindowMyDeckCard?.RemoveCardToDeck(droppedUIIcon);
                         break;
                 }
             }
@@ -67,6 +53,10 @@ namespace GGemCo2DTcg
                 {
                 }
             }
+        }
+
+        public void HandleDragInWindow(UIWindow window, UIIcon dropped)
+        {
         }
 
         public void HandleDragOut(UIWindow window, Vector3 worldPosition, GameObject droppedIcon, GameObject targetIcon,

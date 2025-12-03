@@ -15,7 +15,7 @@ namespace GGemCo2DTcg
         [Tooltip("덱 삭제 버튼")] 
         public Button buttonDelete;
 
-        private UIWindowMyDeck _windowMyDeck;
+        private UIWindowTcgMyDeck _windowTcgMyDeck;
         private PopupManager _popupManager;
 
         protected override void Awake()
@@ -29,7 +29,7 @@ namespace GGemCo2DTcg
         {
             base.Start();
             _popupManager = SceneGame.Instance.popupManager;
-            _windowMyDeck = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
+            _windowTcgMyDeck = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
         }
 
         public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
@@ -98,7 +98,7 @@ namespace GGemCo2DTcg
 
         private void OnDelete()
         {
-            _windowMyDeck?.RemoveDeck(index);
+            _windowTcgMyDeck?.RemoveDeck(index);
         }
     }
 }

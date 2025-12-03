@@ -10,7 +10,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 카드 콜렉션 윈도우
     /// </summary>
-    public class UIWindowCardCollection : UIWindow
+    public class UIWindowTcgCardCollection : UIWindow
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)]
         [Tooltip("선택 타입")]
@@ -26,7 +26,7 @@ namespace GGemCo2DTcg
 
         public UnityEvent onFiltering;
         
-        private UIWindowMyDeck _uiWindowTcgMyDeck;
+        private UIWindowTcgMyDeck _uiWindowTcgTcgMyDeck;
         private TableTcgCard _tableTcgCard;
         
         // GC 할당 줄이기용 버퍼
@@ -99,8 +99,8 @@ namespace GGemCo2DTcg
         protected override void Start()
         {
             base.Start();
-            _uiWindowTcgMyDeck =
-                SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
+            _uiWindowTcgTcgMyDeck =
+                SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
         }
 
         public void SetPositionUiSlot(UISlot uiSlot, int index)

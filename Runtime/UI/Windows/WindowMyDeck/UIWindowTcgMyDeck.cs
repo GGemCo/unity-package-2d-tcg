@@ -8,7 +8,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 나의 덱 리스트 윈도우
     /// </summary>
-    public class UIWindowMyDeck : UIWindow
+    public class UIWindowTcgMyDeck : UIWindow
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)]
         [Tooltip("새로운 덱 만들기 버튼")]
@@ -17,7 +17,7 @@ namespace GGemCo2DTcg
         private MyDeckData _myDeckData;
 
         private UIWindowInputField _windowInputField;
-        private UIWindowMyDeckCard _windowMyDeckCard;
+        private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
         private string _titleInputField;
         
         protected override void Awake()
@@ -46,7 +46,7 @@ namespace GGemCo2DTcg
                 _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
             }
             _windowInputField = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowInputField>(UIWindowConstants.WindowUid.InputField);
-            _windowMyDeckCard = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
+            _windowTcgMyDeckCard = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
             _titleInputField = LocalizationManagerTcg.Instance.GetUIWindowMyDeckByKey("Button_Create_New");
         }
 
@@ -112,7 +112,7 @@ namespace GGemCo2DTcg
         /// <param name="icon"></param>
         protected override void OnSelectedIcon(UIIcon icon)
         {
-            _windowMyDeckCard?.UpdateCardInfo(icon.index);
+            _windowTcgMyDeckCard?.UpdateCardInfo(icon.index);
         }
 
         public void AddCardToDeck(int deckIndex, int cardUid)

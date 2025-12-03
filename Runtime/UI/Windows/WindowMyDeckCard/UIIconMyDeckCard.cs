@@ -13,15 +13,15 @@ namespace GGemCo2DTcg
         public TextMeshProUGUI textName;
 
         private int _deckIndex;
-        private UIWindowMyDeckCard _windowMyDeckCard;
+        private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
         private StruckTableTcgCard _struckTableTcgCard;
         private MyDeckData _myDeckData;
-        private UIWindowCardInfo _windowCardInfo;
+        private UIWindowTcgCardInfo _windowTcgCardInfo;
         
         protected override void Start()
         {
             base.Start();
-            _windowCardInfo = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
+            _windowTcgCardInfo = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
         }
 
         private void OnDisable()
@@ -31,7 +31,7 @@ namespace GGemCo2DTcg
                 SceneGame.Instance.uIWindowManager.ShowSelectIconImage(false);
             }
             SceneGame.Instance.uIWindowManager.ShowOverIconImage(false);
-            _windowCardInfo?.Show(false);
+            _windowTcgCardInfo?.Show(false);
         }
 
         public override bool ChangeInfoByUid(int cardUid, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
@@ -44,7 +44,7 @@ namespace GGemCo2DTcg
             {
                 textName.text = _struckTableTcgCard.name;
             }
-            _windowMyDeckCard = window as UIWindowMyDeckCard;
+            _windowTcgMyDeckCard = window as UIWindowTcgMyDeckCard;
             _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
             UpdateInfo();
             return true;

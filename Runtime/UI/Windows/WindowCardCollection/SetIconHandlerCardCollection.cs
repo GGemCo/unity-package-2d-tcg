@@ -9,8 +9,8 @@ namespace GGemCo2DTcg
     {
         public void OnSetIcon(UIWindow window, int slotIndex, int iconUid, int iconCount, int iconLevel, bool isLearned)
         {
-            UIWindowCardCollection uiWindowCardCollection = window as UIWindowCardCollection;
-            if (uiWindowCardCollection == null) return;
+            UIWindowTcgCardCollection uiWindowTcgCardCollection = window as UIWindowTcgCardCollection;
+            if (uiWindowTcgCardCollection == null) return;
             // var skillData = SceneGame.Instance.saveDataManager.Skill;
             UIIcon icon = window.GetIconByIndex(slotIndex);
             if (icon != null)

@@ -32,7 +32,7 @@ namespace GGemCo2DTcg
         private StruckTableTcgCard _struckTableTcgCard;
         private TableTcgCard _tableTcgCard;
         private MyDeckData _myDeckData;
-        private UIWindowMyDeckCard _windowMyDeckCard;
+        private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
         
         protected override void Awake()
         {
@@ -48,7 +48,7 @@ namespace GGemCo2DTcg
         {
             base.Start();
             _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
-            _windowMyDeckCard = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
+            _windowTcgMyDeckCard = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
         }
 
         public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
@@ -159,11 +159,11 @@ namespace GGemCo2DTcg
         public void OnPointerClick(PointerEventData eventData)
         {
             // 덱이 선택되어있는지 체크
-            if (!_windowMyDeckCard.IsOpen())
+            if (!_windowTcgMyDeckCard.IsOpen())
             {
                 return;
             }
-            _windowMyDeckCard.AddCardToDeck(uid);
+            _windowTcgMyDeckCard.AddCardToDeck(uid);
         }
     }
 }

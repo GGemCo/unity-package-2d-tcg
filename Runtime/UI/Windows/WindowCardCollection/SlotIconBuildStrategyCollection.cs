@@ -21,9 +21,9 @@ namespace GGemCo2DTcg
             IconConstants.Type iconType, Vector2 slotSize, Vector2 iconSize, GameObject[] slots, GameObject[] icons)
         {
             if (AddressableLoaderSettings.Instance == null || window.containerIcon == null) return;
-            UIWindowCardCollection uIWindowCardCollection = window as UIWindowCardCollection;
-            if (uIWindowCardCollection == null) return;
-            if (uIWindowCardCollection.iconPrefab == null)
+            UIWindowTcgCardCollection uIWindowTcgCardCollection = window as UIWindowTcgCardCollection;
+            if (uIWindowTcgCardCollection == null) return;
+            if (uIWindowTcgCardCollection.iconPrefab == null)
             {
                 GcLogger.LogError($"카드 아이콘 프리팹이 없습니다.");
                 return;
@@ -31,7 +31,7 @@ namespace GGemCo2DTcg
             
             // tcg_card 데이터 테이블 가져오기
             var datas = _tableTcgCard.GetDatas();
-            uIWindowCardCollection.maxCountIcon = datas.Count;
+            uIWindowTcgCardCollection.maxCountIcon = datas.Count;
             if (datas.Count <= 0) return;
             
             GameObject slot = ConfigResources.Slot.Load();
@@ -44,17 +44,17 @@ namespace GGemCo2DTcg
                 if (info is not { uid: > 0 }) continue;
                 // GcLogger.Log($"card: {info.uid} / {info.name}");
                 
-                GameObject slotObject = Object.Instantiate(slot, uIWindowCardCollection.containerIcon.gameObject.transform);
+                GameObject slotObject = Object.Instantiate(slot, uIWindowTcgCardCollection.containerIcon.gameObject.transform);
                 UISlot uiSlot = slotObject.GetComponent<UISlot>();
                 if (uiSlot == null) continue;
-                uiSlot.Initialize(uIWindowCardCollection, uIWindowCardCollection.uid, index, slotSize);
-                uIWindowCardCollection.SetPositionUiSlot(uiSlot, index);
+                uiSlot.Initialize(uIWindowTcgCardCollection, uIWindowTcgCardCollection.uid, index, slotSize);
+                uIWindowTcgCardCollection.SetPositionUiSlot(uiSlot, index);
                 slots[index] = slotObject;
 
-                GameObject icon = Object.Instantiate(uIWindowCardCollection.iconPrefab, slotObject.transform);
+                GameObject icon = Object.Instantiate(uIWindowTcgCardCollection.iconPrefab, slotObject.transform);
                 UIIconCard uiIconCard = icon.GetComponent<UIIconCard>();
                 if (uiIconCard == null) continue;
-                uiIconCard.Initialize(uIWindowCardCollection, uIWindowCardCollection.uid, index, index, iconSize, slotSize);
+                uiIconCard.Initialize(uIWindowTcgCardCollection, uIWindowTcgCardCollection.uid, index, index, iconSize, slotSize);
                 // count, 레벨 1로 초기화
                 uiIconCard.ChangeInfoByUid(info.uid, 1, 1);
                 

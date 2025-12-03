@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 나의 덱 리스트 중에서 덱을 선택했을 때, 해당 덱에 포함된 카드 리스트를 표시하는 UI 윈도우
     /// </summary>
-    public class UIWindowMyDeckCard : UIWindow
+    public class UIWindowTcgMyDeckCard : UIWindow
     {
         // 나의 덱 리스트에서 카드를 빼는 키를 마우스 좌클릭으로 할지, 우클릭으로 할지
         public enum RemoveCardButtonType
@@ -30,8 +30,8 @@ namespace GGemCo2DTcg
         public MyDeckData myDeckData;
         
         private PopupManager _popupManager;
-        private UIWindowMyDeck _windowMyDeck;
-        private UIWindowCardInfo _uiWindowCardInfo;
+        private UIWindowTcgMyDeck _windowTcgMyDeck;
+        private UIWindowTcgCardInfo _uiWindowTcgCardInfo;
         private TableTcgCard _tableTcgCard;
         
         protected override void Awake()
@@ -42,19 +42,19 @@ namespace GGemCo2DTcg
             }
             if (iconPrefab == null)
             {
-                GcLogger.LogError($"{nameof(UIWindowMyDeckCard)}: iconPrefab 가 지정되지 않았습니다.");
+                GcLogger.LogError($"{nameof(UIWindowTcgMyDeckCard)}: iconPrefab 가 지정되지 않았습니다.");
                 return;
             }
             if (containerIcon == null)
             {
-                GcLogger.LogError($"{nameof(UIWindowMyDeckCard)}: containerIcon 이 null 입니다.");
+                GcLogger.LogError($"{nameof(UIWindowTcgMyDeckCard)}: containerIcon 이 null 입니다.");
                 return;
             }
             _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
 
             if (_tableTcgCard == null)
             {
-                GcLogger.LogError($"{nameof(UIWindowMyDeckCard)}: TableTcgCard 가 초기화되지 않았습니다.");
+                GcLogger.LogError($"{nameof(UIWindowTcgMyDeckCard)}: TableTcgCard 가 초기화되지 않았습니다.");
                 return;
             }
             
@@ -73,14 +73,14 @@ namespace GGemCo2DTcg
 
             if (SceneGame == null)
             {
-                GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: SceneGame 이 null 입니다.");
+                GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: SceneGame 이 null 입니다.");
                 return;
             }
 
             var saveManagerTcg = TcgPackageManager.Instance?.saveDataManagerTcg;
             if (saveManagerTcg == null)
             {
-                GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: saveDataManagerTcg 가 null 입니다.");
+                GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: saveDataManagerTcg 가 null 입니다.");
             }
             else
             {
@@ -88,8 +88,8 @@ namespace GGemCo2DTcg
             }
 
             _popupManager = SceneGame.popupManager;
-            _windowMyDeck = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
-            _uiWindowCardInfo = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
+            _windowTcgMyDeck = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
+            _uiWindowTcgCardInfo = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowTcgCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
         }
 
         public void UpdateCardInfo(int index)
@@ -111,14 +111,14 @@ namespace GGemCo2DTcg
         {
             if (myDeckData == null)
             {
-                GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: MyDeckData 가 초기화되지 않았습니다.");
+                GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: MyDeckData 가 초기화되지 않았습니다.");
                 return;
             }
 
             var deckSaveData = myDeckData.GetDeckInfoByIndex(_deckIndex);
             if (deckSaveData == null)
             {
-                GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: 인덱스 {_deckIndex} 에 해당하는 덱 정보를 찾을 수 없습니다.");
+                GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: 인덱스 {_deckIndex} 에 해당하는 덱 정보를 찾을 수 없습니다.");
                 return;
             }
             SetDeckName(deckSaveData);
@@ -139,7 +139,7 @@ namespace GGemCo2DTcg
                 var info = _tableTcgCard.GetDataByUid(cardUid);
                 if (info == null)
                 {
-                    GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: cardUid {cardUid} 에 대한 카드 정보를 찾을 수 없습니다.");
+                    GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: cardUid {cardUid} 에 대한 카드 정보를 찾을 수 없습니다.");
                     continue;
                 }
 
@@ -165,7 +165,7 @@ namespace GGemCo2DTcg
         {
             if (!textName)
             {
-                GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: textName 이 할당되지 않았습니다.");
+                GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: textName 이 할당되지 않았습니다.");
                 return;
             }
 
@@ -187,7 +187,7 @@ namespace GGemCo2DTcg
         {
             if (myDeckData == null)
             {
-                GcLogger.LogWarning($"{nameof(UIWindowMyDeckCard)}: MyDeckData 가 초기화되지 않아 카드를 추가할 수 없습니다.");
+                GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: MyDeckData 가 초기화되지 않아 카드를 추가할 수 없습니다.");
                 return;
             }
 
@@ -205,11 +205,11 @@ namespace GGemCo2DTcg
             if (show)
             {
                 if (icon == null) return;
-                _uiWindowCardInfo.SetCardUid(icon.uid, icon.gameObject, UIWindowCardInfo.PositionType.Right, slotSize);
+                _uiWindowTcgCardInfo.SetCardUid(icon.uid, icon.gameObject, UIWindowTcgCardInfo.PositionType.Right, slotSize);
             }
             else
             {
-                _uiWindowCardInfo.Show(false);
+                _uiWindowTcgCardInfo.Show(false);
             }
         }
         

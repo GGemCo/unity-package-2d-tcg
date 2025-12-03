@@ -9,8 +9,8 @@ namespace GGemCo2DTcg
     {
         public void OnSetIcon(UIWindow window, int slotIndex, int iconUid, int iconCount, int iconLevel, bool isLearned)
         {
-            UIWindowMyDeck uiWindowCardCollection = window as UIWindowMyDeck;
-            if (uiWindowCardCollection == null) return;
+            UIWindowTcgMyDeck uiWindowTcgCardCollection = window as UIWindowTcgMyDeck;
+            if (uiWindowTcgCardCollection == null) return;
         }
         public void OnDetachIcon(UIWindow window, int slotIndex)
         {
