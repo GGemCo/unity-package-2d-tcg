@@ -1,5 +1,5 @@
-﻿using GGemCo2DCore;
-using UnityEngine;
+﻿using System.Collections.Generic;
+using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
@@ -9,6 +9,8 @@ namespace GGemCo2DTcg
     public class UIWindowTcgMyHand : UIWindow
     {
         private int? _startingHandCardCount;
+        private TcgBattleManager _battleManager;
+        private ConfigCommonTcg.TcgPlayerSide _side;
         
         protected override void Awake()
         {
@@ -58,6 +60,31 @@ namespace GGemCo2DTcg
 
                 SetIconCount(firstCard.Uid, 1);
             }
+        }
+        public void SetBattleManager(TcgBattleManager battleManager, ConfigCommonTcg.TcgPlayerSide side)
+        {
+            _battleManager = battleManager;
+            _side = side;
+        }
+
+        public void RefreshHand(IReadOnlyList<CardRuntime> hand)
+        {
+            // 기존 SetFirstCard 기반 구현을 확장하여,
+            // hand 리스트를 기준으로 슬롯/아이콘 다시 배치
+        }
+
+        public void SetInteractable(bool interactable)
+        {
+            // 버튼/슬롯에 RaycastTarget, 버튼 활성화 등 적용
+        }
+
+        // 카드 클릭 시 (예: 아이콘에 연결)
+        public void OnClickCard(CardRuntime card)
+        {
+            if (_battleManager == null)
+                return;
+
+            _battleManager.OnUiRequestPlayCard(_side, card);
         }
     }
 }

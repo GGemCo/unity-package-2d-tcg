@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace GGemCo2DTcg
 {
     /// <summary>
@@ -13,30 +14,61 @@ namespace GGemCo2DTcg
         // CardConstants.Type Type { get; }
         // CardConstants.Grade Grade { get; }
     }
-
     /// <summary>
-    /// TCG 카드의 런타임 표현.
-    /// TableTcgCard + 현재 전투에서의 상태(버프, 변형 등)를 담는 그릇으로 사용할 수 있다.
+    /// 전투에서 사용하는 카드 런타임 데이터.
+    /// - 테이블에서 읽은 정적 정보를 기반으로 생성합니다.
+    /// - 여기에는 "게임 중 변하는 값"은 넣지 않고,
+    ///   주로 템플릿/정적 정보(스탯, 키워드, 이펙트)를 유지합니다.
     /// </summary>
-    public class CardRuntime : ICardInfo
+    public sealed class CardRuntime : ICardInfo
     {
         public int Uid { get; }
+        public string Name { get; }
+
+        public CardConstants.Type Type { get; }
+        public CardConstants.Grade Grade { get; }
+        public CardConstants.TargetType TargetType { get; }
+
         public int Cost { get; }
 
-        // 예: 테이블/상수에서 가져온 정보
-        // public CardConstants.Type Type { get; }
-        // public CardConstants.Grade Grade { get; }
+        public int Attack { get; }
+        public int Health { get; }
 
-        public CardRuntime(int uid, int cost)
-        {
-            Uid = uid;
-            Cost = cost;
-        }
+        public int MaxCopiesPerDeck { get; }
 
-        // TableTcgCard 연동 팩토리 메서드 
-        public static CardRuntime FromTable(StruckTableTcgCard row)
+        public string ImageFileName { get; }
+        public string Description { get; }
+
+        public IReadOnlyList<ConfigCommonTcg.TcgKeyword> Keywords => _keywords;
+        public IReadOnlyList<TcgEffectData> SummonEffects => _summonEffects;
+        public IReadOnlyList<TcgEffectData> SpellEffects => _spellEffects;
+        public IReadOnlyList<TcgEffectData> DeathEffects => _deathEffects;
+
+        private readonly List<ConfigCommonTcg.TcgKeyword> _keywords = new List<ConfigCommonTcg.TcgKeyword>(4);
+        private readonly List<TcgEffectData> _summonEffects = new List<TcgEffectData>(4);
+        private readonly List<TcgEffectData> _spellEffects = new List<TcgEffectData>(4);
+        private readonly List<TcgEffectData> _deathEffects = new List<TcgEffectData>(4);
+
+        public CardRuntime(
+            StruckTableTcgCard row,
+            IReadOnlyList<ConfigCommonTcg.TcgKeyword> keywords,
+            IReadOnlyList<TcgEffectData> summonEffects,
+            IReadOnlyList<TcgEffectData> spellEffects,
+            IReadOnlyList<TcgEffectData> deathEffects)
         {
-            return new CardRuntime(row.uid, row.cost);
+            Uid = row.uid;
+            Name = row.name;
+            Type = row.type;
+            Grade = row.grade;
+            Cost = row.cost;
+            MaxCopiesPerDeck = row.maxCopiesPerDeck;
+            ImageFileName = row.imageFileName;
+            Description = row.description;
+
+            if (keywords != null) _keywords.AddRange(keywords);
+            if (summonEffects != null) _summonEffects.AddRange(summonEffects);
+            if (spellEffects != null) _spellEffects.AddRange(spellEffects);
+            if (deathEffects != null) _deathEffects.AddRange(deathEffects);
         }
     }
 }

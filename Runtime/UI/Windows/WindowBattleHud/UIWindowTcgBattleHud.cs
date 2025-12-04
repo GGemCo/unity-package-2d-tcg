@@ -9,6 +9,7 @@ namespace GGemCo2DTcg
         public Button buttonBattleExit;
 
         private UIWindowTcgField _uiWindowTcgField;
+        private TcgBattleManager _battleManager;
         protected override void Awake()
         {
             base.Awake();
@@ -26,6 +27,7 @@ namespace GGemCo2DTcg
         {
             base.Start();
             _uiWindowTcgField = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowTcgField>(UIWindowConstants.WindowUid.TcgField);
+            _battleManager = TcgPackageManager.Instance.battleManager;
         }
 
         private void OnClickBattleExit()
@@ -35,6 +37,10 @@ namespace GGemCo2DTcg
 
         private void OnClickTurnOff()
         {
+            if (_battleManager == null)
+                return;
+
+            _battleManager.OnUiRequestEndTurn(ConfigCommonTcg.TcgPlayerSide.Player);
         }
     }
 }

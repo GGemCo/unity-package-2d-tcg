@@ -60,6 +60,7 @@ namespace GGemCo2DTcg
             Cards.RemoveAt(0);
             return true;
         }
+        public int Count => Cards.Count;
 # if UNITY_EDITOR
         public void DebugCard()
         {

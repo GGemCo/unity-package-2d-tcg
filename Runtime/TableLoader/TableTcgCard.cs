@@ -14,6 +14,11 @@ namespace GGemCo2DTcg
         public int maxCopiesPerDeck;
         public string imageFileName;
         public string description;
+        
+        public string keywordRaw;          // CSV 문자열 그대로 (예: "Rush|Taunt")
+        public string summonEffectsRaw;     // "DealDamageToTargetUnit:3:EnemyCreature;..."
+        public string spellEffectsRaw;      // 스펠 사용 시
+        public string deathEffectsRaw;      // 사망 시
     }
     public class TableTcgCard : DefaultTable<StruckTableTcgCard>
     {
@@ -23,14 +28,18 @@ namespace GGemCo2DTcg
         {
             return new StruckTableTcgCard
             {
-                uid = int.Parse(data["Uid"]),
+                uid = MathHelper.ParseInt(data["Uid"]),
                 name = data["Name"],
                 type = EnumHelper.ConvertEnum<CardConstants.Type>(data["Type"]),
                 grade = EnumHelper.ConvertEnum<CardConstants.Grade>(data["Grade"]),
-                cost = int.Parse(data["Cost"]),
-                maxCopiesPerDeck = int.Parse(data["MaxCopiesPerDeck"]),
+                cost = MathHelper.ParseInt(data["Cost"]),
+                maxCopiesPerDeck = MathHelper.ParseInt(data["MaxCopiesPerDeck"]),
                 imageFileName = data["ImageFileName"],
                 description = data["Description"],
+                keywordRaw = data["Keyword"],
+                summonEffectsRaw = data["SummonEffects"],
+                spellEffectsRaw = data["SpellEffects"],
+                deathEffectsRaw = data["DeathEffects"]
             };
         }
     }

@@ -19,10 +19,9 @@ namespace GGemCo2DTcg
                     GcLogger.LogError($"Card UID {uid} not found in table.");
                     continue;
                 }
+                CardRuntime card = TcgCardRuntimeFactory.CreateCardRuntime(row);
 
-                var runtimeCard = CardRuntime.FromTable(row);
-
-                list.Add(runtimeCard);
+                list.Add(card);
             }
 
             return list;
