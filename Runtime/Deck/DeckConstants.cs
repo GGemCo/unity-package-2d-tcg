@@ -1,6 +1,6 @@
 ﻿namespace GGemCo2DTcg
 {
-    public struct StruckCard
+    public class DeckConstants
     {
         
     }

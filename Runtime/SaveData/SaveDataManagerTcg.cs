@@ -10,6 +10,7 @@ namespace GGemCo2DTcg
     public class SaveDataContainerTcg
     {
         public MyDeckData MyDeckData;
+        public PlayerDataTcg PlayerDataTcg;
     }
     /// <summary>
     /// 세이브 데이터 메인 매니저
@@ -17,6 +18,7 @@ namespace GGemCo2DTcg
     public class SaveDataManagerTcg : SaveDataManagerBase
     {
         public MyDeckData MyDeck { get; private set; }
+        public PlayerDataTcg PlayerTcg { get; private set; }
 
         private PlayerData _playerData;
         
@@ -30,9 +32,11 @@ namespace GGemCo2DTcg
             
             // 각 데이터 클래스 초기화
             MyDeck = new MyDeckData();
+            PlayerTcg = new PlayerDataTcg();
 
             // 초기화 실행
             MyDeck.Initialize(TableLoaderManagerTcg.Instance, saveDataContainer);
+            PlayerTcg.Initialize(TableLoaderManagerTcg.Instance, saveDataContainer);
         }
 
         protected override void Start()
@@ -53,6 +57,7 @@ namespace GGemCo2DTcg
 
             SaveDataContainerTcg saveData = new SaveDataContainerTcg
             {
+                PlayerDataTcg = PlayerTcg,
                 MyDeckData = MyDeck,
             };
 

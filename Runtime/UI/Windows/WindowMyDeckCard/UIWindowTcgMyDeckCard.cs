@@ -1,6 +1,8 @@
-﻿using GGemCo2DCore;
+﻿using System;
+using GGemCo2DCore;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GGemCo2DTcg
 {
@@ -24,6 +26,8 @@ namespace GGemCo2DTcg
         
         [Tooltip("RemoveCardButtonType")]
         public RemoveCardButtonType removeCardButtonType = RemoveCardButtonType.Left;
+        [Tooltip("사용할 덱으로 설정하는 버튼")]
+        public Button buttonSetDefaultDeck;
 
         private int _deckIndex;
         
@@ -33,6 +37,7 @@ namespace GGemCo2DTcg
         private UIWindowTcgMyDeck _windowTcgMyDeck;
         private UIWindowTcgCardInfo _uiWindowTcgCardInfo;
         private TableTcgCard _tableTcgCard;
+        private PlayerDataTcg _playerDataTcg;
         
         protected override void Awake()
         {
@@ -65,6 +70,13 @@ namespace GGemCo2DTcg
 
             IconPoolManager.SetSetIconHandler(new SetIconHandlerMyDeckCard());
             DragDropHandler.SetStrategy(new DragDropStrategyMyDeckCard());
+            
+            buttonSetDefaultDeck?.onClick.AddListener(OnClickSetDefaultDeck);
+        }
+
+        protected void OnDestroy()
+        {
+            buttonSetDefaultDeck?.onClick.RemoveAllListeners();
         }
 
         protected override void Start()
@@ -85,6 +97,7 @@ namespace GGemCo2DTcg
             else
             {
                 myDeckData = saveManagerTcg.MyDeck;
+                _playerDataTcg = saveManagerTcg.PlayerTcg;
             }
 
             _popupManager = SceneGame.popupManager;
@@ -243,6 +256,22 @@ namespace GGemCo2DTcg
                 DetachIcon(icon.index);
             }
             icon.SetCount(result);
+        }
+        /// <summary>
+        /// 선택된 덱을 디폴트로 사용하도록 설정
+        /// </summary>
+        private void OnClickSetDefaultDeck()
+        {
+            bool result = _playerDataTcg.SetDefaultDeckIndex(_deckIndex);
+            if (!result) return;
+            
+            PopupMetadata popupMetadata = new PopupMetadata
+            {
+                PopupType = PopupManager.Type.Default,
+                Title = "저장", 
+                Message = "저장되었습니다.", 
+            };
+            _popupManager.ShowPopup(popupMetadata);
         }
     }
 }

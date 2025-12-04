@@ -8,6 +8,8 @@ namespace GGemCo2DTcg
         public static TcgPackageManager Instance { get; private set; }
 
         public SaveDataManagerTcg saveDataManagerTcg;
+        public TcgBattleManager battleManager;
+        
         private void Awake()
         {
             // 테이블 매니저가 로드 되지 않았다면 return;
@@ -26,13 +28,6 @@ namespace GGemCo2DTcg
                 Destroy(gameObject);
                 return;
             }
-            // gameObject.AddComponent<BootstrapperCharacterSpawn>();
-            // gameObject.AddComponent<BootstrapperMap>();
-            // wetDecaySystem = gameObject.AddComponent<WetDecaySystem>();
-            // simulationDirtyTracker = gameObject.AddComponent<SimulationDirtyTracker>();
-            //
-            // // Core에 저장 기여자 등록
-            // simulationSaveContributor = new SimulationSaveContributor(simulationDirtyTracker, this);
             InitializeManagers();
         }
 
@@ -40,6 +35,9 @@ namespace GGemCo2DTcg
         {
             GameObject managerContainer = new GameObject("ManagersTcg");
             saveDataManagerTcg = CreateManager<SaveDataManagerTcg>(managerContainer);
+
+            battleManager = new TcgBattleManager();
+            battleManager.Initialize(this);
         }
 
         private T CreateManager<T>(GameObject parent) where T : Component

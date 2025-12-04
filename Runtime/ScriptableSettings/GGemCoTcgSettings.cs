@@ -65,6 +65,8 @@ namespace GGemCo2DTcg
         [Min(0)]
         public int cardsDrawnPerTurn = 1;
 
+        [Tooltip("가중치. (0은 제외)")] 
+        public int[] costWeights;
         // ──────────────────────────────────────────────────────────────────────────────
         // Turn Limits
         // ──────────────────────────────────────────────────────────────────────────────
@@ -76,8 +78,14 @@ namespace GGemCo2DTcg
         [Tooltip("최대 턴 수")]
         [Min(0)]
         public int maxTurns = 10;
-
+        
 #if UNITY_EDITOR
+        // ──────────────────────────────────────────────────────────────────────────────
+        // 테스트용
+        // ──────────────────────────────────────────────────────────────────────────────
+        [Header("테스트용")]
+        public int testSeed;
+        
         [ContextMenu("Rebuild Cache & Raise Changed")]
         private void RebuildCacheAndNotify()
         {
