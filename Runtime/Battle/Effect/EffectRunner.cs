@@ -62,12 +62,11 @@ namespace GGemCo2DTcg
         /// 카드가 가진 이펙트 리스트를 순서대로 실행합니다.
         /// </summary>
         public static void RunEffects(
-            TcgBattleContext battleContext,
-            TcgBattleSideState caster,
-            TcgBattleSideState opponent,
-            CardRuntime sourceCard,
+            TcgBattleDataSide caster,
+            TcgBattleDataSide opponent,
+            TcgBattleDataCard sourceTcgBattleDataCard,
             IReadOnlyList<TcgEffectData> effects,
-            TcgUnitRuntime explicitTargetUnit = null)
+            TcgBattleDataFieldCard explicitTargetBattleData = null)
         {
             if (effects == null || effects.Count == 0)
                 return;
@@ -85,16 +84,15 @@ namespace GGemCo2DTcg
                 }
 
                 var ctx = new TcgEffectContext(
-                    battleContext,
                     caster,
                     opponent,
-                    sourceCard,
+                    sourceTcgBattleDataCard,
                     effect.Value,
                     effect.ExtraParams);
 
                 // 타겟 지정이 필요하다면 UI/AI에서 결정한 유닛을 넘겨주거나,
                 // 여기에서 TargetType 에 맞게 선택하도록 구현할 수 있습니다.
-                ctx.TargetUnit = explicitTargetUnit;
+                ctx.TargetBattleData = explicitTargetBattleData;
 
                 handler.Execute(ctx);
             }

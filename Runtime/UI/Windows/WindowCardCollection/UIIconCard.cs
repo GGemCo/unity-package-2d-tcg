@@ -29,8 +29,9 @@ namespace GGemCo2DTcg
         public Image imageAtk;
         public Image imageHp;
 
+        protected TableTcgCard tableTcgCard;
+        
         private StruckTableTcgCard _struckTableTcgCard;
-        private TableTcgCard _tableTcgCard;
         private MyDeckData _myDeckData;
         private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
         
@@ -40,7 +41,7 @@ namespace GGemCo2DTcg
             IconType = IconConstants.Type.TcgCard;
             _struckTableTcgCard = null;
             if (TableLoaderManager.Instance == null) return;
-            _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
+            tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
             
         }
 
@@ -53,7 +54,7 @@ namespace GGemCo2DTcg
 
         public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
         {
-            var info = _tableTcgCard.GetDataByUid(deckIndex);
+            var info = tableTcgCard.GetDataByUid(deckIndex);
             if (info == null)
             {
                 GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {deckIndex}");
@@ -99,6 +100,7 @@ namespace GGemCo2DTcg
             var key = $"{ConfigAddressableKeyTcg.Card.ImageArt}_{_struckTableTcgCard.uid}";
             imageArtWork.sprite = AddressableLoaderCard.Instance.GetImageArtByName(key);
         }
+
         private void InitializeCreature()
         {
             if (_struckTableTcgCard.type != CardConstants.Type.Creature) return;
@@ -156,7 +158,7 @@ namespace GGemCo2DTcg
         /// 덱이 선택되어있을 때, 카드를 클릭하면 바로 덱에 포함 된다.
         /// </summary>
         /// <param name="eventData"></param>
-        public void OnPointerClick(PointerEventData eventData)
+        public virtual void OnPointerClick(PointerEventData eventData)
         {
             // 덱이 선택되어있는지 체크
             if (!_windowTcgMyDeckCard.IsOpen())

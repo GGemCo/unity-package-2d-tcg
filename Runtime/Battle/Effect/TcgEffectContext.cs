@@ -8,29 +8,27 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgEffectContext
     {
-        public TcgBattleContext BattleContext { get; }
-        public TcgBattleSideState Caster { get; }
-        public TcgBattleSideState Opponent { get; }
+        public TcgBattleDataMain BattleDataMain { get; }
+        public TcgBattleDataSide Caster { get; }
+        public TcgBattleDataSide Opponent { get; }
 
-        public CardRuntime SourceCard { get; }
-        public TcgUnitRuntime TargetUnit { get; set; }  // 필요 시 설정
+        public TcgBattleDataCard SourceTcgBattleDataCard { get; }
+        public TcgBattleDataFieldCard TargetBattleData { get; set; }  // 필요 시 설정
 
         public int Value { get; set; }
 
         public Dictionary<string, string> ExtraParams { get; }
 
         public TcgEffectContext(
-            TcgBattleContext battleContext,
-            TcgBattleSideState caster,
-            TcgBattleSideState opponent,
-            CardRuntime sourceCard,
+            TcgBattleDataSide caster,
+            TcgBattleDataSide opponent,
+            TcgBattleDataCard sourceTcgBattleDataCard,
             int value,
             Dictionary<string, string> extraParams = null)
         {
-            BattleContext = battleContext;
             Caster = caster;
             Opponent = opponent;
-            SourceCard = sourceCard;
+            SourceTcgBattleDataCard = sourceTcgBattleDataCard;
             Value = value;
             ExtraParams = extraParams ?? new Dictionary<string, string>();
         }

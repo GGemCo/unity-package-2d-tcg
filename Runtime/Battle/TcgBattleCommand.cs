@@ -19,17 +19,17 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 카드 사용 시: 손에서 사용할 카드 런타임 참조.
         /// </summary>
-        public CardRuntime Card;
+        public TcgBattleDataCard tcgBattleDataCard;
 
         /// <summary>
         /// 공격 시: 공격자 유닛.
         /// </summary>
-        public TcgUnitRuntime Attacker;
+        public TcgBattleDataFieldCard Attacker;
 
         /// <summary>
         /// 공격 시: 대상 유닛 (영웅 공격이면 null 로 사용).
         /// </summary>
-        public TcgUnitRuntime TargetUnit;
+        public TcgBattleDataFieldCard targetBattleData;
 
         /// <summary>
         /// 확장용 추가 데이터 (예: 스펠 턴수, 선택된 옵션 등).
@@ -40,33 +40,33 @@ namespace GGemCo2DTcg
 
         public static TcgBattleCommand PlayCard(
             ConfigCommonTcg.TcgPlayerSide side,
-            CardRuntime card)
+            TcgBattleDataCard tcgBattleDataCard)
         {
             return new TcgBattleCommand
             {
                 CommandType = ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand,
                 Side = side,
-                Card = card
+                tcgBattleDataCard = tcgBattleDataCard
             };
         }
 
         public static TcgBattleCommand AttackUnit(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgUnitRuntime attacker,
-            TcgUnitRuntime target)
+            TcgBattleDataFieldCard attacker,
+            TcgBattleDataFieldCard target)
         {
             return new TcgBattleCommand
             {
                 CommandType = ConfigCommonTcg.TcgBattleCommandType.AttackUnit,
                 Side = side,
                 Attacker = attacker,
-                TargetUnit = target
+                targetBattleData = target
             };
         }
 
         public static TcgBattleCommand AttackHero(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgUnitRuntime attacker)
+            TcgBattleDataFieldCard attacker)
         {
             return new TcgBattleCommand
             {

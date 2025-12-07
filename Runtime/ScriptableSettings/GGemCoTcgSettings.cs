@@ -89,6 +89,7 @@ namespace GGemCo2DTcg
         // ──────────────────────────────────────────────────────────────────────────────
         [Header("테스트용")]
         public int testSeed;
+        public EnemyDeckPreset testDeckPreset;
         
         [ContextMenu("Rebuild Cache & Raise Changed")]
         private void RebuildCacheAndNotify()

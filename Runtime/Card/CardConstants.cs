@@ -8,13 +8,38 @@
         /// </summary>
         public enum Type
         {
-            None,
-            Hero,       // 영웅
-            Creature,   // 일반 유닛
-            Spell,      // 일회성 주문
-            Equipment,  // 장비
-            Permanent,  // 필드 지속 효과
-            Event       // 조건부 자동 발동
+            /// <summary>
+            /// 타입을 구분하지 않음.
+            /// 필터에서 사용 시, 어떤 타입이든 허용됩니다.
+            /// </summary>
+            Any = 0,
+
+            /// <summary>
+            /// 크리처 카드.
+            /// 전장에 소환되어 전투에 참여하는 유닛.
+            /// </summary>
+            Creature = 1,
+
+            /// <summary>
+            /// 스펠 카드.
+            /// 즉시 발동되거나 일회성 효과를 가지는 카드.
+            /// </summary>
+            Spell = 2,
+
+            /// <summary>
+            /// 장비/무기/방어구 등 영웅 혹은 크리처에 부착되는 카드.
+            /// </summary>
+            Equipment = 3,
+
+            /// <summary>
+            /// 지속형 영속물(건물, 필드 등)을 표현하는 카드.
+            /// </summary>
+            Permanent = 4,
+
+            /// <summary>
+            /// 일회성 이벤트, 트랩 등 특수 효과 카드.
+            /// </summary>
+            Event = 5,
         }
 
         /// <summary>

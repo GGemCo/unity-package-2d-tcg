@@ -62,7 +62,7 @@ namespace GGemCo2DTcgEditor
             foreach (var type in EnumCache<CardConstants.Type>.Values)
             {
                 // Debug.Log(type);
-                if (type == CardConstants.Type.None) continue;
+                if (type == CardConstants.Type.Any) continue;
                 
                 string assetPath = $"{ConfigAddressablePathTcg.Card.UIElement}/{type}.prefab";
                 // 대상 파일 가져오기
