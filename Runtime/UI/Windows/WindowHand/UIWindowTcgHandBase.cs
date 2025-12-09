@@ -11,7 +11,7 @@ namespace GGemCo2DTcg
         public TMP_Text textCurrentMana;
         
         protected int? startingHandCardCount;
-        protected TcgBattleControllerBase battleController;
+        // protected TcgBattleControllerBase battleController;
         protected TcgBattleManager battleManager;
         
         protected override void Start()
@@ -29,21 +29,21 @@ namespace GGemCo2DTcg
         protected virtual void UpdateMana()
         {
             if (!textCurrentMana) return;
-            var maxMana = battleController.GetCurrentMaxMana();
-            var currentMana = battleController.GetCurrentMana();
-            textCurrentMana.text = $"{currentMana}/{maxMana}";
+            // var maxMana = battleController.GetCurrentMaxMana();
+            // var currentMana = battleController.GetCurrentMana();
+            // textCurrentMana.text = $"{currentMana}/{maxMana}";
         }
-        public virtual void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
-        {
-            battleManager = tcgBattleManager;
-            if (battleManager != null)
-            {
-                battleManager.onExecuteCommand += UpdateMana;
-            }
-            battleController = tcgBattleController;
-            SetInteractable(true);
-            UpdateMana();
-        }
+        // public virtual void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
+        // {
+        //     battleManager = tcgBattleManager;
+        //     if (battleManager != null)
+        //     {
+        //         battleManager.onExecuteCommand += UpdateMana;
+        //     }
+        //     battleController = tcgBattleController;
+        //     SetInteractable(true);
+        //     UpdateMana();
+        // }
 
         public virtual void SetInteractable(bool set)
         {

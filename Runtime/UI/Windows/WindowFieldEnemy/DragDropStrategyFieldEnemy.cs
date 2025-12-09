@@ -75,7 +75,7 @@ namespace GGemCo2DTcg
                         }
                         TcgBattleDataFieldCard battleDataCardPlayer = uiIconFieldPlayer.GetBattleDataFieldCard();
                         TcgBattleDataFieldCard battleDataCardEnemy = uiIconFieldEnemy.GetBattleDataFieldCard();
-                        uiWindowTcgFieldPlayer.OnRequestAttackUnit(battleDataCardPlayer, battleDataCardEnemy);
+                        // uiWindowTcgFieldPlayer.OnRequestAttackUnit(battleDataCardPlayer, battleDataCardEnemy);
                         break;
                 }
             }

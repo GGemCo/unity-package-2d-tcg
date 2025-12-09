@@ -8,7 +8,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 플레이어가 현재 가지고 있는 카드 윈도우
     /// </summary>
-    public class UIWindowTcgHandPlayer : UIWindowTcgHandBase
+    public class UIWindowTcgHandPlayer : UIWindow
     {
         [Tooltip("턴 종료 버튼")]
         public Button buttonTurnOff;
@@ -17,8 +17,10 @@ namespace GGemCo2DTcg
         [Tooltip("마나 토글 프리팹")]
         public GameObject prefabToggleMana;
         
-        private TcgBattleControllerPlayer _battleControllerPlayer;
         private readonly List<Toggle> _toggleManaList = new List<Toggle>();
+
+        private TcgBattleManager _battleManager;
+        private ConfigCommonTcg.TcgPlayerSide _side;
         
         protected override void Awake()
         {
@@ -43,7 +45,7 @@ namespace GGemCo2DTcg
 
             IconPoolManager.SetSetIconHandler(new SetIconHandlerHandPlayer());
             DragDropHandler.SetStrategy(new DragDropStrategyHandPlayer());
-            buttonTurnOff?.onClick.AddListener(OnClickTurnOff);
+            // buttonTurnOff?.onClick.AddListener(OnClickTurnOff);
 
             CreateToggleMana();
         }
@@ -72,52 +74,23 @@ namespace GGemCo2DTcg
         protected void OnDestroy()
         {
             buttonTurnOff?.onClick.RemoveAllListeners();
-            if (battleManager != null)
-            {
-                battleManager.onExecuteCommand -= UpdateMana;    
-            }
+            // if (battleManager != null)
+            // {
+            //     battleManager.onExecuteCommand -= UpdateMana;    
+            // }
         }
 
-        public override void SetInteractable(bool b)
+        public void SetBattleManager(TcgBattleManager battleManager, ConfigCommonTcg.TcgPlayerSide side)
         {
-            // 버튼/슬롯에 RaycastTarget, 버튼 활성화 등 적용
+            _battleManager = battleManager;
+            _side = side;
         }
 
-        public override void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
+        public void RefreshHand(IReadOnlyList<TcgBattleDataCard> hand)
         {
-            base.SetBattleManager(tcgBattleManager, tcgBattleController);
-            _battleControllerPlayer = tcgBattleController as TcgBattleControllerPlayer;
-        }
-        /// <summary>
-        /// 현재 마나 표시 정보 업데이트
-        /// </summary>
-        protected override void UpdateMana()
-        {
-            base.UpdateMana();
-            var maxMana = battleController.GetCurrentMaxMana();
-            var currentMana = battleController.GetCurrentMana();
-            for (int i = 0; i < maxMana; i++)
-            {
-                var toggle = _toggleManaList[i];
-                if (toggle == null) continue;
-                toggle.gameObject.SetActive(true);
-                toggle.isOn = i < currentMana;
-            }
-        }
-
-        private void OnClickTurnOff()
-        {
-            if (_battleControllerPlayer == null)
-            {
-                GcLogger.LogError($"{nameof(TcgBattleControllerPlayer)} 클래스가 없습니다.");
-                return;
-            }
-            _battleControllerPlayer.OnUiRequestEndTurn();
-        }
-        public override void RefreshHand()
-        {
-            base.RefreshHand();
-            var hand = _battleControllerPlayer.GetHandCards();
+            // 기존 SetFirstCard 기반 구현을 확장하여,
+            // hand 리스트를 기준으로 슬롯/아이콘 다시 배치
+            DetachAllIcons();
             int i = 0;
             foreach (var tcgBattleDataCard in hand)
             {
@@ -129,5 +102,36 @@ namespace GGemCo2DTcg
                 i++;
             }
         }
+        public void SetInteractable(bool interactable)
+        {
+            // 버튼/슬롯에 RaycastTarget, 버튼 활성화 등 적용
+        }
+        
+        // /// <summary>
+        // /// 현재 마나 표시 정보 업데이트
+        // /// </summary>
+        // protected override void UpdateMana()
+        // {
+        //     base.UpdateMana();
+        //     var maxMana = battleController.GetCurrentMaxMana();
+        //     var currentMana = battleController.GetCurrentMana();
+        //     for (int i = 0; i < maxMana; i++)
+        //     {
+        //         var toggle = _toggleManaList[i];
+        //         if (toggle == null) continue;
+        //         toggle.gameObject.SetActive(true);
+        //         toggle.isOn = i < currentMana;
+        //     }
+        // }
+
+        // private void OnClickTurnOff()
+        // {
+        //     if (_battleControllerPlayer == null)
+        //     {
+        //         GcLogger.LogError($"{nameof(TcgBattleControllerPlayer)} 클래스가 없습니다.");
+        //         return;
+        //     }
+        //     // _battleControllerPlayer.OnUiRequestEndTurn();
+        // }
     }
 }

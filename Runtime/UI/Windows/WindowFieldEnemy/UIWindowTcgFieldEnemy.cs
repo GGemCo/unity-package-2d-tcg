@@ -5,7 +5,6 @@ namespace GGemCo2DTcg
     public class UIWindowTcgFieldEnemy : UIWindow
     {
         private TcgBattleManager _battleManager;
-        private TcgBattleControllerBase _battleController;
         
         protected override void Awake()
         {
@@ -20,26 +19,17 @@ namespace GGemCo2DTcg
         {
             DetachAllIcons();
         }
-        public void SetBattleManager(TcgBattleManager battleManager, TcgBattleControllerBase controller)
+
+        public void SetBattleManager(TcgBattleManager battleManager)
         {
             _battleManager = battleManager;
-            _battleController = controller;
         }
 
-        public void RefreshBoard()
+        public void RefreshBoard(
+            TcgBattleDataSide player,
+            TcgBattleDataSide enemy)
         {
-            DetachAllIcons();
-            var cards = _battleController.GetBoardCards();
-            int i = 0;
-            foreach (var battleDataFieldCard in cards)
-            {
-                var uiIcon = SetIconCount(i, battleDataFieldCard.Uid, 1);
-                if (!uiIcon) continue;
-                var uiIconFieldEnemy = uiIcon as UIIconFieldEnemy;
-                if (!uiIconFieldEnemy) continue;
-                uiIconFieldEnemy.SetBattleDataFieldCard(battleDataFieldCard);
-                i++;
-            }
+            // 두 보드 상태를 기반으로 필드 레이아웃 갱신
         }
 
         // 예: 드래그 드랍 후 공격 명령 요청

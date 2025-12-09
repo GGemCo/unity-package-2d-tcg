@@ -62,10 +62,10 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"{nameof(TcgBattleDataCard)} 정보가 없습니다.");
                 return;
             }
-            _windowTcgHandEnemy.OnClickCard(_tcgBattleDataCard);
+            // _windowTcgHandEnemy.OnClickCard(_tcgBattleDataCard);
         }
 
-        public void SetCardRuntime(TcgBattleDataCard tcgBattleDataCard)
+        public void SetBattleDataCard(TcgBattleDataCard tcgBattleDataCard)
         {
             _tcgBattleDataCard = tcgBattleDataCard;
         }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
@@ -27,18 +26,14 @@ namespace GGemCo2DTcg
         public int HeroHpMax { get; private set; }
 
         public int CurrentMana { get; private set; }
-        // 현재 턴에서 최대로 사용할 수 있는 마나
-        public int CurrentMaxMana { get; private set; }
-        // 대결 중 얻을 수 있는 최대 마나
-        private int _maxMana;
-        private SystemMessageManager _systemMessageManager;
+        public int MaxMana { get; private set; }
 
         public TcgBattleDataSide(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataDeck<TcgBattleDataCard> tcgBattleDataDeck)
+            TcgBattleDataDeck<TcgBattleDataCard> deckRuntime)
         {
             Side = side;
-            TcgBattleDataDeck = tcgBattleDataDeck;
+            TcgBattleDataDeck = deckRuntime;
         }
 
         // ===== 초기값 세팅용 =====
@@ -48,52 +43,42 @@ namespace GGemCo2DTcg
             HeroHp    = hp > maxHp ? maxHp : hp;
         }
 
-        public void InitializeMana(int current)
+        public void SetMana(int current, int max)
         {
-            _systemMessageManager = SceneGame.Instance.systemMessageManager;
-            
-            _maxMana = AddressableLoaderSettingsTcg.Instance.tcgSettings.countMaxManaInBattle;
-            CurrentMana = current > _maxMana ? _maxMana : current;
-            CurrentMaxMana = CurrentMana;
+            MaxMana     = max;
+            CurrentMana = current > max ? max : current;
         }
 
         // ===== 손패 관리 =====
 
-        public bool ContainsInHand(TcgBattleDataCard tcgBattleDataCard) => _hand.Contains(tcgBattleDataCard);
+        public bool ContainsInHand(TcgBattleDataCard card) => _hand.Contains(card);
 
-        public void AddCardToHand(TcgBattleDataCard tcgBattleDataCard)
+        public void AddCardToHand(TcgBattleDataCard card)
         {
-            if (tcgBattleDataCard == null) return;
-            _hand.Add(tcgBattleDataCard);
+            if (card == null) return;
+            _hand.Add(card);
         }
 
-        public bool RemoveCardFromHand(TcgBattleDataCard tcgBattleDataCard)
+        public bool RemoveCardFromHand(TcgBattleDataCard card)
         {
-            if (tcgBattleDataCard == null) return false;
-
-            if (ContainsInHand(tcgBattleDataCard)) return _hand.Remove(tcgBattleDataCard);
-            
-            GcLogger.LogWarning("[Battle] RemoveCardFromHand: Hand does not contain card.");
-            return false;
+            if (card == null) return false;
+            return _hand.Remove(card);
         }
 
         // ===== 필드(보드) 관리 =====
 
-        public bool ContainsOnBoard(TcgBattleDataFieldCard battleData) => _board.Contains(battleData);
+        public bool ContainsOnBoard(TcgBattleDataFieldCard unit) => _board.Contains(unit);
 
-        public void AddUnitToBoard(TcgBattleDataFieldCard battleData)
+        public void AddUnitToBoard(TcgBattleDataFieldCard unit)
         {
-            if (battleData == null) return;
-            _board.Add(battleData);
+            if (unit == null) return;
+            _board.Add(unit);
         }
 
-        public bool RemoveUnitFromBoard(TcgBattleDataFieldCard battleData)
+        public bool RemoveUnitFromBoard(TcgBattleDataFieldCard unit)
         {
-            if (battleData == null) return false;
-            if (ContainsOnBoard(battleData)) return _board.Remove(battleData);
-            
-            GcLogger.LogWarning("[Battle] RemoveUnitFromBoard: Board does not contain unit.");
-            return false;
+            if (unit == null) return false;
+            return _board.Remove(unit);
         }
 
         // ===== 마나/HP 증감 =====
@@ -101,13 +86,7 @@ namespace GGemCo2DTcg
         public bool TryConsumeMana(int amount)
         {
             if (amount <= 0) return true;
-            if (CurrentMana < amount)
-            {
-                // todo. localization. 자원 소모 이름 tcg settings에 추가하기
-                _systemMessageManager?.ShowMessageError("마나가 부족합니다.");
-                GcLogger.LogWarning($"[Battle] ExecutePlayCard: Not enough mana. (Need: {amount}, Have: {CurrentMana})");
-                return false;
-            }
+            if (CurrentMana < amount) return false;
 
             CurrentMana -= amount;
             return true;
@@ -115,17 +94,16 @@ namespace GGemCo2DTcg
 
         public void RestoreManaFull()
         {
-            CurrentMana = _maxMana;
-            CurrentMaxMana = _maxMana;
+            CurrentMana = MaxMana;
         }
 
-        public void IncreaseMaxMana(int amount)
+        public void IncreaseMaxMana(int amount, int maxLimit)
         {
-            CurrentMaxMana += amount;
-            if (CurrentMaxMana > _maxMana)
-                CurrentMaxMana = _maxMana;
+            MaxMana += amount;
+            if (MaxMana > maxLimit)
+                MaxMana = maxLimit;
 
-            CurrentMana = CurrentMaxMana;
+            CurrentMana = MaxMana;
         }
 
         public void TakeHeroDamage(int amount)

@@ -6,7 +6,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 상대 AI의 카드가 있는 윈도우
     /// </summary>
-    public class UIWindowTcgHandEnemy : UIWindowTcgHandBase
+    public class UIWindowTcgHandEnemy : UIWindow
     {
         private TcgBattleControllerEnemy _battleControllerEnemy;
 
@@ -30,33 +30,19 @@ namespace GGemCo2DTcg
             DragDropHandler.SetStrategy(new DragDropStrategyHandEnemy());
         }
 
-        public override void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
+        public void RefreshHand(IReadOnlyList<TcgBattleDataCard> hand)
         {
-            base.SetBattleManager(tcgBattleManager, tcgBattleController);
-            _battleControllerEnemy = tcgBattleController as TcgBattleControllerEnemy;
-        }
-
-        public override void SetInteractable(bool b)
-        {
-            // 버튼/슬롯에 RaycastTarget, 버튼 활성화 등 적용
-        }
-
-        public void OnClickCard(TcgBattleDataCard tcgBattleDataCard)
-        {
-            _battleControllerEnemy?.OnUiRequestPlayCard(tcgBattleDataCard);
-        }
-        public override void RefreshHand()
-        {
-            base.RefreshHand();
-            var hand = _battleControllerEnemy.GetHandCards();
+            // 기존 SetFirstCard 기반 구현을 확장하여,
+            // hand 리스트를 기준으로 슬롯/아이콘 다시 배치
+            DetachAllIcons();
             int i = 0;
-            foreach (var cardRuntime in hand)
+            foreach (var tcgBattleDataCard in hand)
             {
-                var uiIcon = SetIconCount(i, cardRuntime.Uid, 1);
+                var uiIcon = SetIconCount(i, tcgBattleDataCard.Uid, 1);
                 if (!uiIcon) continue;
                 var uiIconHandEnemy = uiIcon as UIIconHandEnemy;
                 if (!uiIconHandEnemy) continue;
-                uiIconHandEnemy.SetCardRuntime(cardRuntime);
+                uiIconHandEnemy.SetBattleDataCard(tcgBattleDataCard);
                 i++;
             }
         }
