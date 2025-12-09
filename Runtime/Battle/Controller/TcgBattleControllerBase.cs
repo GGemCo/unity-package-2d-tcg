@@ -69,5 +69,10 @@ namespace GGemCo2DTcg
         {
             return battleDataSide;
         }
+
+        public IEnumerable<TcgBattleDataCard> GetHandCards()
+        {
+            return battleDataSide.Hand;
+        }
     }
 }

@@ -34,9 +34,6 @@ namespace GGemCo2DTcg
 
             InitializeSideState(Side, deckRuntime);
             
-            // 대결 시작 시 처음 드로우하는 카드
-            _uiWindowTcgHandEnemy.SetController(this);
-            _uiWindowTcgHandEnemy.RefreshHand(battleDataSide.Hand);
             return battleDataSide;
         }
 
@@ -130,11 +127,14 @@ namespace GGemCo2DTcg
                     var cmd = TcgBattleCommand.PlayCard(Side, card);
                     battleManager.ExecuteCommand(cmd);
                     // 명령 실행 후 UI 리프레시
-                    _uiWindowTcgHandEnemy.RefreshHand(battleDataSide.Hand);
+                    _uiWindowTcgHandEnemy.RefreshHand();
                     break;
                 }
             }
-            
+            // todo. 정리 필요. 일단 종료.
+            var cmd2 = TcgBattleCommand.EndTurn(Side);
+            battleManager.ExecuteCommand(cmd2);
+
             // 2) 필드에 유닛이 있으면, 적 유닛/영웅 공격 명령 추가 (아주 단순한 예시)
             // foreach (var myUnit in _me.Board)
             // {
@@ -181,7 +181,7 @@ namespace GGemCo2DTcg
             var cmd = TcgBattleCommand.PlayCard(Side, tcgBattleDataCard);
             battleManager.ExecuteCommand(cmd);
             // 명령 실행 후 UI 리프레시
-            _uiWindowTcgHandEnemy.RefreshHand(battleDataSide.Hand);
+            _uiWindowTcgHandEnemy.RefreshHand();
         }
     }
 }

@@ -8,6 +8,8 @@ namespace GGemCo2DTcg
     /// </summary>
     public class DragDropStrategyFieldPlayer : IDragDropStrategy
     {
+        private TcgBattleManager _battleManager;
+        
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
         {
             UIWindowTcgFieldPlayer uiWindowTcgFieldPlayer = window as UIWindowTcgFieldPlayer;
@@ -25,20 +27,7 @@ namespace GGemCo2DTcg
             switch (droppedWindowUid)
             {
                 case UIWindowConstants.WindowUid.TcgHandPlayer:
-                    var uiWindowTcgHandPlayer = droppedWindow as UIWindowTcgHandPlayer;
-                    if (uiWindowTcgHandPlayer == null)
-                    {
-                        GcLogger.LogError($"{nameof(UIWindowTcgHandPlayer)} 클래스가 없습니다.");
-                        return;
-                    }
-                    UIIconHandPlayer uiIconHandPlayer = droppedUIIcon as UIIconHandPlayer;
-                    if (uiIconHandPlayer == null)
-                    {
-                        GcLogger.LogError($"{nameof(UIIconHandPlayer)} 클래스가 없습니다.");
-                        return;
-                    }
-                    TcgBattleDataCard tcgBattleDataCard = uiIconHandPlayer.GetCardRuntime();
-                    uiWindowTcgHandPlayer.OnClickCard(tcgBattleDataCard);
+                    UseCard(droppedUIIcon);
                     break;
             }
         }
@@ -74,20 +63,7 @@ namespace GGemCo2DTcg
                 switch (droppedWindowUid)
                 {
                     case UIWindowConstants.WindowUid.TcgHandPlayer:
-                        var uiWindowTcgHandPlayer = droppedWindow as UIWindowTcgHandPlayer;
-                        if (uiWindowTcgHandPlayer == null)
-                        {
-                            GcLogger.LogError($"{nameof(UIWindowTcgHandPlayer)} 클래스가 없습니다.");
-                            return;
-                        }
-                        UIIconHandPlayer uiIconHandPlayer = droppedUIIcon as UIIconHandPlayer;
-                        if (uiIconHandPlayer == null)
-                        {
-                            GcLogger.LogError($"{nameof(UIIconHandPlayer)} 클래스가 없습니다.");
-                            return;
-                        }
-                        TcgBattleDataCard tcgBattleDataCard = uiIconHandPlayer.GetCardRuntime();
-                        uiWindowTcgHandPlayer.OnClickCard(tcgBattleDataCard);
+                        UseCard(droppedUIIcon);
                         break;
                 }
             }
@@ -102,6 +78,19 @@ namespace GGemCo2DTcg
         public void HandleDragOut(UIWindow window, Vector3 worldPosition, GameObject droppedIcon, GameObject targetIcon,
             Vector3 originalPosition)
         {
+        }
+
+        private void UseCard(UIIcon droppedUIIcon)
+        {
+            UIIconHandPlayer uiIconHandPlayer = droppedUIIcon as UIIconHandPlayer;
+            if (uiIconHandPlayer == null)
+            {
+                GcLogger.LogError($"{nameof(UIIconHandPlayer)} 클래스가 없습니다.");
+                return;
+            }
+            TcgBattleDataCard tcgBattleDataCard = uiIconHandPlayer.GetCardRuntime();
+            _battleManager ??= TcgPackageManager.Instance.battleManager;
+            _battleManager?.OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide.Player, tcgBattleDataCard);
         }
     }
 }

@@ -50,6 +50,7 @@ namespace GGemCo2DTcg
         {
             if (SceneGame.Instance)
                 SceneGame.Instance.OnSceneGameDestroyed += OnDestroyBySceneGame;
+            battleManager.InitializeByStart();
         }
         private void OnDestroyBySceneGame()
         {

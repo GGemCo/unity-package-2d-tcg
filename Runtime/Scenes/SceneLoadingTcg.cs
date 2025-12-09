@@ -31,9 +31,9 @@ namespace GGemCo2DTcg
         private void OnBeforeLoadStartInLoadingScene(GameLoaderManager sender, GameLoaderManager.EventArgsBeforeLoadStart e)
         {
             var tableLoader = FindFirstObjectByType<TableLoaderManagerTcg>() ?? new GameObject("TableLoaderManagerTcg").AddComponent<TableLoaderManagerTcg>();
-            var targetTables = new List<AddressableAssetInfo> { ConfigAddressableTableTcg.TableTcgCard };
+            var targetTables = ConfigAddressableTableTcg.All;
             var tableLoadStep = new TableLoadStep(
-                id: "core.table.card",
+                id: "core.table.tcg",
                 order: 245,
                 localizedKey: LocalizationConstants.Keys.Loading.TextTypeTables(),
                 tableLoader: tableLoader,

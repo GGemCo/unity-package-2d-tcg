@@ -54,7 +54,28 @@ namespace GGemCo2DTcg
             {
                 switch (droppedWindowUid)
                 {
-                    case UIWindowConstants.WindowUid.TcgCardCollection:
+                    case UIWindowConstants.WindowUid.TcgFieldPlayer:
+                        var uiWindowTcgFieldPlayer = droppedWindow as UIWindowTcgFieldPlayer;
+                        if (uiWindowTcgFieldPlayer == null)
+                        {
+                            GcLogger.LogError($"{nameof(UIWindowTcgFieldPlayer)} 클래스가 없습니다.");
+                            return;
+                        }
+                        UIIconFieldPlayer uiIconFieldPlayer = droppedUIIcon as UIIconFieldPlayer;
+                        if (uiIconFieldPlayer == null)
+                        {
+                            GcLogger.LogError($"드랍하는 아이콘에 {nameof(UIIconFieldPlayer)} 클래스가 없습니다.");
+                            return;
+                        }
+                        UIIconFieldEnemy uiIconFieldEnemy = targetUIIcon as UIIconFieldEnemy;
+                        if (uiIconFieldEnemy == null)
+                        {
+                            GcLogger.LogError($"타겟 아이콘에 {nameof(UIIconFieldEnemy)} 클래스가 없습니다.");
+                            return;
+                        }
+                        TcgBattleDataFieldCard battleDataCardPlayer = uiIconFieldPlayer.GetBattleDataFieldCard();
+                        TcgBattleDataFieldCard battleDataCardEnemy = uiIconFieldEnemy.GetBattleDataFieldCard();
+                        uiWindowTcgFieldPlayer.OnRequestAttackUnit(battleDataCardPlayer, battleDataCardEnemy);
                         break;
                 }
             }

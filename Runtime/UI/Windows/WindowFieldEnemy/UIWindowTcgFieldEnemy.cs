@@ -35,9 +35,9 @@ namespace GGemCo2DTcg
             {
                 var uiIcon = SetIconCount(i, battleDataFieldCard.Uid, 1);
                 if (!uiIcon) continue;
-                var uiIconHandEnemy = uiIcon as UIIconHandEnemy;
-                if (!uiIconHandEnemy) continue;
-                uiIconHandEnemy.SetCardRuntime(battleDataFieldCard.SourceTcgBattleDataCard);
+                var uiIconFieldEnemy = uiIcon as UIIconFieldEnemy;
+                if (!uiIconFieldEnemy) continue;
+                uiIconFieldEnemy.SetBattleDataFieldCard(battleDataFieldCard);
                 i++;
             }
         }

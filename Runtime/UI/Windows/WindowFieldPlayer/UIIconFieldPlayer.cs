@@ -1,32 +1,25 @@
 ﻿using GGemCo2DCore;
-using UnityEngine;
 using UnityEngine.EventSystems;
+using R3;
 
 namespace GGemCo2DTcg
 {
-    public class UIIconHandPlayer : UIIconCard, IPointerEnterHandler, IPointerExitHandler
+    public class UIIconFieldPlayer : UIIconCard, IPointerEnterHandler, IPointerExitHandler
     {
         private UIWindowTcgCardInfo _windowTcgCardInfo;
-        private UIWindowTcgHandPlayer _windowTcgHandPlayer;
-        private TcgBattleDataCard _tcgBattleDataCard;
-        
-        // 클릭 드래그 핸들러
-        private UIClickDragHandler _clickDragHandler;
+        private UIWindowTcgFieldPlayer _windowTcgFieldPlayer;
+        private TcgBattleDataFieldCard _tcgBattleDataFieldCard;
 
         protected override void Awake()
         {
             base.Awake();
             
-            // 클릭 드래그 핸들러 붙이기 (이미 붙어 있으면 재사용)
-            _clickDragHandler = GetComponent<UIClickDragHandler>();
-            if (_clickDragHandler == null)
-                _clickDragHandler = gameObject.AddComponent<UIClickDragHandler>();
         }
         protected override void Start()
         {
             base.Start();
             _windowTcgCardInfo = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
-            _windowTcgHandPlayer = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgHandPlayer>(UIWindowConstants.WindowUid.TcgHandPlayer);
+            _windowTcgFieldPlayer = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgFieldPlayer>(UIWindowConstants.WindowUid.TcgFieldPlayer);
         }
         
         private void OnDisable()
@@ -65,24 +58,29 @@ namespace GGemCo2DTcg
         /// <param name="eventData"></param>
         public override void OnPointerClick(PointerEventData eventData)
         {
-            if (_tcgBattleDataCard == null)
+            if (_tcgBattleDataFieldCard == null)
             {
-                GcLogger.LogError($"{nameof(TcgBattleDataCard)} 정보가 없습니다.");
+                GcLogger.LogError($"{nameof(TcgBattleDataFieldCard)} 정보가 없습니다.");
                 return;
             }
-            
-            // 클릭 드래그 토글
-            _clickDragHandler?.ToggleClickDrag();
         }
 
-        public void SetBattleDataCard(TcgBattleDataCard tcgBattleDataCard)
+        public void SetBattleDataFieldCard(TcgBattleDataFieldCard tcgBattleDataFieldCard)
         {
-            _tcgBattleDataCard = tcgBattleDataCard;
+            _tcgBattleDataFieldCard = tcgBattleDataFieldCard;
+            _tcgBattleDataFieldCard.hp
+                .Subscribe(SetHp)
+                .AddTo(this);
+        }
+        private void SetHp(int value)
+        {
+            if (textHp == null) return;
+            textHp.text = $"{value}";
         }
 
-        public TcgBattleDataCard GetCardRuntime()
+        public TcgBattleDataFieldCard GetBattleDataFieldCard()
         {
-            return _tcgBattleDataCard;
+            return _tcgBattleDataFieldCard;
         }
     }
 }

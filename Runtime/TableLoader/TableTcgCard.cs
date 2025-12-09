@@ -19,11 +19,55 @@ namespace GGemCo2DTcg
         public string summonEffectsRaw;     // "DealDamageToTargetUnit:3:EnemyCreature;..."
         public string spellEffectsRaw;      // 스펠 사용 시
         public string deathEffectsRaw;      // 사망 시
+        
+        // 세부 카드 데이터 (Creature/Spell 전용 정보)
+        public StruckTableTcgCardCreature struckTableTcgCardCreature;
+        public StruckTableTcgCardSpell struckTableTcgCardSpell;
     }
     public class TableTcgCard : DefaultTable<StruckTableTcgCard>
     {
         public override string Key => ConfigAddressableTableTcg.TcgCard;
         
+        private TableTcgCardCreature _tableTcgCardCreature;
+        private TableTcgCardSpell _tableTcgCardSpell;
+        
+        protected override void OnLoadedData(StruckTableTcgCard row)
+        {
+            if (row == null)
+            {
+                return;
+            }
+            switch (row.type)
+            {
+                case CardConstants.Type.Creature:
+                    AttachCreatureData(row);
+                    break;
+                case CardConstants.Type.Spell:
+                    AttachSpellData(row);
+                    break;
+            }
+        }
+        private void AttachCreatureData(StruckTableTcgCard row)
+        {
+            _tableTcgCardCreature ??= TableLoaderManagerTcg.Instance.TableTcgCardCreature;
+            if (_tableTcgCardCreature == null)
+            {
+                return;
+            }
+
+            row.struckTableTcgCardCreature = _tableTcgCardCreature.GetDataByUid(row.uid);
+        }
+
+        private void AttachSpellData(StruckTableTcgCard row)
+        {
+            _tableTcgCardSpell ??= TableLoaderManagerTcg.Instance.TableTcgCardSpell;
+            if (_tableTcgCardSpell == null)
+            {
+                return;
+            }
+
+            row.struckTableTcgCardSpell = _tableTcgCardSpell.GetDataByUid(row.uid);
+        }
         protected override StruckTableTcgCard BuildRow(Dictionary<string, string> data)
         {
             return new StruckTableTcgCard

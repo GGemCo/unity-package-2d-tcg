@@ -17,13 +17,8 @@ namespace GGemCo2DTcg
         protected override void Start()
         {
             base.Start();
-            battleManager = TcgPackageManager.Instance.battleManager;
-            if (battleManager != null)
-            {
-                battleManager.onExecuteCommand += UpdateMana;
-            }
         }
-        public virtual void RefreshHand(IReadOnlyList<TcgBattleDataCard> hand)
+        public virtual void RefreshHand()
         {
             DetachAllIcons();
         }
@@ -38,8 +33,13 @@ namespace GGemCo2DTcg
             var currentMana = battleController.GetCurrentMana();
             textCurrentMana.text = $"{currentMana}/{maxMana}";
         }
-        public virtual void SetController(TcgBattleControllerBase tcgBattleController)
+        public virtual void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
         {
+            battleManager = tcgBattleManager;
+            if (battleManager != null)
+            {
+                battleManager.onExecuteCommand += UpdateMana;
+            }
             battleController = tcgBattleController;
             SetInteractable(true);
             UpdateMana();

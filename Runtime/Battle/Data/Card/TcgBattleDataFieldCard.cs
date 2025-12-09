@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using R3;
 
 namespace GGemCo2DTcg
 {
@@ -20,7 +21,10 @@ namespace GGemCo2DTcg
         public TcgBattleDataCard SourceTcgBattleDataCard { get; }
 
         public int Attack { get; private set; }
-        public int Hp { get; private set; }
+        
+        // public int Hp { get; private set; }
+        public readonly BehaviorSubject<int> hp = new(0);
+        
         public int MaxHp { get; private set; }
 
         /// <summary>
@@ -48,7 +52,8 @@ namespace GGemCo2DTcg
             SourceTcgBattleDataCard = sourceTcgBattleDataCard;
 
             Attack = attack;
-            Hp = hp;
+            this.hp.OnNext(hp);
+            
             MaxHp = hp;
             CanAttack = false;
 
@@ -61,15 +66,17 @@ namespace GGemCo2DTcg
         public void ApplyDamage(int value)
         {
             if (value <= 0) return;
-            Hp -= value;
-            if (Hp < 0) Hp = 0;
+            var newValue = hp.Value - value;
+            if (newValue < 0) newValue = 0;
+            hp.OnNext(newValue);
         }
 
         public void Heal(int value)
         {
             if (value <= 0) return;
-            Hp += value;
-            if (Hp > MaxHp) Hp = MaxHp;
+            var newValue = hp.Value + value;
+            if (newValue > MaxHp) newValue = MaxHp;
+            hp.OnNext(newValue);
         }
 
         public void ModifyAttack(int value)

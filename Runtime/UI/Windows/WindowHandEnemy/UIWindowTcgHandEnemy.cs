@@ -30,9 +30,9 @@ namespace GGemCo2DTcg
             DragDropHandler.SetStrategy(new DragDropStrategyHandEnemy());
         }
 
-        public override void SetController(TcgBattleControllerBase tcgBattleController)
+        public override void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
         {
-            base.SetController(tcgBattleController);
+            base.SetBattleManager(tcgBattleManager, tcgBattleController);
             _battleControllerEnemy = tcgBattleController as TcgBattleControllerEnemy;
         }
 
@@ -45,9 +45,10 @@ namespace GGemCo2DTcg
         {
             _battleControllerEnemy?.OnUiRequestPlayCard(tcgBattleDataCard);
         }
-        public override void RefreshHand(IReadOnlyList<TcgBattleDataCard> hand)
+        public override void RefreshHand()
         {
-            base.RefreshHand(hand);
+            base.RefreshHand();
+            var hand = _battleControllerEnemy.GetHandCards();
             int i = 0;
             foreach (var cardRuntime in hand)
             {

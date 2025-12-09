@@ -59,10 +59,6 @@ namespace GGemCo2DTcg
             // 에디터에서만 디버그 로그 출력
             LogShuffledDeckForDebug(deckRuntime);
 #endif
-            
-            // 대결 시작 시 처음 드로우하는 카드
-            _uiWindowTcgHandPlayer.SetController(this);
-            _uiWindowTcgHandPlayer.RefreshHand(battleDataSide.Hand);
             return battleDataSide;
         }
 
@@ -216,27 +212,7 @@ namespace GGemCo2DTcg
             var cmd = TcgBattleCommand.PlayCard(Side, tcgBattleDataCard);
             battleManager.ExecuteCommand(cmd);
             // 명령 실행 후 UI 리프레시
-            _uiWindowTcgHandPlayer.RefreshHand(battleDataSide.Hand);
-        }
-
-        /// <summary>
-        /// UI에서 "유닛 공격" 요청이 들어왔을 때 호출.
-        /// </summary>
-        public void OnUiRequestAttackUnit(
-            ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataFieldCard attacker,
-            TcgBattleDataFieldCard target)
-        {
-            var cmd = TcgBattleCommand.AttackUnit(side, attacker, target);
-            battleManager.ExecuteCommand(cmd);
-        }
-
-        public void OnUiRequestAttackHero(
-            ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataFieldCard attacker)
-        {
-            var cmd = TcgBattleCommand.AttackHero(side, attacker);
-            battleManager.ExecuteCommand(cmd);
+            _uiWindowTcgHandPlayer.RefreshHand();
         }
 
         /// <summary>

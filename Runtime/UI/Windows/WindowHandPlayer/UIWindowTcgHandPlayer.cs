@@ -83,16 +83,10 @@ namespace GGemCo2DTcg
             // 버튼/슬롯에 RaycastTarget, 버튼 활성화 등 적용
         }
 
-        // 카드 클릭 시 (예: 아이콘에 연결)
-        public void OnClickCard(TcgBattleDataCard tcgBattleDataCard)
+        public override void SetBattleManager(TcgBattleManager tcgBattleManager, TcgBattleControllerBase tcgBattleController)
         {
-            _battleControllerPlayer?.OnUiRequestPlayCard(tcgBattleDataCard);
-        }
-
-        public override void SetController(TcgBattleControllerBase tcgBattleControllerPlayer)
-        {
-            base.SetController(tcgBattleControllerPlayer);
-            _battleControllerPlayer = tcgBattleControllerPlayer as TcgBattleControllerPlayer;
+            base.SetBattleManager(tcgBattleManager, tcgBattleController);
+            _battleControllerPlayer = tcgBattleController as TcgBattleControllerPlayer;
         }
         /// <summary>
         /// 현재 마나 표시 정보 업데이트
@@ -120,17 +114,18 @@ namespace GGemCo2DTcg
             }
             _battleControllerPlayer.OnUiRequestEndTurn();
         }
-        public override void RefreshHand(IReadOnlyList<TcgBattleDataCard> hand)
+        public override void RefreshHand()
         {
-            base.RefreshHand(hand);
+            base.RefreshHand();
+            var hand = _battleControllerPlayer.GetHandCards();
             int i = 0;
-            foreach (var cardRuntime in hand)
+            foreach (var tcgBattleDataCard in hand)
             {
-                var uiIcon = SetIconCount(i, cardRuntime.Uid, 1);
+                var uiIcon = SetIconCount(i, tcgBattleDataCard.Uid, 1);
                 if (!uiIcon) continue;
                 var uiIconHandPlayer = uiIcon as UIIconHandPlayer;
                 if (!uiIconHandPlayer) continue;
-                uiIconHandPlayer.SetCardRuntime(cardRuntime);
+                uiIconHandPlayer.SetBattleDataCard(tcgBattleDataCard);
                 i++;
             }
         }

@@ -35,20 +35,22 @@ namespace GGemCo2DTcg
             {
                 var uiIcon = SetIconCount(i, battleDataFieldCard.Uid, 1);
                 if (!uiIcon) continue;
-                var uiIconHandPlayer = uiIcon as UIIconHandPlayer;
+                var uiIconHandPlayer = uiIcon as UIIconFieldPlayer;
                 if (!uiIconHandPlayer) continue;
-                uiIconHandPlayer.SetCardRuntime(battleDataFieldCard.SourceTcgBattleDataCard);
+                uiIconHandPlayer.SetBattleDataFieldCard(battleDataFieldCard);
                 i++;
             }
         }
 
-        // 예: 드래그 드랍 후 공격 명령 요청
-        public void OnRequestAttackUnit(
-            ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataFieldCard attacker,
-            TcgBattleDataFieldCard target)
+        /// <summary>
+        /// 드래그 드랍 후 공격 명령 요청
+        /// </summary>
+        /// <param name="attacker"></param>
+        /// <param name="target"></param>
+        public void OnRequestAttackUnit(TcgBattleDataFieldCard attacker, TcgBattleDataFieldCard target)
         {
-            // _battleManager?.OnUiRequestAttackUnit(side, attacker, target);
+            var cmd = TcgBattleCommand.AttackUnit(ConfigCommonTcg.TcgPlayerSide.Player, attacker, target);
+            _battleManager.ExecuteCommand(cmd);
         }
 
         public void OnRequestAttackHero(

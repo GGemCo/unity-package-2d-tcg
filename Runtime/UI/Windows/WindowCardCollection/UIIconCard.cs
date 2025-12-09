@@ -108,6 +108,11 @@ namespace GGemCo2DTcg
             
             if (textAtk != null)
             {
+                textAtk.text = $"{_struckTableTcgCard.struckTableTcgCardCreature.attack}";
+            }
+            if (textHp != null)
+            {
+                textHp.text = $"{_struckTableTcgCard.struckTableTcgCardCreature.health}";
             }
         }
 
@@ -161,11 +166,10 @@ namespace GGemCo2DTcg
         public virtual void OnPointerClick(PointerEventData eventData)
         {
             // 덱이 선택되어있는지 체크
-            if (!_windowTcgMyDeckCard.IsOpen())
+            if (_windowTcgMyDeckCard.IsOpen())
             {
-                return;
+                _windowTcgMyDeckCard.AddCardToDeck(uid);
             }
-            _windowTcgMyDeckCard.AddCardToDeck(uid);
         }
     }
 }

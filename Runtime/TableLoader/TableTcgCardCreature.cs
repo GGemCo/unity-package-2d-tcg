@@ -18,9 +18,9 @@ namespace GGemCo2DTcg
         {
             return new StruckTableTcgCardCreature
             {
-                uid = int.Parse(data["Uid"]),
-                attack = int.Parse(data["Attack"]),
-                health = int.Parse(data["Health"]),
+                uid = MathHelper.ParseInt(data["Uid"]),
+                attack = MathHelper.ParseInt(data["Attack"]),
+                health = MathHelper.ParseInt(data["Health"]),
                 keywords = data["Keywords"],
             };
         }

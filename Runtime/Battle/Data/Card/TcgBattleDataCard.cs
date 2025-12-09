@@ -48,7 +48,7 @@ namespace GGemCo2DTcg
         private readonly List<TcgEffectData> _summonEffects = new List<TcgEffectData>(4);
         private readonly List<TcgEffectData> _spellEffects = new List<TcgEffectData>(4);
         private readonly List<TcgEffectData> _deathEffects = new List<TcgEffectData>(4);
-
+        
         public TcgBattleDataCard(
             StruckTableTcgCard row,
             IReadOnlyList<ConfigCommonTcg.TcgKeyword> keywords,
@@ -64,6 +64,12 @@ namespace GGemCo2DTcg
             MaxCopiesPerDeck = row.maxCopiesPerDeck;
             ImageFileName = row.imageFileName;
             Description = row.description;
+
+            if (row.struckTableTcgCardCreature != null)
+            {
+                Attack = row.struckTableTcgCardCreature.attack;
+                Health = row.struckTableTcgCardCreature.health;
+            }
 
             if (keywords != null) _keywords.AddRange(keywords);
             if (summonEffects != null) _summonEffects.AddRange(summonEffects);

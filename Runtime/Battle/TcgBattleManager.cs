@@ -17,22 +17,72 @@ namespace GGemCo2DTcg
         
         private UIWindowTcgFieldEnemy _uiWindowTcgFieldEnemy;
         private UIWindowTcgFieldPlayer _uiWindowTcgFieldPlayer;
+        private UIWindowTcgHandEnemy _uiWindowTcgHandEnemy;
+        private UIWindowTcgHandPlayer _uiWindowTcgHandPlayer;
         private UIWindowTcgBattleHud _uiWindowTcgBattleHud;
 
         // === 컨트롤러 추가 ===
         private TcgBattleControllerPlayer _battleControllerPlayer;
         private TcgBattleControllerEnemy _battleControllerEnemy;
 
+        private SystemMessageManager _systemMessageManager;
+        
         // 현재 턴 진행 여부
         private bool _isPlayerTurn;
         private int _turnNumber;
         
+        /// <summary>
+        /// BattleCommandType 별 실행 핸들러 목록.
+        /// </summary>
+        private readonly Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler> _commandHandlers
+            = new Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler>();
+        
+        /// <summary>
+        /// 외부에서 커스텀 BattleCommandType 핸들러를 등록할 수 있도록 합니다.
+        /// 같은 타입이 이미 등록되어 있으면 덮어씁니다.
+        /// </summary>
+        public void RegisterCommandHandler(
+            ConfigCommonTcg.TcgBattleCommandType commandType,
+            ITcgBattleCommandHandler handler)
+        {
+            _commandHandlers[commandType] = handler ?? throw new ArgumentNullException(nameof(handler));
+        }
+        
+        /// <summary>
+        /// 기본 제공 BattleCommandType 핸들러들을 등록합니다.
+        /// </summary>
+        private void InitializeDefaultCommandHandlers()
+        {
+            RegisterCommandHandler(
+                ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand,
+                new PlayCardCommandHandler());
+
+            RegisterCommandHandler(
+                ConfigCommonTcg.TcgBattleCommandType.AttackUnit,
+                new AttackUnitCommandHandler());
+
+            RegisterCommandHandler(
+                ConfigCommonTcg.TcgBattleCommandType.AttackHero,
+                new AttackHeroCommandHandler());
+
+            RegisterCommandHandler(
+                ConfigCommonTcg.TcgBattleCommandType.EndTurn,
+                new EndTurnCommandHandler());
+        }
         /// <summary>
         /// TCG 패키지 매니저로부터 필수 의존성을 주입합니다.
         /// </summary>
         /// <param name="packageManager">TCG 패키지 매니저 인스턴스.</param>
         public void Initialize(TcgPackageManager packageManager)
         {
+            // BattleCommandType 기본 핸들러 등록
+            InitializeDefaultCommandHandlers();
+        }
+
+        public void InitializeByStart()
+        {
+            if (!SceneGame.Instance) return;
+            _systemMessageManager = SceneGame.Instance.systemMessageManager;
         }
 
         /// <summary>
@@ -49,8 +99,14 @@ namespace GGemCo2DTcg
             // 2. 컨트롤러 초기화
             SetupBattleRuntime();
             
-            // 3. 필드 윈도우 표시
+            // 3. UI에 BattleManager / 플레이어 상태 연결
+            InitializeUiForBattle();
+            
+            // 4. 필드 윈도우 표시
             ShowWindows(true);
+            
+            // 5. Hand 윈도우 새로고침
+            ProcessFirstDraw();
         }
 
         #region UI Windows
@@ -88,6 +144,28 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"{nameof(UIWindowTcgFieldPlayer)} 윈도우가 UI 매니저에 없습니다.");
                 return false;
             }
+            
+            if (_uiWindowTcgHandEnemy == null)
+            {
+                _uiWindowTcgHandEnemy = windowManager.GetUIWindowByUid<UIWindowTcgHandEnemy>(UIWindowConstants.WindowUid.TcgHandEnemy);
+            }
+
+            if (_uiWindowTcgHandEnemy == null)
+            {
+                GcLogger.LogError($"{nameof(UIWindowTcgHandEnemy)} 윈도우가 UI 매니저에 없습니다.");
+                return false;
+            }
+            if (_uiWindowTcgHandPlayer == null)
+            {
+                _uiWindowTcgHandPlayer = windowManager.GetUIWindowByUid<UIWindowTcgHandPlayer>(UIWindowConstants.WindowUid.TcgHandPlayer);
+            }
+
+            if (_uiWindowTcgHandPlayer == null)
+            {
+                GcLogger.LogError($"{nameof(UIWindowTcgHandPlayer)} 윈도우가 UI 매니저에 없습니다.");
+                return false;
+            }
+            
             if (_uiWindowTcgBattleHud == null)
             {
                 _uiWindowTcgBattleHud = windowManager.GetUIWindowByUid<UIWindowTcgBattleHud>(UIWindowConstants.WindowUid.TcgBattleHud);
@@ -130,8 +208,20 @@ namespace GGemCo2DTcg
             
             // 플레이어 턴 시작
             _isPlayerTurn = true;
+        }
+
+        private void InitializeUiForBattle()
+        {
             _uiWindowTcgFieldPlayer.SetBattleManager(this, _battleControllerPlayer);
             _uiWindowTcgFieldEnemy.SetBattleManager(this, _battleControllerEnemy);
+            _uiWindowTcgHandPlayer.SetBattleManager(this, _battleControllerPlayer);
+            _uiWindowTcgHandEnemy.SetBattleManager(this, _battleControllerEnemy);
+        }
+
+        private void ProcessFirstDraw()
+        {
+            _uiWindowTcgHandPlayer.RefreshHand();
+            _uiWindowTcgHandEnemy.RefreshHand();
         }
 
         // /// <summary>
@@ -171,155 +261,22 @@ namespace GGemCo2DTcg
             var actor    = GetSideState(cmd.Side);
             var opponent = GetOpponentState(cmd.Side);
             
-            switch (cmd.CommandType)
+            if (!_commandHandlers.TryGetValue(cmd.CommandType, out var handler))
             {
-                case ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand:
-                    ExecutePlayCard(actor, opponent, cmd);
-                    break;
-
-                case ConfigCommonTcg.TcgBattleCommandType.AttackUnit:
-                    ExecuteAttackUnit(actor, opponent, cmd);
-                    break;
-
-                case ConfigCommonTcg.TcgBattleCommandType.AttackHero:
-                    ExecuteAttackHero(actor, opponent, cmd);
-                    break;
-
-                case ConfigCommonTcg.TcgBattleCommandType.EndTurn:
-                    ExecuteEndTurn(cmd.Side);
-                    break;
+                GcLogger.LogWarning($"[Battle] 등록되지 않은 커맨드 타입: {cmd.CommandType}");
+                return;
             }
+            handler.Execute(this, actor, opponent, cmd);
+            
             onExecuteCommand?.Invoke();
             
             _uiWindowTcgFieldEnemy.RefreshBoard();
             _uiWindowTcgFieldPlayer.RefreshBoard();
-        }
-        private void ExecutePlayCard(
-            TcgBattleDataSide actor,
-            TcgBattleDataSide opponent,
-            TcgBattleCommand cmd)
-        {
-            var card = cmd.tcgBattleDataCard;
-            if (card == null)
-                return;
-
-            // 마나 차감
-            if (!actor.TryConsumeMana(card.Cost)) return;
-            // 손에서 제거
-            if (!actor.RemoveCardFromHand(card)) return;
-
-            // 카드 타입에 따라 분기 (예시)
-            switch (card.Type)
-            {
-                case CardConstants.Type.Creature:
-                {
-                    // 1) 유닛 런타임 생성
-                    var unit = CreateUnitFromCard(actor.Side, card);
-                    if (unit != null)
-                    {
-                        actor.AddUnitToBoard(unit);
-                    }
-
-                    // 2) "소환 시 발동" 이펙트가 있다면 실행
-                    if (card.SummonEffects != null && card.SummonEffects.Count > 0)
-                    {
-                        EffectRunner.RunEffects(
-                            actor,
-                            opponent,
-                            card,
-                            card.SummonEffects,
-                            explicitTargetBattleData: null /* 필요 시 타겟 전달 */);
-                    }
-                    break;
-                }
-
-                case CardConstants.Type.Spell:
-                {
-                    // 스펠은 필드에 남지 않고, 이펙트만 실행
-                    if (card.SpellEffects != null && card.SpellEffects.Count > 0)
-                    {
-                        // TODO: TargetType 에 따라 타겟 선택 로직 추가
-                        EffectRunner.RunEffects(
-                            actor,
-                            opponent,
-                            card,
-                            card.SpellEffects,
-                            explicitTargetBattleData: null);
-                    }
-                    break;
-                }
-
-                default:
-                {
-                    // 기타 타입(장비/영속물 등)은 추후 확장
-                    break;
-                }
-            }
+            _uiWindowTcgHandEnemy.RefreshHand();
+            _uiWindowTcgHandPlayer.RefreshHand();
         }
 
-        private void ExecuteAttackUnit(
-            TcgBattleDataSide actor,
-            TcgBattleDataSide opponent,
-            TcgBattleCommand cmd)
-        {
-            var attacker = cmd.Attacker;
-            var target   = cmd.targetBattleData;
-
-            if (attacker == null || target == null)
-                return;
-
-            if (!actor.ContainsOnBoard(attacker))
-                return;
-
-            if (!opponent.ContainsOnBoard(target))
-                return;
-
-            if (!attacker.CanAttack)
-                return;
-
-            // 양쪽에 데미지 적용
-            target.ModifyAttack(-attacker.Attack);
-            attacker.ModifyAttack(-target.Attack);
-
-            attacker.CanAttack = false;
-
-            // 사망 처리
-            if (target.Hp <= 0)
-                opponent.RemoveUnitFromBoard(target);
-
-            if (attacker.Hp <= 0)
-                actor.RemoveUnitFromBoard(attacker);
-        }
-        private void ExecuteAttackHero(
-            TcgBattleDataSide actor,
-            TcgBattleDataSide opponent,
-            TcgBattleCommand cmd)
-        {
-            var attacker = cmd.Attacker;
-            if (attacker == null)
-                return;
-
-            if (!actor.ContainsOnBoard(attacker))
-                return;
-
-            if (!attacker.CanAttack)
-                return;
-
-            opponent.TakeHeroDamage(attacker.Attack);
-            attacker.CanAttack = false;
-
-            // TODO: 영웅 HP 0 이하이면 전투 종료 처리
-            if (opponent.HeroHp <= 0)
-            {
-                OnBattleEnd(actor.Side);
-            }
-        }
-
-        private void OnBattleEnd(ConfigCommonTcg.TcgPlayerSide actorSide)
-        {
-        }
-
-        private void ExecuteEndTurn(ConfigCommonTcg.TcgPlayerSide side)
+        public void ExecuteEndTurn(ConfigCommonTcg.TcgPlayerSide side)
         {
             // 턴 수 증가/액티브 변경
             if (side == ConfigCommonTcg.TcgPlayerSide.Player)
@@ -331,11 +288,18 @@ namespace GGemCo2DTcg
                 _isPlayerTurn = true;
                 _turnNumber++;
             }
-
-            // foreach (var unit in newActor.Board)
-            // {
-            //     unit.CanAttack = true;
-            // }
+            // 턴을 끝낸 쪽은 false
+            var newActor = GetSideState(side);
+            foreach (var unit in newActor.Board)
+            {
+                unit.CanAttack = false;
+            }
+            // 턴을 시작하는 쪽은 true
+            newActor = GetOpponentState(side);
+            foreach (var unit in newActor.Board)
+            {
+                unit.CanAttack = true;
+            }
             
             // 새 턴 시작 시 마나/공격 가능 여부 리셋
             if (_isPlayerTurn) return;
@@ -350,54 +314,21 @@ namespace GGemCo2DTcg
             _battleControllerEnemy.DecideTurnActions();
         }
         /// <summary>
-        /// Creature 타입 카드를 기반으로 필드에 소환할 유닛 런타임을 생성합니다.
-        /// - 실제 스탯/키워드는 카드 테이블/런타임에서 가져와야 합니다.
-        /// </summary>
-        private TcgBattleDataFieldCard CreateUnitFromCard(
-            ConfigCommonTcg.TcgPlayerSide ownerSide,
-            TcgBattleDataCard tcgBattleDataCard)
-        {
-            if (tcgBattleDataCard == null)
-            {
-                GcLogger.LogError("[Battle] CreateUnitFromCard: cardRuntime is null.");
-                return null;
-            }
-
-            // 1) CardRuntime 에서 스탯/키워드 정보 가져오기
-            //    (아래는 예시. 실제 필드 이름에 맞게 수정 필요)
-            int attack = tcgBattleDataCard.Attack; // 예: CardRuntime.Attack
-            int hp     = tcgBattleDataCard.Health; // 예: CardRuntime.Health
-
-            // 키워드 예시: CardRuntime.Keywords 또는 테이블에서 변환
-            List<ConfigCommonTcg.TcgKeyword> keywords = new List<ConfigCommonTcg.TcgKeyword>(4);
-            foreach (var kw in tcgBattleDataCard.Keywords) // 예: IEnumerable<TcgKeyword>
-            {
-                keywords.Add(kw);
-            }
-
-            // 2) 유닛 런타임 생성
-            var unit = new TcgBattleDataFieldCard(
-                tcgBattleDataCard.Uid,
-                ownerSide,
-                tcgBattleDataCard,
-                attack,
-                hp,
-                keywords);
-
-            // 소환 시점에는 공격 불가 (돌진 키워드가 있으면 예외)
-            if (unit.HasKeyword(ConfigCommonTcg.TcgKeyword.Rush))
-                unit.CanAttack = true;
-            else
-                unit.CanAttack = false;
-
-            return unit;
-        }
-        /// <summary>
         /// 대결 강제 종료
         /// </summary>
         public void EndBattleForce()
         {
             ShowWindows(false);
+        }
+
+        public void OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide side, TcgBattleDataCard tcgBattleDataCard)
+        {
+            if (!_isPlayerTurn || side != ConfigCommonTcg.TcgPlayerSide.Player)
+                return;
+
+            if (_battleControllerPlayer == null) return;
+            var cmd = TcgBattleCommand.PlayCard(side, tcgBattleDataCard);
+            ExecuteCommand(cmd);
         }
     }
 }
