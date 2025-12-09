@@ -45,6 +45,19 @@ namespace GGemCo2DTcg
             ShuffleMetaData.Strategy.Shuffle(Cards, ShuffleMetaData);
         }
 
+        public TCard DrawTop()
+        {
+            TCard card;
+            if (Cards.Count == 0)
+            {
+                card = default;
+                return card;
+            }
+
+            card = Cards[0];
+            Cards.RemoveAt(0);
+            return card;
+        }
         /// <summary>
         /// 한 장 드로우. 성공 여부를 bool 로 반환한다.
         /// </summary>
@@ -61,6 +74,7 @@ namespace GGemCo2DTcg
             return true;
         }
         public int Count => Cards.Count;
+        public bool IsEmpty => Cards.Count == 0;
 # if UNITY_EDITOR
         public void DebugCard()
         {

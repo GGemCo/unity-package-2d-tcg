@@ -5,17 +5,18 @@ namespace GGemCo2DTcg
 {
     public class PlayCardCommandHandler : ITcgBattleCommandHandler
     {
-        public void Execute(
-            TcgBattleManager battleManager,
-            TcgBattleDataSide actor,
-            TcgBattleDataSide opponent,
-            TcgBattleCommand cmd)
+        public ConfigCommonTcg.TcgBattleCommandType CommandType =>
+            ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand;
+        
+        public void Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
         {
-            
             var card = cmd.tcgBattleDataCard;
             if (card == null)
                 return;
 
+            var actor = context.GetSideState(cmd.Side);
+            var opponent = context.GetOpponentState(cmd.Side);
+            
             // 마나 차감
             if (!actor.TryConsumeMana(card.Cost)) return;
             // 손에서 제거

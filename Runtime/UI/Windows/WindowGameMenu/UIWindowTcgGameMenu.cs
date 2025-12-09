@@ -40,7 +40,20 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"{nameof(TcgBattleManager)} 클래스가 생성되지 않았습니다.");
                 return;
             }
-            TcgPackageManager.Instance.battleManager.StartBattle();
+            TcgBattleMetaData paramsBattle = new TcgBattleMetaData
+            {
+                playerDeckIndex = TcgPackageManager.Instance.saveDataManagerTcg.PlayerTcg.defaultDeckIndex,
+                enemyDeckPresetId = 0,
+                initialSeed = 0,
+                isPlayerFirst = true
+            };
+#if UNITY_EDITOR            
+            if (AddressableLoaderSettingsTcg.Instance.tcgSettings && AddressableLoaderSettingsTcg.Instance.tcgSettings.testSeed > 0)
+            {
+                paramsBattle.initialSeed = AddressableLoaderSettingsTcg.Instance.tcgSettings.testSeed;
+            }
+#endif            
+            TcgPackageManager.Instance.battleManager.StartBattle(paramsBattle);
         }
     }
 }

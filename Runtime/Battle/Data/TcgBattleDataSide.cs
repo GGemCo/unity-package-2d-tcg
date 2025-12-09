@@ -28,6 +28,9 @@ namespace GGemCo2DTcg
         public int CurrentMana { get; private set; }
         public int MaxMana { get; private set; }
 
+        private const int MaxHandSize = 10;
+        private int _fatigueCounter = 0;
+        
         public TcgBattleDataSide(
             ConfigCommonTcg.TcgPlayerSide side,
             TcgBattleDataDeck<TcgBattleDataCard> deckRuntime)
@@ -119,5 +122,49 @@ namespace GGemCo2DTcg
             HeroHp += amount;
             if (HeroHp > HeroHpMax) HeroHp = HeroHpMax;
         }
+        public TcgBattleDataCard DrawOneCard()
+        {
+            // 1) 덱에서 카드 1장 뽑기
+            if (TcgBattleDataDeck.IsEmpty)
+            {
+                HandleFatigue();   // 덱 고갈 시 규칙 처리
+                return null;
+            }
+
+            var card = TcgBattleDataDeck.DrawTop();  // GC 없음, 참조 그대로 반환
+
+            // 2) 핸드가 꽉 찼다면 오버드로우 처리
+            if (Hand.Count >= MaxHandSize)
+            {
+                HandleOverdraw(card);
+                return null;
+            }
+
+            // 3) 핸드에 추가
+            AddCardToHand(card);
+
+            // 4) 드로우 트리거 처리 (효과 시스템)
+            TriggerOnDraw(card);
+
+            return card;
+        }
+        
+        private void HandleFatigue()
+        {
+            _fatigueCounter++;
+            HeroHp -= _fatigueCounter;
+        }
+
+        private void HandleOverdraw(TcgBattleDataCard card)
+        {
+            // 오버드로우된 카드는 소멸
+            // 덱에서 뽑혔으므로 묘지로 이동시키지 않음 (룰에 따라 변경 가능)
+        }
+
+        private void TriggerOnDraw(TcgBattleDataCard card)
+        {
+            // 키워드 or 지속효과 처리
+        }
+
     }
 }

@@ -2,11 +2,9 @@
 {
     public class AttackUnitCommandHandler : ITcgBattleCommandHandler
     {
-        public void Execute(
-            TcgBattleManager battleManager,
-            TcgBattleDataSide actor,
-            TcgBattleDataSide opponent,
-            TcgBattleCommand cmd)
+        public ConfigCommonTcg.TcgBattleCommandType CommandType =>
+            ConfigCommonTcg.TcgBattleCommandType.AttackUnit;
+        public void Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
         {
             var attacker = cmd.Attacker;
             var target   = cmd.targetBattleData;
@@ -14,6 +12,9 @@
             if (attacker == null || target == null)
                 return;
 
+            var actor = context.GetSideState(cmd.Side);
+            var opponent = context.GetOpponentState(cmd.Side);
+            
             if (!actor.ContainsOnBoard(attacker))
                 return;
 

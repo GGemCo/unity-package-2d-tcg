@@ -2,16 +2,18 @@
 {
     public class AttackHeroCommandHandler : ITcgBattleCommandHandler
     {
-        public void Execute(
-            TcgBattleManager battleManager,
-            TcgBattleDataSide actor,
-            TcgBattleDataSide opponent,
-            TcgBattleCommand cmd)
+        public ConfigCommonTcg.TcgBattleCommandType CommandType =>
+            ConfigCommonTcg.TcgBattleCommandType.AttackHero;
+        
+        public void Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
         {
             var attacker = cmd.Attacker;
             if (attacker == null)
                 return;
 
+            var actor = context.GetSideState(cmd.Side);
+            var opponent = context.GetOpponentState(cmd.Side);
+            
             if (!actor.ContainsOnBoard(attacker))
                 return;
 
