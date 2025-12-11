@@ -31,6 +31,7 @@ namespace GGemCo2DTcg
         /// 승리한 편. 아직 종료되지 않았다면 None.
         /// </summary>
         public ConfigCommonTcg.TcgPlayerSide Winner { get; private set; }
+        
 
         private readonly Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler> _commandHandlers;
         private readonly ITcgPlayerController _playerController;
@@ -38,7 +39,10 @@ namespace GGemCo2DTcg
 
         // 내부 버퍼: 한 턴 동안 실행할 커맨드를 임시 보관.
         private readonly List<TcgBattleCommand> _commandBuffer = new List<TcgBattleCommand>(32);
+        // CommandResult.FollowUpCommands 까지 포함해서 처리할 실행 큐
+        private readonly List<TcgBattleCommand> _executionQueue = new List<TcgBattleCommand>(64);
         private readonly GGemCoTcgSettings _tcgSettings;
+        private readonly SystemMessageManager _systemMessageManager;
 
         public TcgBattleSession(
             TcgBattleDataSide playerSide,
@@ -46,13 +50,16 @@ namespace GGemCo2DTcg
             Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler> commandHandlers,
             ITcgPlayerController playerController,
             ITcgPlayerController enemyController,
-            GGemCoTcgSettings settings)
+            GGemCoTcgSettings settings,
+            SystemMessageManager systemMessageManager)
         {
             _commandHandlers  = commandHandlers ?? throw new ArgumentNullException(nameof(commandHandlers));
             _playerController = playerController ?? throw new ArgumentNullException(nameof(playerController));
             _enemyController  = enemyController ?? throw new ArgumentNullException(nameof(enemyController));
+            _systemMessageManager  = systemMessageManager ?? throw new ArgumentNullException(nameof(systemMessageManager));
+            _tcgSettings  = settings ?? throw new ArgumentNullException(nameof(settings));
 
-            Context = new TcgBattleDataMain(this, playerSide, enemySide)
+            Context = new TcgBattleDataMain(this, playerSide, enemySide, systemMessageManager)
             {
                 // 기본값: 플레이어부터 시작
                 ActiveSide = ConfigCommonTcg.TcgPlayerSide.Player
@@ -61,7 +68,9 @@ namespace GGemCo2DTcg
             IsBattleEnded      = false;
             Winner             = ConfigCommonTcg.TcgPlayerSide.None;
             
-            _tcgSettings = settings;
+            // 컨트롤러 초기화
+            _playerController.Initialize(Context);
+            _enemyController.Initialize(Context);
         }
 
         /// <summary>
@@ -76,8 +85,6 @@ namespace GGemCo2DTcg
             _commandBuffer.Clear();
             _playerController.DecideTurnActions(Context, _commandBuffer);
             ExecuteCommands(_commandBuffer);
-
-            TryCheckBattleEnd();
         }
 
         /// <summary>
@@ -91,43 +98,6 @@ namespace GGemCo2DTcg
             _commandBuffer.Clear();
             _enemyController.DecideTurnActions(Context, _commandBuffer);
             ExecuteCommands(_commandBuffer);
-
-            TryCheckBattleEnd();
-        }
-
-        /// <summary>
-        /// 외부(UI 등)에서 개별 전투 커맨드를 전달하여 실행할 때 사용합니다.
-        /// </summary>
-        public void ExecuteCommand(in TcgBattleCommand command)
-        {
-            if (IsBattleEnded) return;
-
-            if (!_commandHandlers.TryGetValue(command.CommandType, out var handler))
-            {
-                GcLogger.LogError($"[{nameof(TcgBattleSession)}] 핸들러가 등록되지 않은 커맨드 타입: {command.CommandType}");
-                return;
-            }
-
-            handler.Execute(Context, command);
-            TryCheckBattleEnd();
-        }
-
-        /// <summary>
-        /// 여러 개의 커맨드를 순차적으로 실행합니다.
-        /// </summary>
-        public void ExecuteCommands(List<TcgBattleCommand> commands)
-        {
-            if (IsBattleEnded) return;
-            if (commands == null || commands.Count == 0) return;
-
-            foreach (var command in commands)
-            {
-                ExecuteCommand(command);
-                if (IsBattleEnded)
-                {
-                    break;
-                }
-            }
         }
 
         /// <summary>
@@ -151,7 +121,7 @@ namespace GGemCo2DTcg
                     : ConfigCommonTcg.TcgPlayerSide.Player;
 
             // 4) Start-of-Turn 초기 처리
-            RestoreTurnMana();
+            IncreaseMaxManaByTurnOff();
             DrawStartOfTurnCard();
 
             // 5) Start-of-Turn 효과 처리
@@ -184,17 +154,18 @@ namespace GGemCo2DTcg
             // 덱이 비었을 때 처리는 자유 설계 (피해 주기, 패티그 등)
             side.DrawOneCard();
         }
-
-        private void RestoreTurnMana()
+        /// <summary>
+        /// 적 턴 종료 시, 총 마나 올려주고, 마나 리셋 하기 
+        /// </summary>
+        private void IncreaseMaxManaByTurnOff()
         {
-            var side = Context.GetSideState(Context.ActiveSide);
-
-            // 최대 마나 증가 규칙이 있다면
-            var newMaxMana = side.MaxMana;
-            if (newMaxMana < _tcgSettings.countMaxManaInBattle)
-                newMaxMana++;
-
-            side.SetMana(newMaxMana, newMaxMana);
+            if (Context.ActiveSide != ConfigCommonTcg.TcgPlayerSide.Player) return;
+            var playerSide = Context.GetSideState(ConfigCommonTcg.TcgPlayerSide.Player);
+            playerSide.IncreaseMaxMana(_tcgSettings.countManaAfterTurn, _tcgSettings.countMaxManaInBattle);
+            playerSide.RestoreManaFull();
+            var enemySide = Context.GetSideState(ConfigCommonTcg.TcgPlayerSide.Enemy);
+            enemySide.IncreaseMaxMana(_tcgSettings.countManaAfterTurn, _tcgSettings.countMaxManaInBattle);
+            enemySide.RestoreManaFull();
         }
 
         /// <summary>
@@ -239,5 +210,86 @@ namespace GGemCo2DTcg
             _enemyController?.Dispose();
             Context.ClearOwner();
         }
+        
+        #region Command Execution
+        /// <summary>
+        /// 외부(UI 등)에서 개별 전투 커맨드를 전달하여 실행할 때 사용합니다.
+        /// (FollowUpCommands 까지 포함해서 한 번에 처리됩니다.)
+        /// </summary>
+        public void ExecuteCommand(in TcgBattleCommand command)
+        {
+            if (IsBattleEnded) return;
+
+            _executionQueue.Clear();
+            _executionQueue.Add(command);
+
+            ProcessExecutionQueue();
+        }
+
+        /// <summary>
+        /// 여러 개의 커맨드를 순차적으로 실행합니다.
+        /// CommandResult.FollowUpCommands 까지 포함해 모두 처리합니다.
+        /// </summary>
+        public void ExecuteCommands(List<TcgBattleCommand> commands)
+        {
+            if (IsBattleEnded) return;
+            if (commands == null || commands.Count == 0) return;
+
+            _executionQueue.Clear();
+            _executionQueue.AddRange(commands);
+
+            ProcessExecutionQueue();
+        }
+
+        /// <summary>
+        /// _executionQueue 에 들어있는 커맨드를 CommandResult 기반으로 모두 처리합니다.
+        /// </summary>
+        private void ProcessExecutionQueue()
+        {
+            while (_executionQueue.Count > 0 && !IsBattleEnded)
+            {
+                var cmd = _executionQueue[0];
+                _executionQueue.RemoveAt(0);
+
+                if (!_commandHandlers.TryGetValue(cmd.CommandType, out var handler))
+                {
+                    GcLogger.LogError(
+                        $"[{nameof(TcgBattleSession)}] 핸들러가 등록되지 않은 커맨드 타입: {cmd.CommandType}");
+                    continue;
+                }
+
+                var result = handler.Execute(Context, in cmd);
+                HandleCommandResult(result);
+            }
+        }
+
+        /// <summary>
+        /// CommandResult 를 해석해서 메시지/후속 커맨드/전투 종료를 처리합니다.
+        /// </summary>
+        private void HandleCommandResult(CommandResult result)
+        {
+            if (result == null)
+                return;
+
+            if (!result.Success)
+            {
+                if (!string.IsNullOrEmpty(result.MessageKey))
+                {
+                    _systemMessageManager?.ShowMessageError(result.MessageKey);
+                }
+
+                return;
+            }
+
+            // 성공 + 후속 커맨드 처리
+            if (result.HasFollowUps)
+            {
+                _executionQueue.AddRange(result.FollowUpCommands);
+            }
+
+            // 전투 종료 여부 확인
+            TryCheckBattleEnd();
+        }
+        #endregion
     }
 }

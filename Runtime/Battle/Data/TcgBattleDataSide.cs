@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using R3;
 
 namespace GGemCo2DTcg
 {
@@ -25,8 +27,15 @@ namespace GGemCo2DTcg
         public int HeroHp { get; private set; }
         public int HeroHpMax { get; private set; }
 
-        public int CurrentMana { get; private set; }
-        public int MaxMana { get; private set; }
+        private readonly BehaviorSubject<int> _currentMana = new(0);
+        public Observable<int> CurrentMana => _currentMana; // UI용
+        public int CurrentManaValue => _currentMana.Value; // 로직용
+        private readonly BehaviorSubject<int> _currentManaMax = new(0);
+        public Observable<int> CurrentManaMax => _currentManaMax; // UI용
+        public int CurrentManaValueMax => _currentManaMax.Value; // 로직용
+        
+        // 게임 도중 최대로 얻을 수 있는 마나
+        private int _maxMana;
 
         private const int MaxHandSize = 10;
         private int _fatigueCounter = 0;
@@ -40,16 +49,17 @@ namespace GGemCo2DTcg
         }
 
         // ===== 초기값 세팅용 =====
-        public void SetHeroHp(int hp, int maxHp)
+        public void InitializeHeroHp(int hp, int maxHp)
         {
             HeroHpMax = maxHp;
             HeroHp    = hp > maxHp ? maxHp : hp;
         }
 
-        public void SetMana(int current, int max)
+        public void InitializeMana(int current, int currentMax, int maxMana)
         {
-            MaxMana     = max;
-            CurrentMana = current > max ? max : current;
+            _currentManaMax.OnNext(currentMax);
+            _currentMana.OnNext(current > currentMax ? currentMax : current);
+            _maxMana = maxMana;
         }
 
         // ===== 손패 관리 =====
@@ -89,24 +99,25 @@ namespace GGemCo2DTcg
         public bool TryConsumeMana(int amount)
         {
             if (amount <= 0) return true;
-            if (CurrentMana < amount) return false;
+            if (_currentMana.Value < amount) return false;
 
-            CurrentMana -= amount;
+            var manaValue = _currentMana.Value - amount;
+            _currentMana.OnNext(manaValue);
             return true;
         }
 
         public void RestoreManaFull()
         {
-            CurrentMana = MaxMana;
+            _currentMana.OnNext(_currentManaMax.Value);
         }
 
         public void IncreaseMaxMana(int amount, int maxLimit)
         {
-            MaxMana += amount;
-            if (MaxMana > maxLimit)
-                MaxMana = maxLimit;
+            var newMaxMana = _currentManaMax.Value + amount;
+            if (newMaxMana > maxLimit)
+                newMaxMana = maxLimit;
 
-            CurrentMana = MaxMana;
+            _currentManaMax.OnNext(newMaxMana);
         }
 
         public void TakeHeroDamage(int amount)

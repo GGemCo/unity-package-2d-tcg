@@ -7,7 +7,8 @@ namespace GGemCo2DTcg
     /// </summary>
     public class PlayerDataTcg : DefaultData, ISaveData
     {
-        public int defaultDeckIndex;
+        // 0 부터 시작이기 때문에, 디폴트는 -1
+        public int defaultDeckIndex = -1;
 
         /// <summary>
         /// 초기화 (저장된 데이터를 불러오거나 새로운 데이터 생성)

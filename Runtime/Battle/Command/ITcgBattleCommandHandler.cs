@@ -1,5 +1,4 @@
-﻿using GGemCo2DCore;
-
+﻿
 namespace GGemCo2DTcg
 {
     /// <summary>
@@ -19,6 +18,6 @@ namespace GGemCo2DTcg
         /// </summary>
         /// <param name="context">현재 전투 전체 컨텍스트(TcgBattleDataMain)</param>
         /// <param name="command">실행할 전투 명령 구조체</param>
-        void Execute(TcgBattleDataMain context, in TcgBattleCommand command);
+        CommandResult Execute(TcgBattleDataMain context, in TcgBattleCommand command);
     }
 }

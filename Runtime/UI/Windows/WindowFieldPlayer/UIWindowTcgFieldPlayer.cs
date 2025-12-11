@@ -18,5 +18,19 @@ namespace GGemCo2DTcg
             DetachAllIcons();
         }
 
+        public void RefreshBoard(TcgBattleDataSide player)
+        {
+            DetachAllIcons();
+            int i = 0;
+            foreach (var tcgBattleDataCard in player.Board)
+            {
+                var uiIcon = SetIconCount(i, tcgBattleDataCard.Uid, 1);
+                if (!uiIcon) continue;
+                var uiIconFieldPlayer = uiIcon as UIIconFieldPlayer;
+                if (!uiIconFieldPlayer) continue;
+                uiIconFieldPlayer.SetBattleDataFieldCard(tcgBattleDataCard);
+                i++;
+            }
+        }
     }
 }

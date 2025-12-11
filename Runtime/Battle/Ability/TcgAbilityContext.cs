@@ -3,10 +3,10 @@
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// 이펙트 실행 시 필요한 모든 컨텍스트 정보.
+    /// 능력 실행 시 필요한 모든 컨텍스트 정보.
     /// - 어떤 카드에서 실행되는지, 시전자/상대/타겟은 누구인지 등을 포함합니다.
     /// </summary>
-    public sealed class TcgEffectContext
+    public sealed class TcgAbilityContext
     {
         public TcgBattleDataMain BattleDataMain { get; }
         public TcgBattleDataSide Caster { get; }
@@ -19,7 +19,7 @@ namespace GGemCo2DTcg
 
         public Dictionary<string, string> ExtraParams { get; }
 
-        public TcgEffectContext(
+        public TcgAbilityContext(
             TcgBattleDataSide caster,
             TcgBattleDataSide opponent,
             TcgBattleDataCard sourceTcgBattleDataCard,

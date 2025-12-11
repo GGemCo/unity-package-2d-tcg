@@ -8,19 +8,26 @@ namespace GGemCo2DTcg
         public ConfigCommonTcg.TcgBattleCommandType CommandType =>
             ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand;
         
-        public void Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
+        public CommandResult Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
         {
             var card = cmd.tcgBattleDataCard;
             if (card == null)
-                return;
+                return null;
 
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
             
             // 마나 차감
-            if (!actor.TryConsumeMana(card.Cost)) return;
+            if (!actor.TryConsumeMana(card.Cost))
+            {
+                // todo. localization. 자원 소모 이름 tcg settings에 추가하기
+                // systemMessageManager.ShowMessageError("마나가 부족합니다.");
+                GcLogger.LogWarning($"[Battle] ExecutePlayCard: Not enough mana. (Need: {card.Cost}, Have: {actor.CurrentManaValue})");
+                return CommandResult.Fail("Error_Tcg_NotEnoughMana");
+            }
             // 손에서 제거
-            if (!actor.RemoveCardFromHand(card)) return;
+            if (!actor.RemoveCardFromHand(card)) 
+                return CommandResult.Fail("Error_Tcg_NoCardInHand");
 
             // 카드 타입에 따라 분기 (예시)
             switch (card.Type)
@@ -37,7 +44,7 @@ namespace GGemCo2DTcg
                     // 2) "소환 시 발동" 이펙트가 있다면 실행
                     if (card.SummonEffects != null && card.SummonEffects.Count > 0)
                     {
-                        EffectRunner.RunEffects(
+                        AbilityRunner.RunAbility(
                             actor,
                             opponent,
                             card,
@@ -53,7 +60,7 @@ namespace GGemCo2DTcg
                     if (card.SpellEffects != null && card.SpellEffects.Count > 0)
                     {
                         // TODO: TargetType 에 따라 타겟 선택 로직 추가
-                        EffectRunner.RunEffects(
+                        AbilityRunner.RunAbility(
                             actor,
                             opponent,
                             card,
@@ -69,6 +76,9 @@ namespace GGemCo2DTcg
                     break;
                 }
             }
+            // 소환 트리거 후속 커맨드
+            // var followUps = AbilityResolver.ResolveOnSummon(context, summoned);
+            return CommandResult.Ok();
         }
         /// <summary>
         /// Creature 타입 카드를 기반으로 필드에 소환할 유닛 런타임을 생성합니다.

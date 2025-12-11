@@ -13,7 +13,7 @@ namespace GGemCo2DTcg
         /// 플레이어가 사용할 덱 인덱스 또는 Uid.
         /// SaveDataManagerTcg.MyDeck 에서 실제 덱 데이터를 조회할 때 사용합니다.
         /// </summary>
-        public int playerDeckIndex;
+        public int playerDeckIndex = -1;
 
         /// <summary>
         /// AI가 사용할 덱 프리셋 식별자.

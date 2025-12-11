@@ -1,4 +1,6 @@
 ﻿
+using GGemCo2DCore;
+
 namespace GGemCo2DTcg
 {
     /// <summary>
@@ -31,7 +33,8 @@ namespace GGemCo2DTcg
         public TcgBattleDataMain(
             object owner,
             TcgBattleDataSide player,
-            TcgBattleDataSide enemy)
+            TcgBattleDataSide enemy,
+            SystemMessageManager systemMessageManager)
         {
             Owner  = owner;
             Player = player;

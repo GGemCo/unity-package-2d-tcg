@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     {
         public static TcgPackageManager Instance { get; private set; }
 
-        public SaveDataManagerTcg saveDataManagerTcg;
+        [HideInInspector] public SaveDataManagerTcg saveDataManagerTcg;
         public TcgBattleManager battleManager;
         
         private void Awake()
@@ -33,11 +33,8 @@ namespace GGemCo2DTcg
 
         private void InitializeManagers()
         {
-            GameObject managerContainer = new GameObject("ManagersTcg");
+            GameObject managerContainer = new GameObject("GGemCoManagersTcg");
             saveDataManagerTcg = CreateManager<SaveDataManagerTcg>(managerContainer);
-
-            battleManager = new TcgBattleManager();
-            battleManager.Initialize(this);
         }
 
         private T CreateManager<T>(GameObject parent) where T : Component
@@ -50,7 +47,9 @@ namespace GGemCo2DTcg
         {
             if (SceneGame.Instance)
                 SceneGame.Instance.OnSceneGameDestroyed += OnDestroyBySceneGame;
-            battleManager.Initialize(this);
+            
+            battleManager = new TcgBattleManager();
+            battleManager.Initialize(this, SceneGame.Instance.systemMessageManager);
         }
         private void OnDestroyBySceneGame()
         {

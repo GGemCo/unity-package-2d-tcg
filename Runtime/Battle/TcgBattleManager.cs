@@ -15,6 +15,7 @@ namespace GGemCo2DTcg
         // 패키지/세이브/설정
         private TcgPackageManager _packageManager;
         private SaveDataManagerTcg _saveDataManagerTcg;
+        private SystemMessageManager _systemMessageManager;
         private GGemCoTcgSettings _tcgSettings;
         private TableTcgCard _tableTcgCard;
 
@@ -29,10 +30,11 @@ namespace GGemCo2DTcg
 
         public bool IsBattleRunning => _session != null && !_session.IsBattleEnded;
 
-        public void Initialize(TcgPackageManager packageManager)
+        public void Initialize(TcgPackageManager packageManager, SystemMessageManager systemMessageManager)
         {
             _packageManager      = packageManager ?? throw new ArgumentNullException(nameof(packageManager));
             _saveDataManagerTcg  = _packageManager.saveDataManagerTcg;
+            _systemMessageManager = systemMessageManager;
             _tcgSettings         = AddressableLoaderSettingsTcg.Instance.tcgSettings;
             _tableTcgCard        = TableLoaderManagerTcg.Instance.TableTcgCard;
 
@@ -63,6 +65,12 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"[{nameof(TcgBattleManager)}] 전투 UI 윈도우 설정에 실패했습니다.");
                 return;
             }
+            if (metaData.playerDeckIndex < 0)
+            {
+                // todo. localization
+                _systemMessageManager.ShowMessageError("먼저 덱을 생성하고, 카드를 추가해주세요.");
+                return;
+            }
 
             // 덱 생성
             int seed = metaData.initialSeed > 0 ? metaData.initialSeed : 0;
@@ -78,12 +86,12 @@ namespace GGemCo2DTcg
 
             // 각 사이드 상태 생성
             var playerSide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Player, playerDeck);
-            playerSide.SetHeroHp(100, 100);
-            playerSide.SetMana(1, _tcgSettings.countMaxManaInBattle);
+            playerSide.InitializeHeroHp(100, 100);
+            playerSide.InitializeMana(1, 1, _tcgSettings.countMaxManaInBattle);
 
             var enemySide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Enemy, enemyDeck);
-            enemySide.SetHeroHp(100, 100);
-            enemySide.SetMana(1, _tcgSettings.countMaxManaInBattle);
+            enemySide.InitializeHeroHp(100, 100);
+            enemySide.InitializeMana(1, 1, _tcgSettings.countMaxManaInBattle);
 
             // 플레이어/적 컨트롤러 생성
             var playerController = new TcgBattleControllerPlayer(ConfigCommonTcg.TcgPlayerSide.Player);
@@ -96,14 +104,15 @@ namespace GGemCo2DTcg
                 _commandHandlers,
                 playerController,
                 enemyController,
-                _tcgSettings);
+                _tcgSettings,
+                _systemMessageManager);
 
             // 첫 드로우/턴 시작 로직
             DrawCards(playerSide, _tcgSettings.startingHandCardCount);
             DrawCards(enemySide,  _tcgSettings.startingHandCardCount);
             
             // UI 바인딩 및 초기 갱신
-            _ui.BindBattleManager(this);
+            _ui.BindBattleManager(this, _session);
             _ui.ShowAll(true);
             _ui.RefreshAll(_session.Context);
         }
@@ -181,11 +190,17 @@ namespace GGemCo2DTcg
         /// <summary>
         /// UI에서 "턴 종료" 버튼을 눌렀을 때 호출됩니다.
         /// </summary>
-        public void OnUiRequestEndTurn(ConfigCommonTcg.TcgPlayerSide side)
+        public void OnUiRequestEndTurn()
         {
-            var command = TcgBattleCommand.EndTurn(side);
-            _session.ExecuteCommand(command);
+            _session.EndTurn();
             _ui.RefreshAll(_session.Context);
+
+            if (!_session.IsBattleEnded)
+            {
+                // AI 턴 자동 실행
+                _session.ExecuteEnemyTurn();
+                _ui.RefreshAll(_session.Context);
+            }
         }
 
         private void OnBattleEnded(ConfigCommonTcg.TcgPlayerSide winner)

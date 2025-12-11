@@ -44,7 +44,7 @@ namespace GGemCo2DTcg
             // 1) 낼 수 있는 카드 중 코스트가 맞는 카드 찾아서 1장 사용(예시)
             foreach (var card in _me.Hand)
             {
-                if (card.Cost <= _me.CurrentMana)
+                if (card.Cost <= _me.CurrentManaValue)
                 {
                     outCommands.Add(TcgBattleCommand.PlayCard(Side, card));
                     break;

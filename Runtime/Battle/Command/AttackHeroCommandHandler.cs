@@ -5,23 +5,23 @@
         public ConfigCommonTcg.TcgBattleCommandType CommandType =>
             ConfigCommonTcg.TcgBattleCommandType.AttackHero;
         
-        public void Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
+        public CommandResult Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
         {
             var attacker = cmd.Attacker;
             if (attacker == null)
-                return;
+                return CommandResult.Fail("Error_Tcg_NoAttacker");
 
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
             
             if (!actor.ContainsOnBoard(attacker))
-                return;
+                return CommandResult.Fail("Error_Tcg_NoAttackerOnBoard");
 
             if (!attacker.CanAttack)
             {
                 // todo. localization
                 // _systemMessageManager.ShowMessageWarning("그 캐릭터는 이미 공격을 마쳤습니다.");
-                return;
+                return CommandResult.Fail("Error_Tcg_AlreadyAttacked");
             }
 
             opponent.TakeHeroDamage(attacker.Attack);
@@ -32,6 +32,8 @@
             {
                 OnBattleEnd(actor.Side);
             }
+            
+            return CommandResult.Ok();
         }
 
         private void OnBattleEnd(ConfigCommonTcg.TcgPlayerSide actorSide)

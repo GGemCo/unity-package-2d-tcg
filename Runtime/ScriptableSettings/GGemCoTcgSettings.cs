@@ -1,7 +1,6 @@
 ﻿using System;
 using GGemCo2DCore;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace GGemCo2DTcg
 {
@@ -71,6 +70,8 @@ namespace GGemCo2DTcg
         [Header("마나")]
         [Tooltip("대결 시 얻을 수 있는 최대 마나 수치")]
         public int countMaxManaInBattle = 10;
+        [Tooltip("턴이 종료될 때 증가하는 마나 수치")]
+        public int countManaAfterTurn = 1;
         // ──────────────────────────────────────────────────────────────────────────────
         // Turn Limits
         // ──────────────────────────────────────────────────────────────────────────────

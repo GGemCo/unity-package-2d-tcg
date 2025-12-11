@@ -36,9 +36,9 @@ namespace GGemCo2DTcg
 
             return result;
         }
-        public static List<TcgEffectData> ParseEffects(string effectsRaw)
+        public static List<TcgAbilityData> ParseEffects(string effectsRaw)
         {
-            var result = new List<TcgEffectData>(4);
+            var result = new List<TcgAbilityData>(4);
 
             if (string.IsNullOrWhiteSpace(effectsRaw))
                 return result;
@@ -63,7 +63,7 @@ namespace GGemCo2DTcg
                 var targetTypeRaw = tokens[2].Trim();
                 var extraRaw      = tokens.Length >= 4 ? tokens[3].Trim() : string.Empty;
 
-                if (!Enum.TryParse<TcgEffectId>(effectIdRaw, true, out var effectId))
+                if (!Enum.TryParse<TcgAbilityId>(effectIdRaw, true, out var effectId))
                 {
                     GcLogger.LogWarning($"[TcgCardRuntimeFactory] Unknown EffectId: {effectIdRaw}");
                     continue;
@@ -84,12 +84,12 @@ namespace GGemCo2DTcg
 
                 var extraParams = ParseExtraParams(extraRaw);
 
-                result.Add(new TcgEffectData
+                result.Add(new TcgAbilityData
                 {
-                    EffectId = effectId,
-                    Value = value,
-                    TargetType = targetType,
-                    ExtraParams = extraParams
+                    abilityId = effectId,
+                    value = value,
+                    targetType = targetType,
+                    extraParams = extraParams
                 });
             }
 

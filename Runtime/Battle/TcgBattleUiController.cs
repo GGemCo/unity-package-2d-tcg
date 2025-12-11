@@ -1,4 +1,5 @@
 ﻿using GGemCo2DCore;
+using R3;
 
 namespace GGemCo2DTcg
 {
@@ -12,7 +13,8 @@ namespace GGemCo2DTcg
         private UIWindowTcgHandPlayer  _handPlayer;
         private UIWindowTcgHandEnemy   _handEnemy;
         private UIWindowTcgBattleHud   _battleHud;
-
+        private readonly CompositeDisposable _disposables = new();
+        
         public bool IsReady =>
             _fieldEnemy  != null &&
             _fieldPlayer != null &&
@@ -25,26 +27,30 @@ namespace GGemCo2DTcg
         /// </summary>
         public bool TrySetupWindows()
         {
-            var wm = SceneGame.Instance?.uIWindowManager;
-            if (wm == null)
+            var windowManager = SceneGame.Instance?.uIWindowManager;
+            if (windowManager == null)
             {
                 GcLogger.LogError($"[{nameof(TcgBattleUiController)}] {nameof(UIWindowManager)} 를 찾을 수 없습니다.");
                 return false;
             }
 
-            _fieldEnemy  = wm.GetUIWindowByUid<UIWindowTcgFieldEnemy>(UIWindowConstants.WindowUid.TcgFieldEnemy);
-            _fieldPlayer = wm.GetUIWindowByUid<UIWindowTcgFieldPlayer>(UIWindowConstants.WindowUid.TcgFieldPlayer);
-            _handPlayer  = wm.GetUIWindowByUid<UIWindowTcgHandPlayer>(UIWindowConstants.WindowUid.TcgHandPlayer);
-            _handEnemy   = wm.GetUIWindowByUid<UIWindowTcgHandEnemy>(UIWindowConstants.WindowUid.TcgHandEnemy);
-            _battleHud   = wm.GetUIWindowByUid<UIWindowTcgBattleHud>(UIWindowConstants.WindowUid.TcgBattleHud);
+            _fieldEnemy  = GetWindow<UIWindowTcgFieldEnemy>(windowManager, UIWindowConstants.WindowUid.TcgFieldEnemy);
+            _fieldPlayer = GetWindow<UIWindowTcgFieldPlayer>(windowManager, UIWindowConstants.WindowUid.TcgFieldPlayer);
+            _handPlayer  = GetWindow<UIWindowTcgHandPlayer>(windowManager, UIWindowConstants.WindowUid.TcgHandPlayer);
+            _handEnemy   = GetWindow<UIWindowTcgHandEnemy>(windowManager, UIWindowConstants.WindowUid.TcgHandEnemy);
+            _battleHud   = GetWindow<UIWindowTcgBattleHud>(windowManager, UIWindowConstants.WindowUid.TcgBattleHud);
 
-            if (!IsReady)
-            {
-                GcLogger.LogError($"[{nameof(TcgBattleUiController)}] 전투 UI 윈도우 중 일부를 찾을 수 없습니다.");
-                return false;
-            }
+            if (IsReady) return true;
+            
+            GcLogger.LogError($"[{nameof(TcgBattleUiController)}] 전투 UI 윈도우 중 일부를 찾을 수 없습니다.");
+            return false;
 
-            return true;
+        }
+
+        private static TWindow GetWindow<TWindow>(UIWindowManager windowManager, UIWindowConstants.WindowUid uid)
+            where TWindow : UIWindow
+        {
+            return windowManager.GetUIWindowByUid<TWindow>(uid);
         }
 
         /// <summary>
@@ -52,25 +58,72 @@ namespace GGemCo2DTcg
         /// </summary>
         public void ShowAll(bool isShow)
         {
-            _fieldEnemy?.Show(isShow);
-            _fieldPlayer?.Show(isShow);
-            _handPlayer?.Show(isShow);
-            _handEnemy?.Show(isShow);
-            _battleHud?.Show(isShow);
+            if (!IsReady)
+                return;
+
+            _fieldEnemy.Show(isShow);
+            _fieldPlayer.Show(isShow);
+            _handPlayer.Show(isShow);
+            _handEnemy.Show(isShow);
+            _battleHud.Show(isShow);
         }
 
         /// <summary>
         /// BattleManager 와 연동하여, 윈도우에 BattleManager/Side 정보를 바인딩합니다.
         /// </summary>
-        public void BindBattleManager(TcgBattleManager manager)
+        public void BindBattleManager(TcgBattleManager manager, TcgBattleSession session)
         {
-            if (!IsReady) return;
+            if (!IsReady || manager == null || session == null)
+                return;
 
-            _handPlayer.SetBattleManager(manager, ConfigCommonTcg.TcgPlayerSide.Player);
+            BindMana(session);
+
+            _handPlayer.SetBattleManager(manager);
             // _handEnemy.SetBattleManager(manager, ConfigCommonTcg.TcgPlayerSide.Enemy);
             // _fieldPlayer.SetBattleManager(manager);
             _fieldEnemy.SetBattleManager(manager);
             // _battleHud.SetBattleManager(manager);
+        }
+
+        private void BindMana(TcgBattleSession session)
+        {
+            var context = session.Context;
+            var player  = context.Player;
+            var enemy   = context.Enemy;
+
+            // Player
+            player.CurrentMana
+                .Subscribe(_ => UpdatePlayerMana(player))
+                .AddTo(_disposables);
+
+            player.CurrentManaMax
+                .Subscribe(_ => UpdatePlayerMana(player))
+                .AddTo(_disposables);
+
+            // Enemy
+            enemy.CurrentMana
+                .Subscribe(_ => UpdateEnemyMana(enemy))
+                .AddTo(_disposables);
+
+            enemy.CurrentManaMax
+                .Subscribe(_ => UpdateEnemyMana(enemy))
+                .AddTo(_disposables);
+        }
+
+        private void UpdatePlayerMana(TcgBattleDataSide player)
+        {
+            if (_handPlayer == null)
+                return;
+
+            _handPlayer.SetMana(player.CurrentManaValue, player.CurrentManaValueMax);
+        }
+
+        private void UpdateEnemyMana(TcgBattleDataSide enemy)
+        {
+            if (_handEnemy == null)
+                return;
+
+            _handEnemy.SetMana(enemy.CurrentManaValue, enemy.CurrentManaValueMax);
         }
 
         /// <summary>
@@ -78,15 +131,16 @@ namespace GGemCo2DTcg
         /// </summary>
         public void RefreshAll(TcgBattleDataMain context)
         {
-            if (!IsReady || context == null) return;
+            if (!IsReady || context == null)
+                return;
 
             var player = context.Player;
             var enemy  = context.Enemy;
 
             _handPlayer.RefreshHand(player.Hand);
             _handEnemy.RefreshHand(enemy.Hand);
-            // _fieldPlayer.RefreshBoard(player, enemy);
-            _fieldEnemy.RefreshBoard(player, enemy);
+            _fieldPlayer.RefreshBoard(player);
+            _fieldEnemy.RefreshBoard(enemy);
             // _battleHud.Refresh(context);
         }
 
@@ -95,6 +149,8 @@ namespace GGemCo2DTcg
         /// </summary>
         public void Release()
         {
+            _disposables.Clear(); // 또는 _disposables.Dispose();
+            
             _fieldEnemy  = null;
             _fieldPlayer = null;
             _handPlayer  = null;

@@ -12,7 +12,7 @@ namespace GGemCo2DTcg
         public ConfigCommonTcg.TcgBattleCommandType CommandType =>
             ConfigCommonTcg.TcgBattleCommandType.EndTurn;
 
-        public void Execute(TcgBattleDataMain context, in TcgBattleCommand command)
+        public CommandResult Execute(TcgBattleDataMain context, in TcgBattleCommand command)
         {
             // Session 없이 직접 턴 로직을 수행하면 유지보수 비용이 증가하므로,
             // context.owner(TcgBattleManager/TcgBattleSession) 를 활용하여 Session EndTurn을 호출하도록 합니다.
@@ -20,10 +20,10 @@ namespace GGemCo2DTcg
             if (context.Owner is not TcgBattleSession session)
             {
                 GcLogger.LogError($"[{nameof(EndTurnCommandHandler)}] TcgBattleDataMain.Owner 가 Session 이 아닙니다.");
-                return;
+                return CommandResult.Fail("Error_Tcg_NoBattleSession");
             }
-
             session.EndTurn();
+            return CommandResult.Ok();
         }
     }
 }

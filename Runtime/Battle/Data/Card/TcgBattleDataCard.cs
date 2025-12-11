@@ -40,21 +40,21 @@ namespace GGemCo2DTcg
         public string Description { get; }
 
         public IReadOnlyList<ConfigCommonTcg.TcgKeyword> Keywords => _keywords;
-        public IReadOnlyList<TcgEffectData> SummonEffects => _summonEffects;
-        public IReadOnlyList<TcgEffectData> SpellEffects => _spellEffects;
-        public IReadOnlyList<TcgEffectData> DeathEffects => _deathEffects;
+        public IReadOnlyList<TcgAbilityData> SummonEffects => _summonEffects;
+        public IReadOnlyList<TcgAbilityData> SpellEffects => _spellEffects;
+        public IReadOnlyList<TcgAbilityData> DeathEffects => _deathEffects;
 
         private readonly List<ConfigCommonTcg.TcgKeyword> _keywords = new List<ConfigCommonTcg.TcgKeyword>(4);
-        private readonly List<TcgEffectData> _summonEffects = new List<TcgEffectData>(4);
-        private readonly List<TcgEffectData> _spellEffects = new List<TcgEffectData>(4);
-        private readonly List<TcgEffectData> _deathEffects = new List<TcgEffectData>(4);
+        private readonly List<TcgAbilityData> _summonEffects = new List<TcgAbilityData>(4);
+        private readonly List<TcgAbilityData> _spellEffects = new List<TcgAbilityData>(4);
+        private readonly List<TcgAbilityData> _deathEffects = new List<TcgAbilityData>(4);
         
         public TcgBattleDataCard(
             StruckTableTcgCard row,
             IReadOnlyList<ConfigCommonTcg.TcgKeyword> keywords,
-            IReadOnlyList<TcgEffectData> summonEffects,
-            IReadOnlyList<TcgEffectData> spellEffects,
-            IReadOnlyList<TcgEffectData> deathEffects)
+            IReadOnlyList<TcgAbilityData> summonEffects,
+            IReadOnlyList<TcgAbilityData> spellEffects,
+            IReadOnlyList<TcgAbilityData> deathEffects)
         {
             Uid = row.uid;
             Name = row.name;

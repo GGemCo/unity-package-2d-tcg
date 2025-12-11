@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using GGemCo2DCore;
+using TMPro;
+using UnityEngine;
 
 namespace GGemCo2DTcg
 {
@@ -8,6 +10,9 @@ namespace GGemCo2DTcg
     /// </summary>
     public class UIWindowTcgHandEnemy : UIWindow
     {
+        [Header(UIWindowConstants.TitleHeaderIndividual)]
+        public TMP_Text textCurrentMana;
+        
         private TcgBattleControllerEnemy _battleControllerEnemy;
 
         protected override void Awake()
@@ -45,6 +50,16 @@ namespace GGemCo2DTcg
                 uiIconHandEnemy.SetBattleDataCard(tcgBattleDataCard);
                 i++;
             }
+        }
+        /// <summary>
+        /// 현재 마나 표시 정보 업데이트
+        /// </summary>
+        /// <param name="currentMana">현재 마나</param>
+        /// <param name="maxMana">현재 최대 마나</param>
+        public void SetMana(int currentMana, int maxMana)
+        {
+            if (!textCurrentMana) return;
+            textCurrentMana.text = $"{currentMana}/{maxMana}";
         }
     }
 }
