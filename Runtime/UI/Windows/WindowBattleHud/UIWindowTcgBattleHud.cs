@@ -37,5 +37,8 @@ namespace GGemCo2DTcg
             _battleManager.EndBattleForce();
         }
 
+        public void Release()
+        {
+        }
     }
 }

@@ -95,6 +95,12 @@ namespace GGemCo2DTcg
         [Min(1)]
         public int deckSize = 25;
 
+        [Header("영웅 카드")]
+        [Tooltip("영웅으로 사용할 고정 카드 Uid")]
+        public int heroCardUid = 0;
+        [Tooltip("여러 카드를 넣어놓고 랜덤하게 선택하게 합니다. 고정 카드 Uid가 우선순위가 높습니다.")]
+        public List<int> heroCardUids = new List<int>();
+        
         [Header("고정 카드 규칙")]
         [Tooltip("특정 카드 Uid를 미리 지정해 최소/최대 장수로 넣는 규칙")]
         public List<AiDeckFixedCardRule> fixedCardRules = new List<AiDeckFixedCardRule>();

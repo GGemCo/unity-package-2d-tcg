@@ -8,13 +8,15 @@ namespace GGemCo2DTcg
     {
         public int index;
         public readonly string deckName;
+        public int heroCardUid;
         public readonly Dictionary<int, int> cardList;
 
-        public MyDeckSaveData(int index, string deckName, Dictionary<int, int> cardList)
+        public MyDeckSaveData(int index, string deckName, Dictionary<int, int> cardList, int heroCardUid)
         {
             this.index = index;
             this.deckName = deckName;
             this.cardList = cardList;
+            this.heroCardUid = heroCardUid;
         }
     }
     public class MyDeckData : DefaultData, ISaveData
@@ -61,7 +63,7 @@ namespace GGemCo2DTcg
             }
 
             var newIndex = myDeckSaveData.Count;
-            var data = new MyDeckSaveData(newIndex, deckName, new Dictionary<int, int>());
+            var data = new MyDeckSaveData(newIndex, deckName, new Dictionary<int, int>(), 0);
             myDeckSaveData.TryAdd(newIndex, data);
             SaveDatas();
             return newIndex;
@@ -113,6 +115,17 @@ namespace GGemCo2DTcg
                 deckSaveData.cardList[cardUid] = count + 1;
             }
             
+            SaveDatas();
+            return true;
+        }
+
+        public bool AddHeroCardToDeck(int index, int cardUid)
+        {
+            var deckSaveData = GetDeckInfoByIndex(index);
+            if (deckSaveData == null) return false;
+            var info = _tableTcgCard.GetDataByUid(cardUid);
+            if (info == null) return false;
+            deckSaveData.heroCardUid = cardUid;
             SaveDatas();
             return true;
         }
@@ -168,6 +181,11 @@ namespace GGemCo2DTcg
                 SaveDatas();
             }
             return result;
+        }
+
+        public int GetHeroCardUidByDeckIndex(int deckIndex)
+        {
+            return GetDeckInfoByIndex(deckIndex)?.heroCardUid ?? 0;
         }
     }
 }

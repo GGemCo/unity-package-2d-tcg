@@ -87,11 +87,11 @@ namespace GGemCo2DTcg
             // 각 사이드 상태 생성
             var playerSide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Player, playerDeck);
             playerSide.InitializeHeroHp(100, 100);
-            playerSide.InitializeMana(1, 1, _tcgSettings.countMaxManaInBattle);
+            playerSide.InitializeMana(_tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
 
             var enemySide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Enemy, enemyDeck);
             enemySide.InitializeHeroHp(100, 100);
-            enemySide.InitializeMana(1, 1, _tcgSettings.countMaxManaInBattle);
+            enemySide.InitializeMana(_tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
 
             // 플레이어/적 컨트롤러 생성
             var playerController = new TcgBattleControllerPlayer(ConfigCommonTcg.TcgPlayerSide.Player);

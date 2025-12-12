@@ -39,5 +39,10 @@ namespace GGemCo2DTcg
                 i++;
             }
         }
+
+        public void Release()
+        {
+            
+        }
     }
 }

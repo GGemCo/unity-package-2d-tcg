@@ -39,13 +39,16 @@ namespace GGemCo2DTcg
             uid = cardUid;
             SetCount(iconCount);
             _struckTableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard.GetDataByUid(cardUid);
+            _windowTcgMyDeckCard = window as UIWindowTcgMyDeckCard;
+            _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
             
             if (textName != null)
             {
                 textName.text = _struckTableTcgCard.name;
             }
-            _windowTcgMyDeckCard = window as UIWindowTcgMyDeckCard;
-            _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
+
+            ImageIcon.color = _struckTableTcgCard.type == CardConstants.Type.Hero ? Color.gold : Color.white;
+            
             UpdateInfo();
             return true;
         }

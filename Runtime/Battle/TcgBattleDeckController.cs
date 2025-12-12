@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using GGemCo2DCore;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace GGemCo2DTcg
 {
@@ -51,10 +52,12 @@ namespace GGemCo2DTcg
             var deckRuntime    = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
 
             // 3. 런타임 덱 생성 및 셔플
-            List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeck(deckInfo.cardList);
+            List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(deckInfo.cardList);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
             LogShuffledDeckForDebug(deckRuntime, "Player");
+            var heroCard = TcgBattleDataDeckBuilder.BuildRuntimeHeroCard(deckInfo.heroCardUid);
+            deckRuntime.SetHeroCard(heroCard);
 
             return deckRuntime;
         }
@@ -79,12 +82,25 @@ namespace GGemCo2DTcg
             {
                 cardList.TryAdd(uid, 1);
             }
-            List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeck(cardList);
+            List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(cardList);
 
             var deckRuntime = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
             LogShuffledDeckForDebug(deckRuntime, "Enemy");
+            
+            int heroCardUid = 0;
+            if (_tcgSettings.testDeckPreset.heroCardUid > 0)
+            {
+                heroCardUid = _tcgSettings.testDeckPreset.heroCardUid;
+            }
+            else if (_tcgSettings.testDeckPreset.heroCardUids.Count > 0)
+            {
+                heroCardUid = _tcgSettings.testDeckPreset.heroCardUids[Random.Range(0, _tcgSettings.testDeckPreset.heroCardUids.Count)];
+            }
+            
+            var heroCard = TcgBattleDataDeckBuilder.BuildRuntimeHeroCard(heroCardUid);
+            deckRuntime.SetHeroCard(heroCard);
 
             return deckRuntime;
         }

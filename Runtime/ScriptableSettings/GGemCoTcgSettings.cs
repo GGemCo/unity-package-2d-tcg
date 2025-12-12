@@ -68,6 +68,8 @@ namespace GGemCo2DTcg
         public int[] costWeights;
         
         [Header("마나")]
+        [Tooltip("대결 시작 마나 수치")]
+        public int countManaBattleStart = 1;
         [Tooltip("대결 시 얻을 수 있는 최대 마나 수치")]
         public int countMaxManaInBattle = 10;
         [Tooltip("턴이 종료될 때 증가하는 마나 수치")]

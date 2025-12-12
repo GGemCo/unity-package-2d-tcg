@@ -143,7 +143,9 @@ namespace GGemCo2DTcg
                 if (slot == null) continue;
                 slot.gameObject.SetActive(false);
             }
-            int index = 0;
+            // 0 번은 hero 카드
+            SetHeroCard(deckSaveData);
+            int index = 1;
             foreach (var cardCounts in deckSaveData.cardList)
             {
                 var cardUid = cardCounts.Key;
@@ -172,6 +174,28 @@ namespace GGemCo2DTcg
                 uiIcon.ChangeInfoByUid(cardUid, count, 1);
                 index++;
             }
+        }
+
+        private void SetHeroCard(MyDeckSaveData deckSaveData)
+        {
+            if (deckSaveData == null || deckSaveData.heroCardUid <= 0) return;
+            int cardUid = deckSaveData.heroCardUid;
+            int count = 1;
+            int index = 0;
+            var slot = GetSlotByIndex(index);
+            slot?.gameObject.SetActive(true);
+
+            var icon = GetIconByIndex(index);
+            if (!icon) return;
+            UIIcon uiIcon = icon.GetComponent<UIIcon>();
+            if (!uiIcon) return;
+            UIIconMyDeckCard uiIconMyDeckCard = uiIcon as UIIconMyDeckCard;
+            if (uiIconMyDeckCard)
+            {
+                uiIconMyDeckCard.SetDeckIndex(_deckIndex);
+            }
+            uiIcon.Initialize(this, uid, index, index, iconSize, slotSize);
+            uiIcon.ChangeInfoByUid(cardUid, count, 1);
         }
 
         private void SetDeckName(MyDeckSaveData deckSaveData)
@@ -203,8 +227,16 @@ namespace GGemCo2DTcg
                 GcLogger.LogWarning($"{nameof(UIWindowTcgMyDeckCard)}: MyDeckData 가 초기화되지 않아 카드를 추가할 수 없습니다.");
                 return;
             }
-
-            var result = myDeckData.AddCardToDeck(_deckIndex, dropIconUid);
+            var info = _tableTcgCard.GetDataByUid(dropIconUid);
+            bool result = false;
+            if (info != null && info.type == CardConstants.Type.Hero)
+            {
+                result = myDeckData.AddHeroCardToDeck(_deckIndex, dropIconUid);
+            }
+            else
+            {
+                result = myDeckData.AddCardToDeck(_deckIndex, dropIconUid);
+            }
             if (!result) return;
             LoadMyDeckCardData();
         }
@@ -262,12 +294,22 @@ namespace GGemCo2DTcg
         /// </summary>
         private void OnClickSetDefaultDeck()
         {
+            // 영웅 추가했는지 체크
+           int heroCardUid = myDeckData.GetHeroCardUidByDeckIndex(_deckIndex);
+           if (heroCardUid <= 0)
+           {
+               // todo. localization
+               SceneGame.systemMessageManager.ShowMessageError("영웅 카드를 추가해주세요.");
+               return;
+           }
+           
             bool result = _playerDataTcg.SetDefaultDeckIndex(_deckIndex);
             if (!result) return;
             
             PopupMetadata popupMetadata = new PopupMetadata
             {
                 PopupType = PopupManager.Type.Default,
+                // todo. localization
                 Title = "저장", 
                 Message = "저장되었습니다.", 
             };

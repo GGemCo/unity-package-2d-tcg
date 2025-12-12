@@ -31,6 +31,7 @@ namespace GGemCo2DTcg
         
         private void OnDisable()
         {
+            if (!SceneGame.Instance) return;
             if (IsSelected())
             {
                 SceneGame.Instance.uIWindowManager.ShowSelectIconImage(false);

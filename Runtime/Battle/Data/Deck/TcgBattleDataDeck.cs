@@ -14,6 +14,7 @@ namespace GGemCo2DTcg
         /// 현재 덱에 포함된 카드 리스트.
         /// </summary>
         public List<TCard> Cards { get; } = new();
+        public TCard HeroCard { get; set; }
 
         /// <summary>
         /// 셔플 환경 및 전략.
@@ -32,6 +33,11 @@ namespace GGemCo2DTcg
         {
             Cards.Clear();
             Cards.AddRange(cards);
+        }
+        public void SetHeroCard(TCard heroCard)
+        {
+            if (heroCard == null) return;
+            HeroCard = heroCard;
         }
 
         /// <summary>

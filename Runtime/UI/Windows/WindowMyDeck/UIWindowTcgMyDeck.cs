@@ -95,16 +95,7 @@ namespace GGemCo2DTcg
             // GcLogger.Log($"OnCreateNew {deckName}");
             var index = _myDeckData.AddNewDeck(deckName);
             if (index < 0) return;
-            var uiIcon = GetIconByIndex(index);
-            if (!uiIcon) return;
-            
-            var data = new MyDeckSaveData(index, deckName, new Dictionary<int, int>());
-            var uiSlot = GetSlotByIndex(index);
-            if (uiSlot) 
-                uiSlot.gameObject.SetActive(true);
-            uiIcon.Initialize(this, uid, data.index, data.index, iconSize, slotSize);
-            uiIcon.ChangeInfoByUid(data.index, 1, 1);
-            uiIcon.SetDrag(false);
+            LoadMyDeckData();
         }
         /// <summary>
         /// 덱 Element 선택했을때

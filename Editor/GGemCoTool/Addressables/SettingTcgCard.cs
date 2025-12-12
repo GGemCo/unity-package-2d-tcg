@@ -84,6 +84,7 @@ namespace GGemCo2DTcgEditor
                 ClearGroupEntries(settings, groupBorder);
                 foreach (var grade in EnumCache<CardConstants.Grade>.Values)
                 {
+                    if (grade == CardConstants.Grade.None) continue;
                     string key = $"{ConfigAddressableKeyTcg.Card.ImageBorder}_{grade}";
                     string assetPath = $"{ConfigAddressablePathTcg.Card.ImageBorder}/{grade}.png";
                     string label = $"{ConfigAddressableLabelTcg.Card.ImageBorder}";

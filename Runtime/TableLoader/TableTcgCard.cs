@@ -49,6 +49,7 @@ namespace GGemCo2DTcg
         }
         private void AttachCreatureData(StruckTableTcgCard row)
         {
+            if (!TableLoaderManagerTcg.Instance) return;
             _tableTcgCardCreature ??= TableLoaderManagerTcg.Instance.TableTcgCardCreature;
             if (_tableTcgCardCreature == null)
             {
@@ -60,6 +61,7 @@ namespace GGemCo2DTcg
 
         private void AttachSpellData(StruckTableTcgCard row)
         {
+            if (!TableLoaderManagerTcg.Instance) return;
             _tableTcgCardSpell ??= TableLoaderManagerTcg.Instance.TableTcgCardSpell;
             if (_tableTcgCardSpell == null)
             {

@@ -137,8 +137,8 @@ namespace GGemCo2DTcg
             var player = context.Player;
             var enemy  = context.Enemy;
 
-            _handPlayer.RefreshHand(player.Hand);
-            _handEnemy.RefreshHand(enemy.Hand);
+            _handPlayer.RefreshHand(player);
+            _handEnemy.RefreshHand(enemy);
             _fieldPlayer.RefreshBoard(player);
             _fieldEnemy.RefreshBoard(enemy);
             // _battleHud.Refresh(context);
@@ -150,6 +150,12 @@ namespace GGemCo2DTcg
         public void Release()
         {
             _disposables.Clear(); // 또는 _disposables.Dispose();
+
+            _fieldEnemy.Release();
+            _fieldPlayer.Release();
+            _handPlayer.Release();
+            _handEnemy.Release();
+            _battleHud.Release();
             
             _fieldEnemy  = null;
             _fieldPlayer = null;
