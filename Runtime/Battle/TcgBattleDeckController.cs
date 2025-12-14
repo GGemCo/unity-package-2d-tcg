@@ -1,8 +1,6 @@
-﻿// TcgBattleDeckService.cs
-using System;
+﻿using System;
 using System.Collections.Generic;
 using GGemCo2DCore;
-using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace GGemCo2DTcg
@@ -24,7 +22,7 @@ namespace GGemCo2DTcg
             TableTcgCard tableTcgCard)
         {
             _saveDataManagerTcg = saveDataManagerTcg ?? throw new ArgumentNullException(nameof(saveDataManagerTcg));
-            _tcgSettings           = settings ?? throw new ArgumentNullException(nameof(settings));
+            _tcgSettings        = settings ?? throw new ArgumentNullException(nameof(settings));
             _tableTcgCard       = tableTcgCard ?? throw new ArgumentNullException(nameof(tableTcgCard));
             _seedManager        = new SeedManager();
         }
@@ -48,14 +46,15 @@ namespace GGemCo2DTcg
                 return null;
             }
 
-            var shuffleContext = BuildShuffleContext(seed);
-            var deckRuntime    = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
-
-            // 3. 런타임 덱 생성 및 셔플
+            // 런타임 덱 생성 및 셔플
             List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(deckInfo.cardList);
+            
+            var shuffleContext = BuildShuffleContext(ConfigCommonTcg.TcgPlayerSide.Player, seed, runtimeCardList.Count);
+            var deckRuntime    = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
             LogShuffledDeckForDebug(deckRuntime, "Player");
+
             var heroCard = TcgBattleDataDeckBuilder.BuildRuntimeHeroCard(deckInfo.heroCardUid);
             deckRuntime.SetHeroCard(heroCard);
 
@@ -67,11 +66,10 @@ namespace GGemCo2DTcg
         /// </summary>
         public TcgBattleDataDeck<TcgBattleDataCard> BuildEnemyDeckRuntime(int enemyDeckPresetId, int seed)
         {
-            var shuffleContext = BuildShuffleContext(seed);
-
             // TableTcgCard에서 전체 카드 리스트 가져오기
             var tableTcgCards = _tableTcgCard.GetAll();
-            // AI 덱 구성 (Random은 외부 주입 or 내부 생성)
+
+            // AI 덱 구성 (현재는 테스트 프리셋 사용)
             List<int> cardUids = new List<int>();
             cardUids.Clear();
             cardUids = _tcgSettings.testDeckPreset.BuildDeckUids(tableTcgCards);
@@ -82,13 +80,15 @@ namespace GGemCo2DTcg
             {
                 cardList.TryAdd(uid, 1);
             }
+
             List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(cardList);
 
+            var shuffleContext = BuildShuffleContext(ConfigCommonTcg.TcgPlayerSide.Enemy, seed, runtimeCardList.Count);
             var deckRuntime = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
             LogShuffledDeckForDebug(deckRuntime, "Enemy");
-            
+
             int heroCardUid = 0;
             if (_tcgSettings.testDeckPreset.heroCardUid > 0)
             {
@@ -98,7 +98,7 @@ namespace GGemCo2DTcg
             {
                 heroCardUid = _tcgSettings.testDeckPreset.heroCardUids[Random.Range(0, _tcgSettings.testDeckPreset.heroCardUids.Count)];
             }
-            
+
             var heroCard = TcgBattleDataDeckBuilder.BuildRuntimeHeroCard(heroCardUid);
             deckRuntime.SetHeroCard(heroCard);
 
@@ -114,38 +114,33 @@ namespace GGemCo2DTcg
             }
             _seedManager.ApplySeed();
         }
+
         /// <summary>
         /// 셔플에 사용할 컨텍스트(Seed, 정책 등)를 생성합니다.
         /// </summary>
-        private ShuffleMetaData BuildShuffleContext(int seed)
+        private ShuffleMetaData BuildShuffleContext(ConfigCommonTcg.TcgPlayerSide side, int seed, int deckSize)
         {
-            // 1) 시드 설정
             UpdateSeedManager(seed);
-            
-            // 2) 셔플 모드 및 설정
-            var shuffleMode = ConfigCommonTcg.ShuffleMode.PureRandom;
-            var shuffleConfig = new ShuffleConfig();
 
-            int[] costWeights = _tcgSettings.costWeights;
+            // Settings(SO) 기반 정책 우선
+            var (mode, settingsAsset) = _tcgSettings.GetShufflePolicy(side);
 
-            // costWeights 에 값이 정의되어 있으면 Weighted 모드로 전환
-            if (costWeights == null || costWeights.Length <= 0)
-                return new ShuffleMetaData(shuffleMode, _seedManager, shuffleConfig);
-            
-            shuffleMode = ConfigCommonTcg.ShuffleMode.Weighted;
-
-            shuffleConfig.FrontLoadedCount = 10;
-
-            if (shuffleConfig.CostWeights == null || shuffleConfig.CostWeights.Count <= 0)
-                return new ShuffleMetaData(shuffleMode, _seedManager, shuffleConfig);
-            int length = Mathf.Min(costWeights.Length, shuffleConfig.CostWeights.Count);
-            for (int i = 0; i < length; i++)
+            // 1) 모드별 설정 에셋이 제공되었고, ITcgShuffleSettingsAsset을 구현한 경우
+            if (settingsAsset is ITcgShuffleSettingsAsset builder)
             {
-                if (costWeights[i] <= 0) continue;
-                shuffleConfig.CostWeights[i] = costWeights[i];
+                var config = builder.BuildShuffleConfig(
+                    deckSize: deckSize,
+                    startMana: _tcgSettings.countManaBattleStart,
+                    maxMana: _tcgSettings.countMaxManaInBattle,
+                    manaPerTurn: _tcgSettings.countManaAfterTurn,
+                    initialDrawCount: _tcgSettings.startingHandCardCount,
+                    drawPerTurn: _tcgSettings.cardsDrawnPerTurn);
+
+                return new ShuffleMetaData(mode, _seedManager, config);
             }
 
-            return new ShuffleMetaData(shuffleMode, _seedManager, shuffleConfig);
+            // 설정 에셋 없이는 의미가 약하므로 PureRandom으로 안전 폴백
+            return new ShuffleMetaData(ConfigCommonTcg.ShuffleMode.PureRandom, _seedManager, new ShuffleConfig());
         }
 
         /// <summary>
@@ -164,6 +159,5 @@ namespace GGemCo2DTcg
             }
 #endif
         }
-
     }
 }

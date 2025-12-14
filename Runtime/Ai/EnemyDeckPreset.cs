@@ -75,9 +75,9 @@ namespace GGemCo2DTcg
     /// - 런타임에서는 카드 테이블을 기반으로 실제 덱 리스트를 생성합니다.
     /// </summary>
     [CreateAssetMenu(
-        fileName = "AiDeckPreset",
-        menuName = "GGemCo/TCG/AI Deck Preset",
-        order = 1000)]
+        fileName = ConfigScriptableObjectTcg.TcgAiPreset.FileName,
+        menuName = ConfigScriptableObjectTcg.TcgAiPreset.MenuName,
+        order    = ConfigScriptableObjectTcg.TcgAiPreset.Ordering)]
     public class EnemyDeckPreset : ScriptableObject
     {
         [Header("기본 정보")]

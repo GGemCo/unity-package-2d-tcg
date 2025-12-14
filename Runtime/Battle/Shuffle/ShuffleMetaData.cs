@@ -45,6 +45,10 @@ namespace GGemCo2DTcg
                     Strategy = new WeightedShuffleStrategy();
                     break;
 
+                case ConfigCommonTcg.ShuffleMode.PhaseWeighted:
+                    Strategy = new PhaseWeightedShuffleStrategy();
+                    break;
+
                 case ConfigCommonTcg.ShuffleMode.SeededReplay:
                     // 알고리즘 자체는 PureRandom 과 동일하게 사용하되,
                     // SeedManager.FixedSeed 를 통해 결과 재현성을 보장한다.

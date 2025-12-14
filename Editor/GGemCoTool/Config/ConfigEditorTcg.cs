@@ -14,6 +14,7 @@ namespace GGemCo2DTcgEditor
             Development = 100,
             CreateSampleAiDeck,
             Test = 200,
+            PreviewShuffle,
             Etc = 900,
         }
         private const string NameToolGGemCo = ConfigDefine.NameSDK+"ToolTcg/";
@@ -31,6 +32,7 @@ namespace GGemCo2DTcgEditor
         
         // 테스트
         private const string NameToolTest = NameToolGGemCo + "태스트툴/";
+        public const string NameToolPreviewShuffle = NameToolTest + "카드 덱 미리보기";
         
         // etc
         private const string NameToolEtc = NameToolGGemCo + "기타/";

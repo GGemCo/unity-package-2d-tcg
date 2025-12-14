@@ -9,23 +9,46 @@ namespace GGemCo2DTcg
     /// </summary>
     public static class ConfigScriptableObjectTcg
     {
-        public const string NameBase = ConfigDefine.NameSDK + "_Tcg";
+        private const string BaseName = ConfigDefine.NameSDK + ConfigPackageInfo.NamePackageTcg;
         
-        private const string PathBase = ConfigDefine.NameSDK + "/Tcg";
+        private const string BasePath = ConfigDefine.NameSDK + "/" + ConfigPackageInfo.NamePackageTcg + "/";
+        private const string BasePathSettings = BasePath + "Settings/";
         
         /// <summary>
         /// 메뉴 순서 정의
         /// </summary>
-        public enum MenuOrdering
+        private enum MenuOrdering
         {
             None,
+            TcgSettings,
+            TcgWeightShuffleSettings,
+            TcgPhaseShuffleSettings,
+            TcgAiPreset
         }
         
         public static class TcgSettings
         {
-            public const string FileName = ConfigScriptableObject.BaseName + "TcgSettings";
-            public const string MenuName = ConfigScriptableObject.BasePath + FileName;
-            public const int Ordering = (int)ConfigScriptableObject.MenuOrdering.TcgSettings;
+            public const string FileName = BaseName + "Settings";
+            public const string MenuName = BasePathSettings + FileName;
+            public const int Ordering = (int)MenuOrdering.TcgSettings;
+        }
+        public static class TcgWeightShuffleSettings
+        {
+            public const string FileName = BaseName + "WeightShuffleSettings";
+            public const string MenuName = BasePathSettings + FileName;
+            public const int Ordering = (int)MenuOrdering.TcgWeightShuffleSettings;
+        }
+        public static class TcgPhaseShuffleSettings
+        {
+            public const string FileName = BaseName + "PhaseShuffleSettings";
+            public const string MenuName = BasePathSettings + FileName;
+            public const int Ordering = (int)MenuOrdering.TcgPhaseShuffleSettings;
+        }
+        public static class TcgAiPreset
+        {
+            public const string FileName = BaseName + "AiDeckPreset";
+            public const string MenuName = BasePath + FileName;
+            public const int Ordering = (int)MenuOrdering.TcgAiPreset;
         }
         
         public static readonly Dictionary<string, Type> SettingsTypes = new()

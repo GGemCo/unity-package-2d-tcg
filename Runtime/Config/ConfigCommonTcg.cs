@@ -22,7 +22,8 @@
             /// 고정 시드를 사용하여 결과를 재현 가능한 셔플.
             /// 리플레이, PVP 검증 등에 사용.
             /// </summary>
-            SeededReplay
+            SeededReplay,
+            PhaseWeighted
         }
         
         /// <summary>
