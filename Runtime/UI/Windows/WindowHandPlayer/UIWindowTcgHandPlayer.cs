@@ -89,11 +89,11 @@ namespace GGemCo2DTcg
 
             // 2) Player 전용 토글 처리
             var count = Mathf.Min(maxMana, _toggleManaList.Count);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < _toggleManaList.Count; i++)
             {
                 var toggle = _toggleManaList[i];
                 if (toggle == null) continue;
-                toggle.gameObject.SetActive(true);
+                toggle.gameObject.SetActive(i < count);
                 toggle.isOn = i < currentMana;
             }
         }
