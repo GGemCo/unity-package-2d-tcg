@@ -16,6 +16,7 @@ namespace GGemCo2DTcg
 
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
+            int toIndex = 0;
             
             // 마나 차감
             if (!actor.TryConsumeMana(card.Cost))
@@ -26,7 +27,7 @@ namespace GGemCo2DTcg
                 return CommandResult.Fail("Error_Tcg_NotEnoughMana");
             }
             // 손에서 제거
-            if (!actor.RemoveCardFromHand(card)) 
+            if (!actor.RemoveCardFromHand(card, out int fromIndex)) 
                 return CommandResult.Fail("Error_Tcg_NoCardInHand");
 
             // 카드 타입에 따라 분기 (예시)
@@ -38,7 +39,7 @@ namespace GGemCo2DTcg
                     var unit = CreateUnitFromCard(actor.Side, card);
                     if (unit != null)
                     {
-                        actor.AddUnitToBoard(unit);
+                        toIndex = actor.AddUnitToBoard(unit);
                     }
 
                     // 2) "소환 시 발동" 이펙트가 있다면 실행
@@ -78,7 +79,17 @@ namespace GGemCo2DTcg
             }
             // 소환 트리거 후속 커맨드
             // var followUps = AbilityResolver.ResolveOnSummon(context, summoned);
-            return CommandResult.Ok();
+            // return CommandResult.Ok();
+            return CommandResult.OkPresentation(new[]
+            {
+                new TcgPresentationStep(
+                    TcgPresentationStepType.MoveCardHandToBoard,
+                    cmd.Side,
+                    fromIndex: fromIndex,
+                    toIndex: toIndex,
+                    countSlot: actor.Board.Count)
+            });
+
         }
         /// <summary>
         /// Creature 타입 카드를 기반으로 필드에 소환할 유닛 런타임을 생성합니다.

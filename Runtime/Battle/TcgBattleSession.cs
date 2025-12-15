@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using GGemCo2DCore;
-using UnityEngine;
 
 namespace GGemCo2DTcg
 {
@@ -88,6 +87,20 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
+        /// 플레이어 턴을 실행하면서, 실행된 커맨드들의 Trace를 수집합니다.
+        /// UI에서 연출을 재생하고 싶을 때 사용합니다.
+        /// </summary>
+        public void ExecutePlayerTurnWithTrace(List<TcgBattleCommandTrace> traces)
+        {
+            if (IsBattleEnded) return;
+            if (!IsPlayerTurn) return;
+
+            _commandBuffer.Clear();
+            _playerController.DecideTurnActions(Context, _commandBuffer);
+            ExecuteCommandsWithTrace(_commandBuffer, traces);
+        }
+
+        /// <summary>
         /// AI 턴용으로 커맨드를 수집/실행합니다.
         /// </summary>
         public void ExecuteEnemyTurn()
@@ -98,6 +111,20 @@ namespace GGemCo2DTcg
             _commandBuffer.Clear();
             _enemyController.DecideTurnActions(Context, _commandBuffer);
             ExecuteCommands(_commandBuffer);
+        }
+
+        /// <summary>
+        /// AI 턴을 실행하면서, 실행된 커맨드들의 Trace를 수집합니다.
+        /// UI에서 연출을 재생하고 싶을 때 사용합니다.
+        /// </summary>
+        public void ExecuteEnemyTurnWithTrace(List<TcgBattleCommandTrace> traces)
+        {
+            if (IsBattleEnded) return;
+            if (IsPlayerTurn) return;
+
+            _commandBuffer.Clear();
+            _enemyController.DecideTurnActions(Context, _commandBuffer);
+            ExecuteCommandsWithTrace(_commandBuffer, traces);
         }
 
         /// <summary>
@@ -227,6 +254,22 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
+        /// 외부(UI 등)에서 개별 전투 커맨드를 전달하여 실행하며,
+        /// 실행된 커맨드들의 Trace를 수집합니다.
+        /// </summary>
+        public void ExecuteCommandWithTrace(in TcgBattleCommand command, List<TcgBattleCommandTrace> traces)
+        {
+            if (IsBattleEnded) return;
+            traces?.Clear();
+
+            _executionQueue.Clear();
+            _executionQueue.Add(command);
+
+            ProcessExecutionQueue(traces);
+        }
+
+
+        /// <summary>
         /// 여러 개의 커맨드를 순차적으로 실행합니다.
         /// CommandResult.FollowUpCommands 까지 포함해 모두 처리합니다.
         /// </summary>
@@ -240,6 +283,23 @@ namespace GGemCo2DTcg
 
             ProcessExecutionQueue();
         }
+
+        /// <summary>
+        /// 여러 개의 커맨드를 순차적으로 실행하며,
+        /// 실행된 커맨드들의 Trace를 수집합니다.
+        /// </summary>
+        public void ExecuteCommandsWithTrace(List<TcgBattleCommand> commands, List<TcgBattleCommandTrace> traces)
+        {
+            if (IsBattleEnded) return;
+            if (commands == null || commands.Count == 0) return;
+            traces?.Clear();
+
+            _executionQueue.Clear();
+            _executionQueue.AddRange(commands);
+
+            ProcessExecutionQueue(traces);
+        }
+
 
         /// <summary>
         /// _executionQueue 에 들어있는 커맨드를 CommandResult 기반으로 모두 처리합니다.
@@ -259,6 +319,30 @@ namespace GGemCo2DTcg
                 }
 
                 var result = handler.Execute(Context, in cmd);
+                HandleCommandResult(result);
+            }
+        }
+
+        /// <summary>
+        /// _executionQueue 에 들어있는 커맨드를 처리하면서 Trace를 수집합니다.
+        /// </summary>
+        private void ProcessExecutionQueue(List<TcgBattleCommandTrace> traces)
+        {
+            while (_executionQueue.Count > 0 && !IsBattleEnded)
+            {
+                var cmd = _executionQueue[0];
+                _executionQueue.RemoveAt(0);
+
+                if (!_commandHandlers.TryGetValue(cmd.CommandType, out var handler))
+                {
+                    GcLogger.LogError(
+                        $"[{nameof(TcgBattleSession)}] 핸들러가 등록되지 않은 커맨드 타입: {cmd.CommandType}");
+                    continue;
+                }
+
+                var result = handler.Execute(Context, in cmd);
+                traces?.Add(new TcgBattleCommandTrace(in cmd, result));
+
                 HandleCommandResult(result);
             }
         }

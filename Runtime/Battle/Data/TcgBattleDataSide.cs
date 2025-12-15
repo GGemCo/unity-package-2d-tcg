@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using R3;
 
 namespace GGemCo2DTcg
@@ -72,26 +71,50 @@ namespace GGemCo2DTcg
             _hand.Add(card);
         }
 
-        public bool RemoveCardFromHand(TcgBattleDataCard card)
+        public bool RemoveCardFromHand(TcgBattleDataCard card, out int index)
         {
+            index = -1;
             if (card == null) return false;
-            return _hand.Remove(card);
+            index = _hand.IndexOf(card);
+            _hand.Remove(card);
+            return true;
+        }
+
+        /// <summary>
+        /// 현재 손패 리스트에서 카드의 인덱스를 반환합니다. (없으면 -1)
+        /// 연출/로깅용으로만 사용하고, 로직 분기에는 사용하지 않는 것을 권장합니다.
+        /// </summary>
+        public int GetHandIndex(TcgBattleDataCard card)
+        {
+            if (card == null) return -1;
+            return _hand.IndexOf(card);
         }
 
         // ===== 필드(보드) 관리 =====
 
         public bool ContainsOnBoard(TcgBattleDataFieldCard unit) => _board.Contains(unit);
 
-        public void AddUnitToBoard(TcgBattleDataFieldCard unit)
+        public int AddUnitToBoard(TcgBattleDataFieldCard unit)
         {
-            if (unit == null) return;
+            if (unit == null) return -1;
             _board.Add(unit);
+            return _board.IndexOf(unit);
         }
 
         public bool RemoveUnitFromBoard(TcgBattleDataFieldCard unit)
         {
             if (unit == null) return false;
             return _board.Remove(unit);
+        }
+
+        /// <summary>
+        /// 현재 보드 리스트에서 유닛의 인덱스를 반환합니다. (없으면 -1)
+        /// 연출/로깅용으로만 사용하고, 로직 분기에는 사용하지 않는 것을 권장합니다.
+        /// </summary>
+        public int GetBoardIndex(TcgBattleDataFieldCard unit)
+        {
+            if (unit == null) return -1;
+            return _board.IndexOf(unit);
         }
 
         // ===== 마나/HP 증감 =====

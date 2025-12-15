@@ -1,4 +1,5 @@
 ﻿using GGemCo2DCore;
+using UnityEngine;
 
 namespace GGemCo2DTcg
 {
@@ -12,12 +13,25 @@ namespace GGemCo2DTcg
             // GcLogger.Log("MyHand OnSetIcon");
             UIWindowTcgHandPlayer uiWindowTcgHandPlayer = window as UIWindowTcgHandPlayer;
             if (uiWindowTcgHandPlayer == null) return;
+            // 아이콘 위치 재정렬
+            var icon = window.GetIconByIndex(slotIndex);
+            if (icon)
+            {
+                icon.transform.localPosition = Vector3.zero;
+            }
+
             var slot = window.GetSlotByIndex(slotIndex);
             slot?.gameObject.SetActive(true);
         }
         public void OnDetachIcon(UIWindow window, int slotIndex)
         {
             // GcLogger.Log("MyHand OnDetachIcon");
+            // 아이콘 위치 재정렬
+            var icon = window.GetIconByIndex(slotIndex);
+            if (icon)
+            {
+                icon.transform.localPosition = Vector3.zero;
+            }
             var slot = window.GetSlotByIndex(slotIndex);
             slot?.gameObject.SetActive(false);
         }

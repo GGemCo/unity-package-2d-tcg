@@ -2,47 +2,26 @@
 
 namespace GGemCo2DTcg
 {
-    public class UIWindowTcgFieldEnemy : UIWindow
+    public class UIWindowTcgFieldEnemy : UIWindowFieldBase
     {
-        private TcgBattleManager _battleManager;
+        protected override UIWindowConstants.WindowUid WindowUid =>
+            UIWindowConstants.WindowUid.TcgFieldEnemy;
+
+        protected override ISetIconHandler CreateSetIconHandler() =>
+            new SetIconHandlerFieldEnemy();
+
+        protected override IDragDropStrategy CreateDragDropStrategy() =>
+            new DragDropStrategyFieldEnemy();
         
-        protected override void Awake()
+        protected override void BindCardIcon(UIIcon uiIcon, TcgBattleDataFieldCard card)
         {
-            uid = UIWindowConstants.WindowUid.TcgFieldEnemy;
+            var iconEnemy = uiIcon as UIIconFieldEnemy;
+            if (!iconEnemy) return;
 
-            base.Awake();
-
-            IconPoolManager.SetSetIconHandler(new SetIconHandlerFieldEnemy());
-            DragDropHandler.SetStrategy(new DragDropStrategyFieldEnemy());
+            iconEnemy.SetBattleDataFieldCard(card);
         }
-        public override void OnShow(bool show)
-        {
-            DetachAllIcons();
-        }
-
-        public void SetBattleManager(TcgBattleManager battleManager)
-        {
-            _battleManager = battleManager;
-        }
-
-        public void RefreshBoard(TcgBattleDataSide enemy)
-        {
-            DetachAllIcons();
-            int i = 0;
-            foreach (var tcgBattleDataCard in enemy.Board)
-            {
-                var uiIcon = SetIconCount(i, tcgBattleDataCard.Uid, 1);
-                if (!uiIcon) continue;
-                var uiIconFieldEnemy = uiIcon as UIIconFieldEnemy;
-                if (!uiIconFieldEnemy) continue;
-                uiIconFieldEnemy.SetBattleDataFieldCard(tcgBattleDataCard);
-                i++;
-            }
-        }
-
         public void Release()
         {
-            
         }
     }
 }

@@ -24,6 +24,9 @@ namespace GGemCo2DTcg
         private TcgBattleUiController _ui;
         private TcgBattleSession _session;
 
+        // 커맨드 연출 Trace 버퍼 (GC 최소화)
+        private readonly List<TcgBattleCommandTrace> _traceBuffer = new List<TcgBattleCommandTrace>(64);
+
         // 커맨드 핸들러
         private readonly Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler> _commandHandlers
             = new Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler>(16);
@@ -147,8 +150,8 @@ namespace GGemCo2DTcg
             if (!_session.IsPlayerTurn) return;
 
             var command = TcgBattleCommand.PlayCard(side, battleCard);
-            _session.ExecuteCommand(command);
-            _ui.RefreshAll(_session.Context);
+            _session.ExecuteCommandWithTrace(command, _traceBuffer);
+            _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -198,8 +201,8 @@ namespace GGemCo2DTcg
             if (!_session.IsBattleEnded)
             {
                 // AI 턴 자동 실행
-                _session.ExecuteEnemyTurn();
-                _ui.RefreshAll(_session.Context);
+                _session.ExecuteEnemyTurnWithTrace(_traceBuffer);
+                _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
             }
         }
 

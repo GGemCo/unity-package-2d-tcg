@@ -1,5 +1,8 @@
-﻿using GGemCo2DCore;
+﻿using System.Collections;
+using System.Collections.Generic;
+using GGemCo2DCore;
 using R3;
+using UnityEngine;
 
 namespace GGemCo2DTcg
 {
@@ -14,6 +17,13 @@ namespace GGemCo2DTcg
         private UIWindowTcgHandEnemy   _handEnemy;
         private UIWindowTcgBattleHud   _battleHud;
         private readonly CompositeDisposable _disposables = new();
+
+        // ------------------------------
+        // Presentation Lock (연출 중 UI 갱신 지연)
+        // ------------------------------
+        private bool _presentationLocked;
+        private (int cur, int max)? _pendingPlayerMana;
+        private (int cur, int max)? _pendingEnemyMana;
         
         public bool IsReady =>
             _fieldEnemy  != null &&
@@ -79,10 +89,6 @@ namespace GGemCo2DTcg
             BindMana(session);
 
             _handPlayer.SetBattleManager(manager);
-            // _handEnemy.SetBattleManager(manager, ConfigCommonTcg.TcgPlayerSide.Enemy);
-            // _fieldPlayer.SetBattleManager(manager);
-            _fieldEnemy.SetBattleManager(manager);
-            // _battleHud.SetBattleManager(manager);
         }
 
         private void BindMana(TcgBattleSession session)
@@ -115,6 +121,12 @@ namespace GGemCo2DTcg
             if (_handPlayer == null)
                 return;
 
+            if (_presentationLocked)
+            {
+                _pendingPlayerMana = (player.CurrentManaValue, player.CurrentManaValueMax);
+                return;
+            }
+
             _handPlayer.SetMana(player.CurrentManaValue, player.CurrentManaValueMax);
         }
 
@@ -123,7 +135,229 @@ namespace GGemCo2DTcg
             if (_handEnemy == null)
                 return;
 
+            if (_presentationLocked)
+            {
+                _pendingEnemyMana = (enemy.CurrentManaValue, enemy.CurrentManaValueMax);
+                return;
+            }
+
             _handEnemy.SetMana(enemy.CurrentManaValue, enemy.CurrentManaValueMax);
+        }
+
+        public void BeginPresentation()
+        {
+            _presentationLocked = true;
+            _pendingPlayerMana = null;
+            _pendingEnemyMana = null;
+        }
+
+        public void EndPresentation(TcgBattleDataMain context)
+        {
+            _presentationLocked = false;
+
+            if (_pendingPlayerMana.HasValue)
+                _handPlayer?.SetMana(_pendingPlayerMana.Value.cur, _pendingPlayerMana.Value.max);
+
+            if (_pendingEnemyMana.HasValue)
+                _handEnemy?.SetMana(_pendingEnemyMana.Value.cur, _pendingEnemyMana.Value.max);
+
+            RefreshAll(context);
+        }
+
+        /// <summary>
+        /// CommandTrace 목록을 기반으로 연출을 순차 재생한 뒤,
+        /// 모든 UI를 최종 상태로 갱신합니다.
+        /// </summary>
+        public void PlayPresentationAndRefresh(TcgBattleDataMain context, IReadOnlyList<TcgBattleCommandTrace> traces)
+        {
+            if (!IsReady || context == null)
+                return;
+
+            // 코루틴 호스트는 MonoBehaviour여야 함 (UIWindow는 MonoBehaviour)
+            if (_battleHud == null)
+            {
+                RefreshAll(context);
+                return;
+            }
+
+            BeginPresentation();
+            _battleHud.StartCoroutine(CoPlayPresentation(context, traces));
+        }
+
+        private IEnumerator CoPlayPresentation(TcgBattleDataMain context, IReadOnlyList<TcgBattleCommandTrace> traces)
+        {
+            if (traces != null)
+            {
+                foreach (var trace in traces)
+                {
+                    var result = trace.Result;
+                    if (result == null || !result.Success) continue;
+                    if (!result.HasPresentation) continue;
+
+                    foreach (var step in result.PresentationSteps)
+                    {
+                        yield return PlayStep(step);
+                    }
+                }
+            }
+
+            EndPresentation(context);
+        }
+
+        private IEnumerator PlayStep(TcgPresentationStep step)
+        {
+            switch (step.Type)
+            {
+                case TcgPresentationStepType.MoveCardHandToBoard:
+                    yield return CoSummonFromHandToBoard(step.Side, step.FromIndex, step.ToIndex, step.CountSlot);
+                    break;
+
+                case TcgPresentationStepType.AttackUnit:
+                    yield return CoAttackUnit(step.Side, step.FromIndex, step.ToIndex);
+                    break;
+
+                case TcgPresentationStepType.AttackHero:
+                    yield return CoAttackHero(step.Side, step.FromIndex);
+                    break;
+
+                case TcgPresentationStepType.DamagePopup:
+                    // TODO: 피해 텍스트/이펙트 시스템이 준비되면 연결
+                    yield return new WaitForSecondsRealtime(0.08f);
+                    break;
+
+                case TcgPresentationStepType.DeathFadeOut:
+                    yield return CoDeathFadeOut(step.Side, step.FromIndex);
+                    break;
+
+                default:
+                    yield return null;
+                    break;
+            }
+        }
+
+        private IEnumerator CoSummonFromHandToBoard(ConfigCommonTcg.TcgPlayerSide side, int handIndex, int boardIndex, int childCount)
+        {
+            var handWindow = GetHandWindow(side);
+            var fieldWindow = GetFieldWindow(side);
+            if (handWindow == null || fieldWindow == null)
+                yield break;
+
+            // Hand UI: 0번은 영웅, 실제 손패는 1번부터
+            var icon = handWindow.GetIconByIndex(handIndex + 1);
+            var destSlot = fieldWindow.GetSlotByIndex(boardIndex);
+            var grid = fieldWindow.containerIcon;
+            if (GridLayoutPositionUtility.TryGetCellTransformPosition(grid, index: boardIndex, childCount, out var pos))
+            {
+                // 카드/이펙트/프리뷰 등의 목표 위치로 사용
+                // (같은 부모 RectTransform 기준으로 사용할 때 가장 정확합니다) 
+            }
+
+            if (icon == null || destSlot == null)
+            {
+                yield return new WaitForSecondsRealtime(0.05f);
+                yield break;
+            }
+
+            // 아이콘 이동
+            GcLogger.Log($"move icon: {icon.transform.position.x}, {icon.transform.position.y} =>" +
+                         $"to {pos.x}, {pos.y}");
+            yield return TcgUiTween.MoveTo(icon.transform, pos, 0.1f);
+
+            // 현재 아이콘은 RefreshAll에서 새로 생성될 것이므로, 임시로 숨김
+            // icon.gameObject.SetActive(false);
+
+            yield return new WaitForSecondsRealtime(0.05f);
+        }
+
+        private IEnumerator CoAttackUnit(ConfigCommonTcg.TcgPlayerSide attackerSide, int attackerBoardIndex, int defenderBoardIndex)
+        {
+            var attackerField = GetFieldWindow(attackerSide);
+            var defenderField = GetFieldWindow(attackerSide == ConfigCommonTcg.TcgPlayerSide.Player
+                ? ConfigCommonTcg.TcgPlayerSide.Enemy
+                : ConfigCommonTcg.TcgPlayerSide.Player);
+
+            if (attackerField == null || defenderField == null)
+                yield break;
+
+            var attackerIcon = attackerField.GetIconByIndex(attackerBoardIndex);
+            var defenderIcon = defenderField.GetIconByIndex(defenderBoardIndex);
+
+            if (attackerIcon == null || defenderIcon == null)
+            {
+                yield return new WaitForSecondsRealtime(0.05f);
+                yield break;
+            }
+
+            var origin = attackerIcon.transform.position;
+            var target = defenderIcon.transform.position;
+
+            yield return TcgUiTween.MoveTo(attackerIcon.transform, target, 0.12f);
+            yield return new WaitForSecondsRealtime(0.03f);
+            yield return TcgUiTween.MoveTo(attackerIcon.transform, origin, 0.12f);
+        }
+
+        private IEnumerator CoAttackHero(ConfigCommonTcg.TcgPlayerSide attackerSide, int attackerBoardIndex)
+        {
+            var attackerField = GetFieldWindow(attackerSide);
+            var defenderHand = GetHandWindow(attackerSide == ConfigCommonTcg.TcgPlayerSide.Player
+                ? ConfigCommonTcg.TcgPlayerSide.Enemy
+                : ConfigCommonTcg.TcgPlayerSide.Player);
+
+            if (attackerField == null || defenderHand == null)
+                yield break;
+
+            var attackerIcon = attackerField.GetIconByIndex(attackerBoardIndex);
+            // Hero card는 Hand 0번 슬롯
+            var heroIcon = defenderHand.GetIconByIndex(0);
+
+            if (attackerIcon == null || heroIcon == null)
+            {
+                yield return new WaitForSecondsRealtime(0.05f);
+                yield break;
+            }
+
+            var origin = attackerIcon.transform.position;
+            var target = heroIcon.transform.position;
+
+            yield return TcgUiTween.MoveTo(attackerIcon.transform, target, 0.12f);
+            yield return new WaitForSecondsRealtime(0.03f);
+            yield return TcgUiTween.MoveTo(attackerIcon.transform, origin, 0.12f);
+        }
+
+        private IEnumerator CoDeathFadeOut(ConfigCommonTcg.TcgPlayerSide side, int boardIndex)
+        {
+            var field = GetFieldWindow(side);
+            if (field == null)
+                yield break;
+
+            var icon = field.GetIconByIndex(boardIndex);
+            if (icon == null)
+            {
+                yield return new WaitForSecondsRealtime(0.05f);
+                yield break;
+            }
+
+            // CanvasGroup이 있으면 알파 페이드, 없으면 비활성화
+            var cg = icon.GetComponent<CanvasGroup>();
+            if (cg == null)
+            {
+                icon.gameObject.SetActive(false);
+                yield return new WaitForSecondsRealtime(0.05f);
+                yield break;
+            }
+
+            yield return TcgUiTween.FadeTo(cg, 0f, 0.12f);
+            icon.gameObject.SetActive(false);
+        }
+
+        private UIWindow GetHandWindow(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            return side == ConfigCommonTcg.TcgPlayerSide.Player ? _handPlayer : _handEnemy;
+        }
+
+        private UIWindow GetFieldWindow(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            return side == ConfigCommonTcg.TcgPlayerSide.Player ? _fieldPlayer : _fieldEnemy;
         }
 
         /// <summary>

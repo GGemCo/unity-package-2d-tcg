@@ -46,29 +46,24 @@ namespace GGemCo2DTcgEditor
         // ─────────────────────────────────────────────────────────────────────────────
         // Inputs
         // ─────────────────────────────────────────────────────────────────────────────
-        [SerializeField] private GGemCoTcgSettings tcgSettings;
+        private GGemCoTcgSettings tcgSettings;
 
-        [Header("Card Table Source")]
-        [SerializeField] private TextAsset cardTableCsv;
+        private TextAsset cardTableCsv;
 
-        [Header("Player Save")]
-        [SerializeField] private TextAsset saveDataTcgJson;
-        [SerializeField] private string saveDataTcgPath;
-        [SerializeField] private bool includeHeroCardInDeck = true;
+        private TextAsset saveDataTcgJson;
+        private string saveDataTcgPath;
+        private bool includeHeroCardInDeck = true;
 
-        [Header("Enemy Preset")]
-        [SerializeField] private EnemyDeckPreset enemyPreset;
-        [SerializeField] private bool includeEnemyHeroCardInDeck = true;
+        private EnemyDeckPreset enemyPreset;
+        private bool includeEnemyHeroCardInDeck = true;
 
-        [Header("Shuffle")]
-        [SerializeField] private ConfigCommonTcg.ShuffleMode shuffleMode = ConfigCommonTcg.ShuffleMode.PhaseWeighted;
-        [SerializeField] private GGemCoTcgPhaseShuffleSettings shuffleSettings;
-        [SerializeField] private bool useFixedSeed;
-        [SerializeField] private int fixedSeed;
+        private ConfigCommonTcg.ShuffleMode shuffleMode = ConfigCommonTcg.ShuffleMode.PhaseWeighted;
+        private GGemCoTcgPhaseShuffleSettings shuffleSettings;
+        private bool useFixedSeed;
+        private int fixedSeed;
 
-        [Header("Preview")]
-        [SerializeField] private DeckSource previewSource = DeckSource.PlayerSave;
-        [SerializeField] private int previewDeckIndex;
+        private DeckSource previewSource = DeckSource.PlayerSave;
+        private int previewDeckIndex;
         
         // ─────────────────────────────────────────────────────────────────────────────
         // Runtime cache
@@ -94,6 +89,7 @@ namespace GGemCo2DTcgEditor
             _packageType = ConfigPackageInfo.PackageType.Core;
             _cardTableCache = _tableLoaderManagerTcg.LoadTableTcgCard().GetDatas();
         }
+        
         private void OnGUI()
         {
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
