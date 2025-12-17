@@ -63,14 +63,13 @@ namespace GGemCo2DTcg
                 var targetTypeRaw = tokens[2].Trim();
                 var extraRaw      = tokens.Length >= 4 ? tokens[3].Trim() : string.Empty;
 
-                if (!Enum.TryParse<TcgAbilityId>(effectIdRaw, true, out var effectId))
+                if (!Enum.TryParse<TcgAbilityConstants.TcgAbilityId>(effectIdRaw, true, out var effectId))
                 {
                     GcLogger.LogWarning($"[TcgCardRuntimeFactory] Unknown EffectId: {effectIdRaw}");
                     continue;
                 }
 
-                int value = 0;
-                int.TryParse(valueRaw, out value);
+                int.TryParse(valueRaw, out int value);
 
                 var targetType = CardConstants.TargetType.None;
                 if (!string.IsNullOrEmpty(targetTypeRaw))
@@ -131,7 +130,7 @@ namespace GGemCo2DTcg
             var keywords         = ParseKeywords(row.keywordRaw);
             var summonEffects    = ParseEffects(row.summonEffectsRaw);
             var spellEffects     = ParseEffects(row.spellEffectsRaw);
-            var deathrattleFx    = ParseEffects(row.deathEffectsRaw);
+            var deathEffects    = ParseEffects(row.deathEffectsRaw);
 
             return new TcgBattleDataCard(
             
@@ -139,7 +138,7 @@ namespace GGemCo2DTcg
                 keywords,
                 summonEffects,
                 spellEffects,
-                deathrattleFx);
+                deathEffects);
         }
     }
 }

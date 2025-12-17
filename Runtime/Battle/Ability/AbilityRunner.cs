@@ -10,11 +10,11 @@ namespace GGemCo2DTcg
     /// </summary>
     public static class AbilityRunner
     {
-        private static readonly Dictionary<TcgAbilityId, ITcgAbilityHandler> Handlers;
+        private static readonly Dictionary<TcgAbilityConstants.TcgAbilityId, ITcgAbilityHandler> Handlers;
 
         static AbilityRunner()
         {
-            Handlers = new Dictionary<TcgAbilityId, ITcgAbilityHandler>();
+            Handlers = new Dictionary<TcgAbilityConstants.TcgAbilityId, ITcgAbilityHandler>();
 
             // 기본 핸들러 등록
             RegisterDefaultHandlers();
@@ -22,23 +22,23 @@ namespace GGemCo2DTcg
 
         private static void RegisterDefaultHandlers()
         {
-            Handlers[TcgAbilityId.DealDamageToTargetUnit] =
+            Handlers[TcgAbilityConstants.TcgAbilityId.DealDamageToTargetUnit] =
                 new AbilityDealDamageToTargetUnit();
 
-            Handlers[TcgAbilityId.DealDamageToEnemyHero] =
+            Handlers[TcgAbilityConstants.TcgAbilityId.DealDamageToEnemyHero] =
                 new AbilityDealDamageToEnemyHero();
 
-            Handlers[TcgAbilityId.HealTargetUnit] =
+            Handlers[TcgAbilityConstants.TcgAbilityId.HealTargetUnit] =
                 new AbilityHealTargetUnit();
 
-            Handlers[TcgAbilityId.DrawCards] =
+            Handlers[TcgAbilityConstants.TcgAbilityId.DrawCards] =
                 new AbilityDrawCards();
 
             // 필요 시 추가 등록
         }
 
         public static void RegisterHandler(
-            TcgAbilityId id,
+            TcgAbilityConstants.TcgAbilityId id,
             ITcgAbilityHandler handler,
             bool overwrite = false)
         {
@@ -68,7 +68,7 @@ namespace GGemCo2DTcg
 
             foreach (var abilityData in abilityDataList)
             {
-                if (abilityData == null || abilityData.abilityId == TcgAbilityId.None)
+                if (abilityData == null || abilityData.abilityId == TcgAbilityConstants.TcgAbilityId.None)
                     continue;
 
                 if (!Handlers.TryGetValue(abilityData.abilityId, out var handler) ||

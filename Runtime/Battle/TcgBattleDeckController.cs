@@ -149,6 +149,7 @@ namespace GGemCo2DTcg
         private void LogShuffledDeckForDebug(TcgBattleDataDeck<TcgBattleDataCard> deckRuntime, string label)
         {
 #if UNITY_EDITOR
+            if (!_tcgSettings.showDeckInfo) return;
             if (deckRuntime == null) return;
 
             GcLogger.Log($"[TcgBattleDataDeck-{label}] 카드 개수: {deckRuntime.Count}");

@@ -1,5 +1,4 @@
 ﻿using GGemCo2DCore;
-using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace GGemCo2DTcg
@@ -7,7 +6,6 @@ namespace GGemCo2DTcg
     public class UIIconHandPlayer : UIIconCard, IPointerEnterHandler, IPointerExitHandler
     {
         private UIWindowTcgCardInfo _windowTcgCardInfo;
-        private UIWindowTcgHandPlayer _windowTcgHandPlayer;
         private TcgBattleDataCard _tcgBattleDataCard;
         
         // 클릭 드래그 핸들러
@@ -26,7 +24,6 @@ namespace GGemCo2DTcg
         {
             base.Start();
             _windowTcgCardInfo = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
-            _windowTcgHandPlayer = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgHandPlayer>(UIWindowConstants.WindowUid.TcgHandPlayer);
         }
         
         private void OnDisable()
@@ -40,16 +37,16 @@ namespace GGemCo2DTcg
             _windowTcgCardInfo?.Show(false);
         }
         
-        public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
+        public override bool ChangeInfoByUid(int cardUid, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
         {
-            var info = tableTcgCard.GetDataByUid(deckIndex);
+            var info = tableTcgCard.GetDataByUid(cardUid);
             if (info == null)
             {
-                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {deckIndex}");
+                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {cardUid}");
                 return false;
             }
 
-            base.ChangeInfoByUid(deckIndex, iconCount, iconLevel, iconIsLearn, remainCoolTime);
+            base.ChangeInfoByUid(cardUid, iconCount, iconLevel, iconIsLearn, remainCoolTime);
             return true;
         }
         public void OnPointerEnter(PointerEventData eventData)
@@ -78,10 +75,18 @@ namespace GGemCo2DTcg
 
         public void SetBattleDataCard(TcgBattleDataCard tcgBattleDataCard)
         {
+            // todo 정리 필요. _tcgBattleDataCard 를 사용하지 않는 방향으로
             _tcgBattleDataCard = tcgBattleDataCard;
+            
+            if (_tcgBattleDataCard == null)
+                return;
+
+            // 초기값 반영
+            UpdateAttack(_tcgBattleDataCard.attack.Value);
+            UpdateHealth(_tcgBattleDataCard.health.Value);
         }
 
-        public TcgBattleDataCard GetCardRuntime()
+        public TcgBattleDataCard GetBattleDataCard()
         {
             return _tcgBattleDataCard;
         }

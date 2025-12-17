@@ -31,7 +31,15 @@ namespace GGemCo2DTcg
             _popupManager = SceneGame.Instance.popupManager;
             _windowTcgMyDeck = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeck>(UIWindowConstants.WindowUid.TcgMyDeck);
         }
-
+        /// <summary>
+        /// 덱 index 번호를 고유번호로 사용
+        /// </summary>
+        /// <param name="deckIndex"></param>
+        /// <param name="iconCount"></param>
+        /// <param name="iconLevel"></param>
+        /// <param name="iconIsLearn"></param>
+        /// <param name="remainCoolTime"></param>
+        /// <returns></returns>
         public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
         {
             uid = deckIndex;

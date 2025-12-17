@@ -150,7 +150,8 @@ namespace GGemCo2DTcg
         [Header("테스트용")]
         public int testSeed;
         public EnemyDeckPreset testDeckPreset;
-        public bool testMemoryProfile;
+        public bool showDeckInfo;
+        public bool showCardUid;
 
         [ContextMenu("Rebuild Cache & Raise Changed")]
         private void RebuildCacheAndNotify()

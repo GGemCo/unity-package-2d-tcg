@@ -1,9 +1,14 @@
 ﻿using GGemCo2DCore;
+using UnityEngine;
 
 namespace GGemCo2DTcg
 {
-    public abstract class UIWindowFieldBase : UIWindow
+    public abstract class UIWindowTcgFieldBase : UIWindow
     {
+        [Header(UIWindowConstants.TitleHeaderIndividual)]
+        public float timeToMove = 0.2f;
+        public float timeToFadeOut = 0.6f;
+        
         // 각 Side 별 UID (Player/Enemy 가 다름)
         protected abstract UIWindowConstants.WindowUid WindowUid { get; }
         

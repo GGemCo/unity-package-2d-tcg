@@ -2,7 +2,7 @@
 
 namespace GGemCo2DTcg
 {
-    public class UIWindowTcgFieldEnemy : UIWindowFieldBase
+    public class UIWindowTcgFieldEnemy : UIWindowTcgFieldBase
     {
         protected override UIWindowConstants.WindowUid WindowUid =>
             UIWindowConstants.WindowUid.TcgFieldEnemy;

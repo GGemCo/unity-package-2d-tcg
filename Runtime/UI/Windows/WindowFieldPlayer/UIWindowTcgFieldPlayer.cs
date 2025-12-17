@@ -2,7 +2,7 @@
 
 namespace GGemCo2DTcg
 {
-    public class UIWindowTcgFieldPlayer : UIWindowFieldBase
+    public class UIWindowTcgFieldPlayer : UIWindowTcgFieldBase
     {
         protected override UIWindowConstants.WindowUid WindowUid =>
             UIWindowConstants.WindowUid.TcgFieldPlayer;

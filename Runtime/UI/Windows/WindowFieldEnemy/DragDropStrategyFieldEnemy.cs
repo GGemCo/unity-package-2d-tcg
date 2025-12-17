@@ -8,6 +8,8 @@ namespace GGemCo2DTcg
     /// </summary>
     public class DragDropStrategyFieldEnemy : IDragDropStrategy
     {
+        private TcgBattleManager _battleManager;
+        
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
         {
             UIWindowTcgFieldEnemy uiWindowTcgFieldEnemy = window as UIWindowTcgFieldEnemy;
@@ -75,7 +77,8 @@ namespace GGemCo2DTcg
                         }
                         TcgBattleDataFieldCard battleDataCardPlayer = uiIconFieldPlayer.GetBattleDataFieldCard();
                         TcgBattleDataFieldCard battleDataCardEnemy = uiIconFieldEnemy.GetBattleDataFieldCard();
-                        // uiWindowTcgFieldPlayer.OnRequestAttackUnit(battleDataCardPlayer, battleDataCardEnemy);
+                        _battleManager ??= TcgPackageManager.Instance.battleManager;
+                        _battleManager?.OnUiRequestAttackUnit(ConfigCommonTcg.TcgPlayerSide.Player, battleDataCardPlayer, battleDataCardEnemy);
                         break;
                 }
             }

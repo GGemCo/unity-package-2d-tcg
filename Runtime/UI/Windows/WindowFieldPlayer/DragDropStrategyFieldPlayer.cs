@@ -88,7 +88,7 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"{nameof(UIIconHandPlayer)} 클래스가 없습니다.");
                 return;
             }
-            TcgBattleDataCard tcgBattleDataCard = uiIconHandPlayer.GetCardRuntime();
+            TcgBattleDataCard tcgBattleDataCard = uiIconHandPlayer.GetBattleDataCard();
             _battleManager ??= TcgPackageManager.Instance.battleManager;
             _battleManager?.OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide.Player, tcgBattleDataCard);
         }

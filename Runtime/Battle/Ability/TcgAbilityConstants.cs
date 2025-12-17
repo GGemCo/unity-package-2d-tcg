@@ -1,0 +1,24 @@
+﻿namespace GGemCo2DTcg
+{
+    public class TcgAbilityConstants
+    {
+        /// <summary>
+        /// 카드/키워드가 가질 수 있는 이펙트의 종류.
+        /// - 테이블에서 문자열로 관리 후 Enum으로 변환해 사용하는 것을 권장합니다.
+        /// </summary>
+        public enum TcgAbilityId
+        {
+            None = 0,
+
+            DealDamageToTargetUnit,
+            DealDamageToEnemyHero,
+            HealTargetUnit,
+            DrawCards,
+
+            // 필요에 따라 계속 추가
+            BuffTargetUnitAttack,
+            BuffTargetUnitHp,
+        }
+
+    }
+}

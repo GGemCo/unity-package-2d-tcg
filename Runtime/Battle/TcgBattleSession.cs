@@ -147,14 +147,21 @@ namespace GGemCo2DTcg
                     ? ConfigCommonTcg.TcgPlayerSide.Enemy
                     : ConfigCommonTcg.TcgPlayerSide.Player;
 
-            // 4) Start-of-Turn 초기 처리
+            // 4) field에 있는 카드 attack true 처리
+            if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
+            {
+                Context.Player.SetBoardUnitsCanAttack(true);
+                Context.Enemy.SetBoardUnitsCanAttack(true);
+            }
+
+            // 5) Start-of-Turn 초기 처리
             IncreaseMaxManaByTurnOff();
             DrawStartOfTurnCard();
 
-            // 5) Start-of-Turn 효과 처리
+            // 6) Start-of-Turn 효과 처리
             ResolveStartOfTurnEffects();
 
-            // 6) 전투 종료 여부 검사
+            // 7) 전투 종료 여부 검사
             TryCheckBattleEnd();
         }
         private void ResolveEndOfTurnEffects()

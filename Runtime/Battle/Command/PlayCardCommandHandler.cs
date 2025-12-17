@@ -77,17 +77,16 @@ namespace GGemCo2DTcg
                     break;
                 }
             }
-            // 소환 트리거 후속 커맨드
-            // var followUps = AbilityResolver.ResolveOnSummon(context, summoned);
-            // return CommandResult.Ok();
             return CommandResult.OkPresentation(new[]
             {
                 new TcgPresentationStep(
                     TcgPresentationStepType.MoveCardHandToBoard,
                     cmd.Side,
+                    attacker: actor,
+                    target: opponent,
                     fromIndex: fromIndex,
                     toIndex: toIndex,
-                    countSlot: actor.Board.Count)
+                    valueA: actor.Board.Count)
             });
 
         }
@@ -107,8 +106,8 @@ namespace GGemCo2DTcg
 
             // 1) CardRuntime 에서 스탯/키워드 정보 가져오기
             //    (아래는 예시. 실제 필드 이름에 맞게 수정 필요)
-            int attack = tcgBattleDataCard.Attack; // 예: CardRuntime.Attack
-            int hp     = tcgBattleDataCard.Health; // 예: CardRuntime.Health
+            int attack = tcgBattleDataCard.attack.Value; // 예: CardRuntime.Attack
+            int hp     = tcgBattleDataCard.health.Value; // 예: CardRuntime.Health
 
             // 키워드 예시: CardRuntime.Keywords 또는 테이블에서 변환
             List<ConfigCommonTcg.TcgKeyword> keywords = new List<ConfigCommonTcg.TcgKeyword>(4);

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
@@ -40,21 +41,20 @@ namespace GGemCo2DTcg
 
             outCommands.Clear();
 
-            // 1) 낼 수 있는 카드 중 코스트가 맞는 카드 찾아서 1장 사용(예시)
-            foreach (var card in _me.Hand)
-            {
-                if (card.Cost <= _me.CurrentManaValue)
-                {
-                    outCommands.Add(TcgBattleCommand.PlayCard(Side, card));
-                    break;
-                }
-            }
-
-            // 2) 필드에 유닛이 있으면, 적 유닛/영웅 공격 명령 추가 (아주 단순한 예시)
+            // 1) 필드에 유닛이 있으면, 적 유닛/영웅 공격 명령 추가 (아주 단순한 예시)
+            Dictionary<int, TcgBattleDataFieldCard> deadUnits = new Dictionary<int, TcgBattleDataFieldCard>();
+            Dictionary<int, TcgBattleDataFieldCard> alreadyAttack = new Dictionary<int, TcgBattleDataFieldCard>();
             foreach (var myUnit in _me.Board)
             {
                 if (!myUnit.CanAttack)
                     continue;
+                if (myUnit.Hp <= 0)
+                {
+                    GcLogger.LogError($"hp가 0인데 공격 시도");
+                    continue;
+                }
+                // 이미 공격한 카드는 넘어가기
+                if (alreadyAttack.ContainsKey(myUnit.Index)) continue;
 
                 if (_opponent.Board.Count > 0)
                 {
@@ -63,9 +63,12 @@ namespace GGemCo2DTcg
                     int minHp = int.MaxValue;
                     foreach (var enemy in _opponent.Board)
                     {
-                        if (enemy.hp.Value < minHp)
+                        if (enemy.Hp < minHp)
                         {
-                            minHp = enemy.hp.Value;
+                            // 사망한 타겟이면 넘어가기
+                            if (deadUnits.ContainsKey(enemy.Index)) continue;
+                            
+                            minHp = enemy.Hp;
                             lowHpTarget = enemy;
                         }
                     }
@@ -74,12 +77,31 @@ namespace GGemCo2DTcg
                     {
                         outCommands.Add(
                             TcgBattleCommand.AttackUnit(Side, myUnit, lowHpTarget));
+                        
+                        // 공격한 카드 수집
+                        alreadyAttack.TryAdd(myUnit.Index, myUnit);
+                        
+                        // 사망한 타겟 수집
+                        if (minHp - myUnit.Attack <= 0)
+                        {
+                            deadUnits.TryAdd(lowHpTarget.Index, lowHpTarget);
+                        }
                     }
                 }
                 else
                 {
-                    outCommands.Add(
-                        TcgBattleCommand.AttackHero(Side, myUnit));
+                    // outCommands.Add(
+                    //     TcgBattleCommand.AttackHero(Side, myUnit));
+                }
+            }
+
+            // 2) 낼 수 있는 카드 중 코스트가 맞는 카드 찾아서 1장 사용(예시)
+            foreach (var card in _me.Hand)
+            {
+                if (card.Cost <= _me.CurrentManaValue)
+                {
+                    outCommands.Add(TcgBattleCommand.PlayCard(Side, card));
+                    break;
                 }
             }
 

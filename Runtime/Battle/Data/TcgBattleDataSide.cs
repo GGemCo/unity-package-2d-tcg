@@ -98,7 +98,9 @@ namespace GGemCo2DTcg
         {
             if (unit == null) return -1;
             _board.Add(unit);
-            return _board.IndexOf(unit);
+            int index = _board.IndexOf(unit);
+            unit.Index = index;
+            return index;
         }
 
         public bool RemoveUnitFromBoard(TcgBattleDataFieldCard unit)
@@ -117,6 +119,32 @@ namespace GGemCo2DTcg
             return _board.IndexOf(unit);
         }
 
+        public TcgBattleDataFieldCard GetFieldDataByIndex(int index)
+        {
+            return _board.Count > index ? _board[index] : null;
+        }
+
+        /// <summary>
+        /// 보드에 있는 모든 유닛의 CanAttack 값을 설정합니다.
+        /// (턴 종료/턴 시작 등에서 일괄 갱신용)
+        /// </summary>
+        private void SetAllBoardUnitsCanAttack(bool canAttack)
+        {
+            foreach (var unit in _board)
+            {
+                if (unit == null) continue;
+                unit.CanAttack = canAttack;
+            }
+        }
+        
+        /// <summary>
+        /// 턴 종료 시 호출: 보드 전체 유닛을 공격 가능 상태로 만듭니다.
+        /// </summary>
+        public void SetBoardUnitsCanAttack(bool value)
+        {
+            SetAllBoardUnitsCanAttack(value);
+        }
+        
         // ===== 마나/HP 증감 =====
 
         public bool TryConsumeMana(int amount)

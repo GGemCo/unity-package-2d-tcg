@@ -23,6 +23,7 @@ namespace GGemCo2DTcg
         // 세부 카드 데이터 (Creature/Spell 전용 정보)
         public StruckTableTcgCardCreature struckTableTcgCardCreature;
         public StruckTableTcgCardSpell struckTableTcgCardSpell;
+        public StruckTableTcgCardHero struckTableTcgCardHero;
     }
     public class TableTcgCard : DefaultTable<StruckTableTcgCard>
     {
@@ -30,6 +31,7 @@ namespace GGemCo2DTcg
         
         private TableTcgCardCreature _tableTcgCardCreature;
         private TableTcgCardSpell _tableTcgCardSpell;
+        private TableTcgCardHero _tableTcgCardHero;
         
         protected override void OnLoadedData(StruckTableTcgCard row)
         {
@@ -40,14 +42,17 @@ namespace GGemCo2DTcg
             switch (row.type)
             {
                 case CardConstants.Type.Creature:
-                    AttachCreatureData(row);
+                    AttachDataCreature(row);
                     break;
                 case CardConstants.Type.Spell:
-                    AttachSpellData(row);
+                    AttachDataSpell(row);
+                    break;
+                case CardConstants.Type.Hero:
+                    AttachDataHero(row);
                     break;
             }
         }
-        private void AttachCreatureData(StruckTableTcgCard row)
+        private void AttachDataCreature(StruckTableTcgCard row)
         {
             if (!TableLoaderManagerTcg.Instance) return;
             _tableTcgCardCreature ??= TableLoaderManagerTcg.Instance.TableTcgCardCreature;
@@ -59,7 +64,7 @@ namespace GGemCo2DTcg
             row.struckTableTcgCardCreature = _tableTcgCardCreature.GetDataByUid(row.uid);
         }
 
-        private void AttachSpellData(StruckTableTcgCard row)
+        private void AttachDataSpell(StruckTableTcgCard row)
         {
             if (!TableLoaderManagerTcg.Instance) return;
             _tableTcgCardSpell ??= TableLoaderManagerTcg.Instance.TableTcgCardSpell;
@@ -70,12 +75,29 @@ namespace GGemCo2DTcg
 
             row.struckTableTcgCardSpell = _tableTcgCardSpell.GetDataByUid(row.uid);
         }
+
+        private void AttachDataHero(StruckTableTcgCard row)
+        {
+            if (!TableLoaderManagerTcg.Instance) return;
+            _tableTcgCardHero ??= TableLoaderManagerTcg.Instance.TableTcgCardHero;
+            if (_tableTcgCardHero == null)
+            {
+                return;
+            }
+
+            row.struckTableTcgCardHero = _tableTcgCardHero.GetDataByUid(row.uid);
+        }
         protected override StruckTableTcgCard BuildRow(Dictionary<string, string> data)
         {
+            var name = data["Name"];
+# if UNITY_EDITOR
+            if (AddressableLoaderSettingsTcg.Instance?.tcgSettings && AddressableLoaderSettingsTcg.Instance.tcgSettings.showCardUid)
+                name = $"[{data["Uid"]}] {name}";
+# endif
             return new StruckTableTcgCard
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
-                name = data["Name"],
+                name = name,
                 type = EnumHelper.ConvertEnum<CardConstants.Type>(data["Type"]),
                 grade = EnumHelper.ConvertEnum<CardConstants.Grade>(data["Grade"]),
                 cost = MathHelper.ParseInt(data["Cost"]),

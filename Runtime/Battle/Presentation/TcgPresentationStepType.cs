@@ -48,29 +48,45 @@
         public TcgPresentationStepType Type { get; }
         public ConfigCommonTcg.TcgPlayerSide Side { get; }
         
+        public TcgBattleDataSide Attacker { get; }
+        public TcgBattleDataSide Target { get; }
+        
         public int FromIndex { get; }
         public int ToIndex { get; }
         
         public int ValueA { get; }
         public int ValueB { get; }
-        public int CountSlot { get; }
+        public int ValueC { get; }
+        public int ValueD { get; }
+        public int ValueE { get; }
+        public int ValueF { get; }
 
         public TcgPresentationStep(
             TcgPresentationStepType type,
             ConfigCommonTcg.TcgPlayerSide side,
             int fromIndex,
             int toIndex,
-            int countSlot,
+            TcgBattleDataSide attacker,
+            TcgBattleDataSide target,
             int valueA = 0,
-            int valueB = 0)
+            int valueB = 0,
+            int valueC = 0,
+            int valueD = 0,
+            int valueE = 0,
+            int valueF = 0)
         {
             Type = type;
             Side = side;
             FromIndex = fromIndex;
             ToIndex = toIndex;
-            CountSlot = countSlot;
+            Attacker = attacker;
+            Target = target;
             ValueA = valueA;
             ValueB = valueB;
+            ValueC = valueC;
+            ValueD = valueD;
+            ValueE = valueE;
+            ValueF = valueF;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using GGemCo2DCore;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 

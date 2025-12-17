@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GGemCo2DCore;
 using R3;
 
 namespace GGemCo2DTcg
@@ -11,6 +12,7 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgBattleDataFieldCard
     {
+        public int Index { get; set; }
         public int Uid { get; }
         public ConfigCommonTcg.TcgPlayerSide OwnerSide { get; }
 
@@ -20,10 +22,21 @@ namespace GGemCo2DTcg
         /// </summary>
         public TcgBattleDataCard SourceTcgBattleDataCard { get; }
 
-        public int Attack { get; private set; }
+        /// <summary>
+        /// 공격력(Observable). UI/연출은 이 값을 구독하여 자동 갱신할 수 있습니다.
+        /// </summary>
+        public readonly BehaviorSubject<int> attack = new(0);
+
+        /// <summary>
+        /// 현재 공격력 (편의용 프로퍼티)
+        /// </summary>
+        public int Attack => attack.Value;
         
-        // public int Hp { get; private set; }
+        /// <summary>
+        /// 체력(Observable)
+        /// </summary>
         public readonly BehaviorSubject<int> hp = new(0);
+        public int Hp => hp.Value;
         
         public int MaxHp { get; private set; }
 
@@ -51,7 +64,7 @@ namespace GGemCo2DTcg
             OwnerSide = ownerSide;
             SourceTcgBattleDataCard = sourceTcgBattleDataCard;
 
-            Attack = attack;
+            this.attack.OnNext(attack);
             this.hp.OnNext(hp);
             
             MaxHp = hp;
@@ -66,23 +79,26 @@ namespace GGemCo2DTcg
         public void ApplyDamage(int value)
         {
             if (value <= 0) return;
-            var newValue = hp.Value - value;
+            var newValue = Hp - value;
             if (newValue < 0) newValue = 0;
+            GcLogger.Log($"side:{OwnerSide}, ApplyDamage: {value}, old hp: {Hp} -> new hp: {newValue}");
             hp.OnNext(newValue);
         }
 
         public void Heal(int value)
         {
             if (value <= 0) return;
-            var newValue = hp.Value + value;
+            var newValue = Hp + value;
             if (newValue > MaxHp) newValue = MaxHp;
+            GcLogger.Log($"side:{OwnerSide}, Heal: {value}, old hp: {Hp} -> new hp: {newValue}");
             hp.OnNext(newValue);
         }
 
         public void ModifyAttack(int value)
         {
-            Attack += value;
-            if (Attack < 0) Attack = 0;
+            var newValue = attack.Value + value;
+            if (newValue < 0) newValue = 0;
+            attack.OnNext(newValue);
         }
 
         public bool HasKeyword(ConfigCommonTcg.TcgKeyword keyword)

@@ -19,20 +19,19 @@ namespace GGemCo2DTcg
         [Tooltip("설명")]
         public TextMeshProUGUI textDescription;
         
-        public TextMeshProUGUI textAtk;
-        public TextMeshProUGUI textHp;
+        public TextMeshProUGUI textAttack;
+        public TextMeshProUGUI textHealth;
 
         [Tooltip("이미지")] 
         public Image imageArtWork;
         public Image imageBorder;
         
-        public Image imageAtk;
-        public Image imageHp;
+        public Image imageAttack;
+        public Image imageHealth;
 
         protected TableTcgCard tableTcgCard;
         
         private StruckTableTcgCard _struckTableTcgCard;
-        private MyDeckData _myDeckData;
         private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
         
         protected override void Awake()
@@ -42,33 +41,27 @@ namespace GGemCo2DTcg
             _struckTableTcgCard = null;
             if (TableLoaderManager.Instance == null) return;
             tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
-            
         }
 
         protected override void Start()
         {
             base.Start();
-            _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
             _windowTcgMyDeckCard = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
         }
 
-        public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
+        public override bool ChangeInfoByUid(int cardUid, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
         {
-            var info = tableTcgCard.GetDataByUid(deckIndex);
+            var info = tableTcgCard.GetDataByUid(cardUid);
             if (info == null)
             {
-                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {deckIndex}");
+                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {cardUid}");
                 return false;
             }
-
-            uid = deckIndex;
-            SetCount(iconCount);
             _struckTableTcgCard = info;
-            
-            if (textName != null)
-            {
-                textName.text = info.name;
-            }
+
+            uid = cardUid;
+            SetCount(iconCount);
+            SetCardName();
             if (textCost != null)
             {
                 textCost.text = $"{info.cost}";
@@ -78,19 +71,28 @@ namespace GGemCo2DTcg
                 textDescription.text = info.description;
             }
 
-            ShowAtkHp(false);
-
             var key = $"{ConfigAddressableKeyTcg.Card.ImageArt}_{info.uid}";
             imageArtWork.sprite = AddressableLoaderCard.Instance.GetImageArtByName(key);
             
             key = $"{ConfigAddressableKeyTcg.Card.ImageBorder}_{info.grade}";
             imageBorder.sprite = AddressableLoaderCard.Instance.GetImageBorderByName(key);
 
-            InitializeCreature();
+            var canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1;
+            }
             
             UpdateInfo();
             return true;
         }
+
+        private void SetCardName()
+        {
+            if (textName == null) return;
+            textName.text = _struckTableTcgCard.name;
+        }
+
         /// <summary>
         /// 아이콘 이미지 업데이트 하기
         /// </summary>
@@ -101,32 +103,6 @@ namespace GGemCo2DTcg
             imageArtWork.sprite = AddressableLoaderCard.Instance.GetImageArtByName(key);
         }
 
-        private void InitializeCreature()
-        {
-            if (_struckTableTcgCard.type != CardConstants.Type.Creature) return;
-            ShowAtkHp(true);
-            
-            if (textAtk != null)
-            {
-                textAtk.text = $"{_struckTableTcgCard.struckTableTcgCardCreature.attack}";
-            }
-            if (textHp != null)
-            {
-                textHp.text = $"{_struckTableTcgCard.struckTableTcgCardCreature.health}";
-            }
-        }
-
-        private void ShowAtkHp(bool show)
-        {
-            if (imageAtk != null)
-            {
-                imageAtk.gameObject.SetActive(show);
-            }
-            if (imageHp != null)
-            {
-                imageHp.gameObject.SetActive(show);
-            }
-        }
         public override void SetCount(int value)
         {
             count = value;
@@ -170,6 +146,35 @@ namespace GGemCo2DTcg
             {
                 _windowTcgMyDeckCard.AddCardToDeck(uid);
             }
+        }
+
+        protected void UpdateAttack(int attackValue)
+        {
+            if (!textAttack) return;
+            imageAttack.gameObject.SetActive(attackValue > 0);
+            textAttack.text = $"{attackValue}";
+        }
+
+        public void UpdateHealth(int healthValue, int damageValue = 0)
+        {
+            if (damageValue > 0)
+            {
+                MetadataDamageText metadataDamageText = new MetadataDamageText
+                {
+                    Damage = damageValue,
+                    Color = Color.red,
+                    WorldPosition = textHealth.transform.position + new Vector3(0, 0, 0),
+                };
+                SceneGame.Instance.damageTextManager.ShowDamageText(metadataDamageText);
+            }
+            if (!textHealth) return;
+            imageHealth.gameObject.SetActive(healthValue > 0);
+            textHealth.text = $"{healthValue}";
+        }
+
+        public bool IsHero()
+        {
+            return _struckTableTcgCard.type == CardConstants.Type.Hero;
         }
     }
 }

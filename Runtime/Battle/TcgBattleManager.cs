@@ -89,6 +89,7 @@ namespace GGemCo2DTcg
 
             // 각 사이드 상태 생성
             var playerSide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Player, playerDeck);
+            // todo. 정리 필요
             playerSide.InitializeHeroHp(100, 100);
             playerSide.InitializeMana(_tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
 
@@ -157,19 +158,14 @@ namespace GGemCo2DTcg
         /// <summary>
         /// UI에서 "크리처로 유닛 공격" 요청을 보냈을 때 호출됩니다.
         /// </summary>
-        public void OnUiRequestAttackUnit(int attackerBoardIndex, int defenderBoardIndex)
+        public void OnUiRequestAttackUnit(ConfigCommonTcg.TcgPlayerSide side, TcgBattleDataFieldCard attacker, TcgBattleDataFieldCard target)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
 
-            // var command = new TcgBattleCommand(
-            //     ConfigCommonTcg.TcgBattleCommandType.AttackUnit,
-            //     ConfigCommonTcg.TcgPlayerSide.Player,
-            //     attackerBoardIndex,
-            //     defenderBoardIndex);
-            //
-            // _session.ExecuteCommand(command);
-            // _ui.RefreshAll(_session.Context);
+            var command = TcgBattleCommand.AttackUnit(side, attacker, target);
+            _session.ExecuteCommandWithTrace(command, _traceBuffer);
+            _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>

@@ -209,11 +209,12 @@ namespace GGemCo2DTcg
             switch (step.Type)
             {
                 case TcgPresentationStepType.MoveCardHandToBoard:
-                    yield return CoSummonFromHandToBoard(step.Side, step.FromIndex, step.ToIndex, step.CountSlot);
+                    // todo. 정리 필요. 파라미터를 step 넘기기
+                    yield return CoSummonFromHandToBoard(step.Side, step.FromIndex, step.ToIndex, step.ValueA);
                     break;
 
                 case TcgPresentationStepType.AttackUnit:
-                    yield return CoAttackUnit(step.Side, step.FromIndex, step.ToIndex);
+                    yield return CoAttackUnit(step);
                     break;
 
                 case TcgPresentationStepType.AttackHero:
@@ -226,7 +227,7 @@ namespace GGemCo2DTcg
                     break;
 
                 case TcgPresentationStepType.DeathFadeOut:
-                    yield return CoDeathFadeOut(step.Side, step.FromIndex);
+                    yield return CoDeathFadeOut(step.Side, step.ToIndex);
                     break;
 
                 default:
@@ -246,7 +247,7 @@ namespace GGemCo2DTcg
             var icon = handWindow.GetIconByIndex(handIndex + 1);
             var destSlot = fieldWindow.GetSlotByIndex(boardIndex);
             var grid = fieldWindow.containerIcon;
-            if (GridLayoutPositionUtility.TryGetCellTransformPosition(grid, index: boardIndex, childCount, out var pos))
+            if (GridLayoutPositionUtility.TryGetCellTransformPosition(grid, boardIndex, childCount, out var pos))
             {
                 // 카드/이펙트/프리뷰 등의 목표 위치로 사용
                 // (같은 부모 RectTransform 기준으로 사용할 때 가장 정확합니다) 
@@ -259,8 +260,8 @@ namespace GGemCo2DTcg
             }
 
             // 아이콘 이동
-            GcLogger.Log($"move icon: {icon.transform.position.x}, {icon.transform.position.y} =>" +
-                         $"to {pos.x}, {pos.y}");
+            // GcLogger.Log($"move icon: {icon.transform.position.x}, {icon.transform.position.y} =>" +
+            //              $"to {pos.x}, {pos.y}");
             yield return TcgUiTween.MoveTo(icon.transform, pos, 0.1f);
 
             // 현재 아이콘은 RefreshAll에서 새로 생성될 것이므로, 임시로 숨김
@@ -269,8 +270,19 @@ namespace GGemCo2DTcg
             yield return new WaitForSecondsRealtime(0.05f);
         }
 
-        private IEnumerator CoAttackUnit(ConfigCommonTcg.TcgPlayerSide attackerSide, int attackerBoardIndex, int defenderBoardIndex)
+        private IEnumerator CoAttackUnit(TcgPresentationStep step)
         {
+            ConfigCommonTcg.TcgPlayerSide attackerSide = step.Side;
+            int attackerBoardIndex = step.FromIndex;
+            int defenderBoardIndex = step.ToIndex;
+            int defenderChildCount = step.ValueB;
+            int attackerHp = step.ValueC;
+            int targetHp = step.ValueD;
+            // 공격자가 받은 데미지
+            int attackerDamage = step.ValueE;
+            // 타겟이 받은 데미지
+            int targetDamage = step.ValueF;
+            
             var attackerField = GetFieldWindow(attackerSide);
             var defenderField = GetFieldWindow(attackerSide == ConfigCommonTcg.TcgPlayerSide.Player
                 ? ConfigCommonTcg.TcgPlayerSide.Enemy
@@ -279,6 +291,7 @@ namespace GGemCo2DTcg
             if (attackerField == null || defenderField == null)
                 yield break;
 
+            var attackerSlot = attackerField.GetSlotByIndex(attackerBoardIndex);
             var attackerIcon = attackerField.GetIconByIndex(attackerBoardIndex);
             var defenderIcon = defenderField.GetIconByIndex(defenderBoardIndex);
 
@@ -287,13 +300,52 @@ namespace GGemCo2DTcg
                 yield return new WaitForSecondsRealtime(0.05f);
                 yield break;
             }
+            var defenderGrid = defenderField.containerIcon;
+            if (GridLayoutPositionUtility.TryGetCellTransformPosition(defenderGrid, defenderBoardIndex, defenderChildCount, out var target))
+            {
+                // 카드/이펙트/프리뷰 등의 목표 위치로 사용
+                // (같은 부모 RectTransform 기준으로 사용할 때 가장 정확합니다) 
+            }
 
-            var origin = attackerIcon.transform.position;
-            var target = defenderIcon.transform.position;
-
-            yield return TcgUiTween.MoveTo(attackerIcon.transform, target, 0.12f);
-            yield return new WaitForSecondsRealtime(0.03f);
-            yield return TcgUiTween.MoveTo(attackerIcon.transform, origin, 0.12f);
+            // 이동 중 최상위에 보이게 하기위한 처리 
+            attackerIcon.transform.SetParent(SceneGame.Instance.canvasUI.gameObject.transform);
+            
+            // 공격 하는 카드가 타겟 카드로 이동하는 처리. todo. 정리 필요. 좌표 값
+            yield return TcgUiTween.MoveTo(attackerIcon.transform, target - new Vector3(20, 20), attackerField.timeToMove);
+            
+            // 공격 후 원래 슬롯 자리로 되돌리기
+            attackerIcon.transform.SetParent(attackerSlot.transform);
+            // 아이콘 위치도 초기화
+            attackerIcon.transform.localPosition = Vector3.zero;
+            
+            // hp 업데이트, 데미지 표시. 원래 위치에서 데미지 텍스트를 표시
+            UIIconCard uiIconFieldPlayer = attackerIcon as UIIconCard;
+            if (uiIconFieldPlayer != null)
+            {
+                uiIconFieldPlayer.UpdateHealth(attackerHp, attackerDamage);
+            }
+            
+            // 사망 처리 fade out
+            if (attackerHp <= 0)
+            {
+                var cg = attackerIcon.GetComponent<CanvasGroup>();
+                if (cg != null)
+                    yield return TcgUiTween.FadeTo(cg, 0f, _fieldPlayer.timeToFadeOut);
+            }
+            
+            // hp 업데이트, 데미지 표시
+            UIIconCard uiIconFieldEnemy = defenderIcon as UIIconCard;
+            if (uiIconFieldEnemy != null)
+            {
+                uiIconFieldEnemy.UpdateHealth(targetHp, targetDamage);
+            }
+            // 사망 처리 fade out
+            if (targetHp <= 0)
+            {
+                var cg = defenderIcon.GetComponent<CanvasGroup>();
+                if (cg != null)
+                    yield return TcgUiTween.FadeTo(cg, 0f, _fieldEnemy.timeToFadeOut);
+            }
         }
 
         private IEnumerator CoAttackHero(ConfigCommonTcg.TcgPlayerSide attackerSide, int attackerBoardIndex)
@@ -346,16 +398,16 @@ namespace GGemCo2DTcg
                 yield break;
             }
 
-            yield return TcgUiTween.FadeTo(cg, 0f, 0.12f);
-            icon.gameObject.SetActive(false);
+            yield return TcgUiTween.FadeTo(cg, 0f, 5.12f);
+            // icon.gameObject.SetActive(false);
         }
 
-        private UIWindow GetHandWindow(ConfigCommonTcg.TcgPlayerSide side)
+        private UIWindowTcgHandBase GetHandWindow(ConfigCommonTcg.TcgPlayerSide side)
         {
             return side == ConfigCommonTcg.TcgPlayerSide.Player ? _handPlayer : _handEnemy;
         }
 
-        private UIWindow GetFieldWindow(ConfigCommonTcg.TcgPlayerSide side)
+        private UIWindowTcgFieldBase GetFieldWindow(ConfigCommonTcg.TcgPlayerSide side)
         {
             return side == ConfigCommonTcg.TcgPlayerSide.Player ? _fieldPlayer : _fieldEnemy;
         }

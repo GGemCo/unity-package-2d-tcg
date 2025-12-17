@@ -9,6 +9,7 @@ namespace GGemCo2DTcg
         public TableTcgCard TableTcgCard { get; private set; } = new TableTcgCard();
         public TableTcgCardCreature TableTcgCardCreature { get; private set; } = new TableTcgCardCreature();
         public TableTcgCardSpell TableTcgCardSpell { get; private set; } = new TableTcgCardSpell();
+        public TableTcgCardHero TableTcgCardHero { get; private set; } = new TableTcgCardHero();
         
         protected void Awake()
         {
@@ -19,6 +20,7 @@ namespace GGemCo2DTcg
 
                 registry = new TableRegistry();
                 // 순서 중요.
+                registry.Register(TableTcgCardHero);
                 registry.Register(TableTcgCardCreature);
                 registry.Register(TableTcgCardSpell);
                 registry.Register(TableTcgCard);

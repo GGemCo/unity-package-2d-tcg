@@ -7,19 +7,13 @@ namespace GGemCo2DTcg
     public class UIIconFieldEnemy : UIIconCard, IPointerEnterHandler, IPointerExitHandler
     {
         private UIWindowTcgCardInfo _windowTcgCardInfo;
-        private UIWindowTcgFieldEnemy _windowTcgFieldEnemy;
         private TcgBattleDataFieldCard _tcgBattleDataFieldCard;
+        // private readonly CompositeDisposable _bindDisposables = new();
 
-        protected override void Awake()
-        {
-            base.Awake();
-            
-        }
         protected override void Start()
         {
             base.Start();
             _windowTcgCardInfo = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgCardInfo>(UIWindowConstants.WindowUid.TcgCardInfo);
-            _windowTcgFieldEnemy = SceneGame.Instance.uIWindowManager.GetUIWindowByUid<UIWindowTcgFieldEnemy>(UIWindowConstants.WindowUid.TcgFieldEnemy);
         }
         
         private void OnDisable()
@@ -32,16 +26,16 @@ namespace GGemCo2DTcg
             _windowTcgCardInfo?.Show(false);
         }
         
-        public override bool ChangeInfoByUid(int deckIndex, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
+        public override bool ChangeInfoByUid(int cardUid, int iconCount = 0, int iconLevel = 0, bool iconIsLearn = false, int remainCoolTime = 0)
         {
-            var info = tableTcgCard.GetDataByUid(deckIndex);
+            var info = tableTcgCard.GetDataByUid(cardUid);
             if (info == null)
             {
-                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {deckIndex}");
+                GcLogger.LogError($"tcg_card 테이블에 없는 카드 입니다. uid: {cardUid}");
                 return false;
             }
 
-            base.ChangeInfoByUid(deckIndex, iconCount, iconLevel, iconIsLearn, remainCoolTime);
+            base.ChangeInfoByUid(cardUid, iconCount, iconLevel, iconIsLearn, remainCoolTime);
             return true;
         }
         public void OnPointerEnter(PointerEventData eventData)
@@ -69,17 +63,24 @@ namespace GGemCo2DTcg
         {
             _tcgBattleDataFieldCard = tcgBattleDataFieldCard;
             
-            _tcgBattleDataFieldCard.hp
-                .Subscribe(SetHp)
-                .AddTo(this);
-        }
+            // todo 정리 필요
+            // _bindDisposables.Clear();
 
-        private void SetHp(int value)
-        {
-            if (textHp == null) return;
-            textHp.text = $"{value}";
-        }
+            if (_tcgBattleDataFieldCard == null)
+                return;
 
+            // 초기값 반영
+            UpdateAttack(_tcgBattleDataFieldCard.Attack);
+            UpdateHealth(_tcgBattleDataFieldCard.Hp);
+            
+            // 변경 구독
+            // _tcgBattleDataFieldCard.attack
+            //     .Subscribe(UpdateAttack)
+            //     .AddTo(_bindDisposables);
+            // _tcgBattleDataFieldCard.hp
+            //     .Subscribe(_ => UpdateHealth(_tcgBattleDataFieldCard.Hp, _tcgBattleDataFieldCard.damage))
+            //     .AddTo(_bindDisposables);
+        }
         public TcgBattleDataFieldCard GetBattleDataFieldCard()
         {
             return _tcgBattleDataFieldCard;

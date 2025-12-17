@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using R3;
 
 namespace GGemCo2DTcg
 {
@@ -31,8 +32,8 @@ namespace GGemCo2DTcg
 
         public int Cost { get; }
 
-        public int Attack { get; }
-        public int Health { get; }
+        public readonly BehaviorSubject<int> attack = new(0);
+        public readonly BehaviorSubject<int> health = new(0);
 
         public int MaxCopiesPerDeck { get; }
 
@@ -65,16 +66,28 @@ namespace GGemCo2DTcg
             ImageFileName = row.imageFileName;
             Description = row.description;
 
-            if (row.struckTableTcgCardCreature != null)
-            {
-                Attack = row.struckTableTcgCardCreature.attack;
-                Health = row.struckTableTcgCardCreature.health;
-            }
+            attack.OnNext(InitializeAttack(row));
+            health.OnNext(InitializeHealth(row));
 
             if (keywords != null) _keywords.AddRange(keywords);
             if (summonEffects != null) _summonEffects.AddRange(summonEffects);
             if (spellEffects != null) _spellEffects.AddRange(spellEffects);
             if (deathEffects != null) _deathEffects.AddRange(deathEffects);
+        }
+
+        private int InitializeAttack(StruckTableTcgCard row)
+        {
+            int baseAttack = 0;
+            if (row.type == CardConstants.Type.Creature && row.struckTableTcgCardCreature is { attack: > 0 }) baseAttack = row.struckTableTcgCardCreature.attack;
+            else if (row.type == CardConstants.Type.Hero && row.struckTableTcgCardHero is { attack: > 0 }) baseAttack = row.struckTableTcgCardHero.attack;
+            return baseAttack;
+        }
+        private int InitializeHealth(StruckTableTcgCard row)
+        {
+            int baseHealth = 0;
+            if (row.type == CardConstants.Type.Creature && row.struckTableTcgCardCreature is { health: > 0 }) baseHealth = row.struckTableTcgCardCreature.health;
+            else if (row.type == CardConstants.Type.Hero && row.struckTableTcgCardHero is { health: > 0 }) baseHealth = row.struckTableTcgCardHero.health;
+            return baseHealth;
         }
     }
 }
