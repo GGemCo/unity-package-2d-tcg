@@ -16,14 +16,6 @@ namespace GGemCo2DTcg
         protected override IDragDropStrategy CreateDragDropStrategy() =>
             new DragDropStrategyHandEnemy();
 
-        protected override void BindCardIcon(UIIcon uiIcon, TcgBattleDataCard card, bool isHero)
-        {
-            var iconEnemy = uiIcon as UIIconHandEnemy;
-            if (!iconEnemy) return;
-
-            iconEnemy.SetBattleDataCard(card);
-        }
-
         // Enemy 의 SetMana 는 텍스트만 있으면 되므로
         // 베이스 구현 그대로 사용 (override 불필요)
     }

@@ -148,7 +148,7 @@ namespace GGemCo2DTcg
             }
         }
 
-        protected void UpdateAttack(int attackValue)
+        public void UpdateAttack(int attackValue)
         {
             if (!textAttack) return;
             imageAttack.gameObject.SetActive(attackValue > 0);
@@ -170,11 +170,6 @@ namespace GGemCo2DTcg
             if (!textHealth) return;
             imageHealth.gameObject.SetActive(healthValue > 0);
             textHealth.text = $"{healthValue}";
-        }
-
-        public bool IsHero()
-        {
-            return _struckTableTcgCard.type == CardConstants.Type.Hero;
         }
     }
 }

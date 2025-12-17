@@ -24,6 +24,27 @@ namespace GGemCo2DTcg
         public StruckTableTcgCardCreature struckTableTcgCardCreature;
         public StruckTableTcgCardSpell struckTableTcgCardSpell;
         public StruckTableTcgCardHero struckTableTcgCardHero;
+
+        public int GetAttack()
+        {
+            return type switch
+            {
+                CardConstants.Type.Hero when struckTableTcgCardHero is { attack: > 0 } => struckTableTcgCardHero.attack,
+                CardConstants.Type.Creature when struckTableTcgCardCreature is { attack: > 0 } =>
+                    struckTableTcgCardCreature.attack,
+                _ => 0
+            };
+        }
+        public int GetHealth()
+        {
+            return type switch
+            {
+                CardConstants.Type.Hero when struckTableTcgCardHero is { health: > 0 } => struckTableTcgCardHero.health,
+                CardConstants.Type.Creature when struckTableTcgCardCreature is { health: > 0 } =>
+                    struckTableTcgCardCreature.health,
+                _ => 0
+            };
+        }
     }
     public class TableTcgCard : DefaultTable<StruckTableTcgCard>
     {

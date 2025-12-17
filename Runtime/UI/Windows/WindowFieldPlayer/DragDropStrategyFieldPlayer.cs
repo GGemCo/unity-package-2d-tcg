@@ -82,15 +82,10 @@ namespace GGemCo2DTcg
 
         private void UseCard(UIIcon droppedUIIcon)
         {
-            UIIconHandPlayer uiIconHandPlayer = droppedUIIcon as UIIconHandPlayer;
-            if (uiIconHandPlayer == null)
-            {
-                GcLogger.LogError($"{nameof(UIIconHandPlayer)} 클래스가 없습니다.");
-                return;
-            }
-            TcgBattleDataCard tcgBattleDataCard = uiIconHandPlayer.GetBattleDataCard();
+            // 0은 영웅으로 사용하고 있기 때문에 -1 해준다
+            var newIndex = droppedUIIcon.index - 1;
             _battleManager ??= TcgPackageManager.Instance.battleManager;
-            _battleManager?.OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide.Player, tcgBattleDataCard);
+            _battleManager?.OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide.Player, newIndex);
         }
     }
 }

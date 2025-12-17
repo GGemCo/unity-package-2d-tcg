@@ -73,14 +73,6 @@ namespace GGemCo2DTcg
             buttonTurnOff?.onClick.RemoveAllListeners();
         }
 
-        protected override void BindCardIcon(UIIcon uiIcon, TcgBattleDataCard card, bool isHero)
-        {
-            var iconPlayer = uiIcon as UIIconHandPlayer;
-            if (!iconPlayer) return;
-
-            iconPlayer.SetBattleDataCard(card);
-        }
-
         public override void SetMana(int currentMana, int maxMana)
         {
             // 1) 기본 텍스트 처리

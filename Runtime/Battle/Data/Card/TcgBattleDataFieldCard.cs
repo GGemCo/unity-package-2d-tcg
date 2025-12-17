@@ -81,7 +81,7 @@ namespace GGemCo2DTcg
             if (value <= 0) return;
             var newValue = Hp - value;
             if (newValue < 0) newValue = 0;
-            GcLogger.Log($"side:{OwnerSide}, ApplyDamage: {value}, old hp: {Hp} -> new hp: {newValue}");
+            // GcLogger.Log($"side:{OwnerSide}, ApplyDamage: {value}, old hp: {Hp} -> new hp: {newValue}");
             hp.OnNext(newValue);
         }
 
@@ -90,7 +90,7 @@ namespace GGemCo2DTcg
             if (value <= 0) return;
             var newValue = Hp + value;
             if (newValue > MaxHp) newValue = MaxHp;
-            GcLogger.Log($"side:{OwnerSide}, Heal: {value}, old hp: {Hp} -> new hp: {newValue}");
+            // GcLogger.Log($"side:{OwnerSide}, Heal: {value}, old hp: {Hp} -> new hp: {newValue}");
             hp.OnNext(newValue);
         }
 

@@ -58,32 +58,5 @@ namespace GGemCo2DTcg
                 return;
             }
         }
-
-        public void SetBattleDataFieldCard(TcgBattleDataFieldCard tcgBattleDataFieldCard)
-        {
-            _tcgBattleDataFieldCard = tcgBattleDataFieldCard;
-            
-            // todo 정리 필요
-            // _bindDisposables.Clear();
-
-            if (_tcgBattleDataFieldCard == null)
-                return;
-
-            // 초기값 반영
-            UpdateAttack(_tcgBattleDataFieldCard.Attack);
-            UpdateHealth(_tcgBattleDataFieldCard.Hp);
-            
-            // 변경 구독
-            // _tcgBattleDataFieldCard.attack
-            //     .Subscribe(UpdateAttack)
-            //     .AddTo(_bindDisposables);
-            // _tcgBattleDataFieldCard.hp
-            //     .Subscribe(_ => UpdateHealth(_tcgBattleDataFieldCard.Hp, _tcgBattleDataFieldCard.damage))
-            //     .AddTo(_bindDisposables);
-        }
-        public TcgBattleDataFieldCard GetBattleDataFieldCard()
-        {
-            return _tcgBattleDataFieldCard;
-        }
     }
 }

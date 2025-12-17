@@ -6,7 +6,6 @@ namespace GGemCo2DTcg
     public class UIIconHandEnemy : UIIconCard, IPointerEnterHandler, IPointerExitHandler
     {
         private UIWindowTcgCardInfo _windowTcgCardInfo;
-        private TcgBattleDataCard _tcgBattleDataCard;
 
         protected override void Start()
         {
@@ -50,24 +49,6 @@ namespace GGemCo2DTcg
         /// <param name="eventData"></param>
         public override void OnPointerClick(PointerEventData eventData)
         {
-            if (_tcgBattleDataCard == null)
-            {
-                GcLogger.LogError($"{nameof(TcgBattleDataCard)} 정보가 없습니다.");
-                return;
-            }
-            // _windowTcgHandEnemy.OnClickCard(_tcgBattleDataCard);
-        }
-
-        public void SetBattleDataCard(TcgBattleDataCard tcgBattleDataCard)
-        {
-            _tcgBattleDataCard = tcgBattleDataCard;
-            
-            if (_tcgBattleDataCard == null)
-                return;
-
-            // 초기값 반영
-            UpdateAttack(_tcgBattleDataCard.attack.Value);
-            UpdateHealth(_tcgBattleDataCard.health.Value);
         }
     }
 }

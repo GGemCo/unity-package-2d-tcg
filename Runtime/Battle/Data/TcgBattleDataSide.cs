@@ -61,7 +61,7 @@ namespace GGemCo2DTcg
             _maxMana = maxMana;
         }
 
-        // ===== 손패 관리 =====
+        #region Card In Hand
 
         public bool ContainsInHand(TcgBattleDataCard card) => _hand.Contains(card);
 
@@ -90,7 +90,15 @@ namespace GGemCo2DTcg
             return _hand.IndexOf(card);
         }
 
-        // ===== 필드(보드) 관리 =====
+        public TcgBattleDataCard GetDataByIndex(int index)
+        {
+            return Hand.Count > index ? Hand[index] : null;
+        }
+
+        #endregion
+
+
+        #region Card In Board
 
         public bool ContainsOnBoard(TcgBattleDataFieldCard unit) => _board.Contains(unit);
 
@@ -124,6 +132,8 @@ namespace GGemCo2DTcg
             return _board.Count > index ? _board[index] : null;
         }
 
+        #endregion
+
         /// <summary>
         /// 보드에 있는 모든 유닛의 CanAttack 값을 설정합니다.
         /// (턴 종료/턴 시작 등에서 일괄 갱신용)
@@ -144,8 +154,8 @@ namespace GGemCo2DTcg
         {
             SetAllBoardUnitsCanAttack(value);
         }
-        
-        // ===== 마나/HP 증감 =====
+
+        #region Mana, Hp
 
         public bool TryConsumeMana(int amount)
         {
@@ -184,13 +194,16 @@ namespace GGemCo2DTcg
             HeroHp += amount;
             if (HeroHp > HeroHpMax) HeroHp = HeroHpMax;
         }
-        public TcgBattleDataCard DrawOneCard()
+
+        #endregion
+
+        public void DrawOneCard()
         {
             // 1) 덱에서 카드 1장 뽑기
             if (TcgBattleDataDeck.IsEmpty)
             {
                 HandleFatigue();   // 덱 고갈 시 규칙 처리
-                return null;
+                return;
             }
 
             var card = TcgBattleDataDeck.DrawTop();  // GC 없음, 참조 그대로 반환
@@ -199,7 +212,7 @@ namespace GGemCo2DTcg
             if (Hand.Count >= MaxHandSize)
             {
                 HandleOverdraw(card);
-                return null;
+                return;
             }
 
             // 3) 핸드에 추가
@@ -207,8 +220,6 @@ namespace GGemCo2DTcg
 
             // 4) 드로우 트리거 처리 (효과 시스템)
             TriggerOnDraw(card);
-
-            return card;
         }
         
         private void HandleFatigue()
@@ -227,6 +238,5 @@ namespace GGemCo2DTcg
         {
             // 키워드 or 지속효과 처리
         }
-
     }
 }

@@ -145,11 +145,13 @@ namespace GGemCo2DTcg
         /// <summary>
         /// UI에서 "카드 사용" 요청을 보냈을 때 호출됩니다.
         /// </summary>
-        public void OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide side, TcgBattleDataCard battleCard)
+        public void OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide side, int indexInHand)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
 
+            var actor = _session.Context.GetSideState(side);
+            var battleCard = actor.GetDataByIndex(indexInHand);
             var command = TcgBattleCommand.PlayCard(side, battleCard);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
@@ -158,12 +160,17 @@ namespace GGemCo2DTcg
         /// <summary>
         /// UI에서 "크리처로 유닛 공격" 요청을 보냈을 때 호출됩니다.
         /// </summary>
-        public void OnUiRequestAttackUnit(ConfigCommonTcg.TcgPlayerSide side, TcgBattleDataFieldCard attacker, TcgBattleDataFieldCard target)
+        public void OnUiRequestAttackUnit(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex, int targetIndex)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
 
-            var command = TcgBattleCommand.AttackUnit(side, attacker, target);
+            var actor = _session.Context.GetSideState(side);
+            var opponent = _session.Context.GetOpponentState(side);
+            
+            var battleCardAttacker = actor.GetFieldDataByIndex(attackerIndex);
+            var battleCardTarget = opponent.GetFieldDataByIndex(targetIndex);
+            var command = TcgBattleCommand.AttackUnit(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }

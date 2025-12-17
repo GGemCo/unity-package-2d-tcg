@@ -13,13 +13,6 @@ namespace GGemCo2DTcg
         protected override IDragDropStrategy CreateDragDropStrategy() =>
             new DragDropStrategyFieldEnemy();
         
-        protected override void BindCardIcon(UIIcon uiIcon, TcgBattleDataFieldCard card)
-        {
-            var iconEnemy = uiIcon as UIIconFieldEnemy;
-            if (!iconEnemy) return;
-
-            iconEnemy.SetBattleDataFieldCard(card);
-        }
         public void Release()
         {
         }

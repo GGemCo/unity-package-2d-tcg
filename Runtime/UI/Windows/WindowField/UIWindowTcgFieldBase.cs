@@ -51,15 +51,15 @@ namespace GGemCo2DTcg
                 if (!uiIcon) { i++; continue; }
 
                 card.Index = i;
-                BindCardIcon(uiIcon, card);
+                var uiIconCard = uiIcon.GetComponent<UIIconCard>();
+                if (uiIconCard != null)
+                {
+                    uiIconCard.UpdateAttack(card.Attack);
+                    uiIconCard.UpdateHealth(card.Hp);
+                }
                 i++;
             }
         }
-
-        /// <summary>
-        /// 실제 UIIcon 타입(Player/Enemy 전용)으로 캐스팅/바인딩 하는 훅
-        /// </summary>
-        protected abstract void BindCardIcon(UIIcon uiIcon, TcgBattleDataFieldCard card);
 
         public int GetActiveIconCount()
         {

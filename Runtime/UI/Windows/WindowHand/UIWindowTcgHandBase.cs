@@ -21,6 +21,8 @@ namespace GGemCo2DTcg
         protected abstract ISetIconHandler CreateSetIconHandler();
         protected abstract IDragDropStrategy CreateDragDropStrategy();
 
+        private TableTcgCard _tableTcgCard;
+        
         protected override void Awake()
         {
             if (TableLoaderManager.Instance == null)
@@ -38,6 +40,7 @@ namespace GGemCo2DTcg
 
             IconPoolManager.SetSetIconHandler(CreateSetIconHandler());
             DragDropHandler.SetStrategy(CreateDragDropStrategy());
+            _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
         }
 
         public void Release()
@@ -66,8 +69,14 @@ namespace GGemCo2DTcg
             {
                 var uiIcon = SetIconCount(i, card.Uid, 1);
                 if (!uiIcon) { i++; continue; }
-
-                BindCardIcon(uiIcon, card, isHero: false);
+                var uiIconCard = uiIcon.GetComponent<UIIconCard>();
+                if (uiIconCard != null)
+                {
+                    var info = _tableTcgCard.GetDataByUid(card.Uid);
+                    if (info == null) continue;
+                    uiIconCard.UpdateAttack(info.GetAttack());
+                    uiIconCard.UpdateHealth(info.GetHealth());
+                }
                 i++;
             }
         }
@@ -76,16 +85,8 @@ namespace GGemCo2DTcg
         {
             if (heroCard == null) return;
 
-            var uiIcon = SetIconCount(0, heroCard.Uid, 1);
-            if (!uiIcon) return;
-
-            BindCardIcon(uiIcon, heroCard, isHero: true);
+            SetIconCount(0, heroCard.Uid, 1);
         }
-
-        /// <summary>
-        /// 실제 UIIcon 타입(Player/Enemy 전용)으로 캐스팅/바인딩 하는 훅
-        /// </summary>
-        protected abstract void BindCardIcon(UIIcon uiIcon, TcgBattleDataCard card, bool isHero);
 
         #endregion
 

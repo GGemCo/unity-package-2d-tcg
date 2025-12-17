@@ -66,28 +66,13 @@ namespace GGemCo2DTcg
             ImageFileName = row.imageFileName;
             Description = row.description;
 
-            attack.OnNext(InitializeAttack(row));
-            health.OnNext(InitializeHealth(row));
+            attack.OnNext(row.GetAttack());
+            health.OnNext(row.GetHealth());
 
             if (keywords != null) _keywords.AddRange(keywords);
             if (summonEffects != null) _summonEffects.AddRange(summonEffects);
             if (spellEffects != null) _spellEffects.AddRange(spellEffects);
             if (deathEffects != null) _deathEffects.AddRange(deathEffects);
-        }
-
-        private int InitializeAttack(StruckTableTcgCard row)
-        {
-            int baseAttack = 0;
-            if (row.type == CardConstants.Type.Creature && row.struckTableTcgCardCreature is { attack: > 0 }) baseAttack = row.struckTableTcgCardCreature.attack;
-            else if (row.type == CardConstants.Type.Hero && row.struckTableTcgCardHero is { attack: > 0 }) baseAttack = row.struckTableTcgCardHero.attack;
-            return baseAttack;
-        }
-        private int InitializeHealth(StruckTableTcgCard row)
-        {
-            int baseHealth = 0;
-            if (row.type == CardConstants.Type.Creature && row.struckTableTcgCardCreature is { health: > 0 }) baseHealth = row.struckTableTcgCardCreature.health;
-            else if (row.type == CardConstants.Type.Hero && row.struckTableTcgCardHero is { health: > 0 }) baseHealth = row.struckTableTcgCardHero.health;
-            return baseHealth;
         }
     }
 }
