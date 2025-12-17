@@ -31,7 +31,7 @@ namespace GGemCo2DTcg
                 return CommandResult.Fail("Error_Tcg_NoAttackedInThisTurn");
             }
 
-            GcLogger.Log($"{actor.Side} attack to {opponent.Side}");
+            // GcLogger.Log($"{actor.Side} attack to {opponent.Side}");
             // 양쪽에 데미지 적용
             target.ApplyDamage(attacker.Attack);
             attacker.ApplyDamage(target.Attack);
@@ -58,12 +58,10 @@ namespace GGemCo2DTcg
                     target: opponent,
                     fromIndex: attacker.Index,
                     toIndex: target.Index,
-                    valueA: countActor,
-                    valueB: countOpponent,
-                    valueC: attacker.Hp,
-                    valueD: target.Hp,
-                    valueE: attacker.Attack,
-                    valueF: target.Attack
+                    valueA: attacker.Hp,
+                    valueB: target.Hp,
+                    valueC: target.Attack,
+                    valueD: attacker.Attack
                     )
             });
         }

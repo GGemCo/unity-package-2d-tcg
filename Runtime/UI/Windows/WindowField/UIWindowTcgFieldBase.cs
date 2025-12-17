@@ -50,6 +50,7 @@ namespace GGemCo2DTcg
                 var uiIcon = SetIconCount(i, card.Uid, 1);
                 if (!uiIcon) { i++; continue; }
 
+                card.Index = i;
                 BindCardIcon(uiIcon, card);
                 i++;
             }
@@ -59,6 +60,16 @@ namespace GGemCo2DTcg
         /// 실제 UIIcon 타입(Player/Enemy 전용)으로 캐스팅/바인딩 하는 훅
         /// </summary>
         protected abstract void BindCardIcon(UIIcon uiIcon, TcgBattleDataFieldCard card);
-        
+
+        public int GetActiveIconCount()
+        {
+            int count = 0;
+            foreach (var slot in slots)
+            {
+                if (slot == null || !slot.activeSelf) continue;
+                count++;
+            }
+            return count;
+        }
     }
 }

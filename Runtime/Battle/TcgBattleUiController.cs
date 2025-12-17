@@ -275,13 +275,13 @@ namespace GGemCo2DTcg
             ConfigCommonTcg.TcgPlayerSide attackerSide = step.Side;
             int attackerBoardIndex = step.FromIndex;
             int defenderBoardIndex = step.ToIndex;
-            int defenderChildCount = step.ValueB;
-            int attackerHp = step.ValueC;
-            int targetHp = step.ValueD;
+            
+            int attackerHp = step.ValueA;
+            int targetHp = step.ValueB;
             // 공격자가 받은 데미지
-            int attackerDamage = step.ValueE;
+            int attackerDamage = step.ValueC;
             // 타겟이 받은 데미지
-            int targetDamage = step.ValueF;
+            int targetDamage = step.ValueD;
             
             var attackerField = GetFieldWindow(attackerSide);
             var defenderField = GetFieldWindow(attackerSide == ConfigCommonTcg.TcgPlayerSide.Player
@@ -301,6 +301,7 @@ namespace GGemCo2DTcg
                 yield break;
             }
             var defenderGrid = defenderField.containerIcon;
+            int defenderChildCount = defenderField.GetActiveIconCount();
             if (GridLayoutPositionUtility.TryGetCellTransformPosition(defenderGrid, defenderBoardIndex, defenderChildCount, out var target))
             {
                 // 카드/이펙트/프리뷰 등의 목표 위치로 사용
