@@ -79,5 +79,10 @@
         {
             _heroField.ApplyDamage(contextValue);
         }
+
+        public TcgBattleDataFieldCard GetFieldDataByIndex(int targetIndex)
+        {
+            return _heroField;
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace GGemCo2DTcg
             {
                 return;
             }
-            
+
             // 드래그앤 드랍 한 곳에 아무것도 없을때 
             if (targetUIIcon == null)
             {
