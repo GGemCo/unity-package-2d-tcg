@@ -29,9 +29,8 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 승리한 편. 아직 종료되지 않았다면 None.
         /// </summary>
-        public ConfigCommonTcg.TcgPlayerSide Winner { get; private set; }
+        private ConfigCommonTcg.TcgPlayerSide Winner { get; set; }
         
-
         private readonly Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler> _commandHandlers;
         private readonly ITcgPlayerController _playerController;
         private readonly ITcgPlayerController _enemyController;
@@ -73,47 +72,6 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 플레이어 턴용으로 커맨드를 수집/실행합니다. 
-        /// (UI에서 직접 커맨드를 넣는 구조라면 사용하지 않고, UI에서 ExecuteCommand를 직접 호출하게 할 수 있습니다.)
-        /// </summary>
-        public void ExecutePlayerTurn()
-        {
-            if (IsBattleEnded) return;
-            if (!IsPlayerTurn) return;
-
-            _commandBuffer.Clear();
-            _playerController.DecideTurnActions(Context, _commandBuffer);
-            ExecuteCommands(_commandBuffer);
-        }
-
-        /// <summary>
-        /// 플레이어 턴을 실행하면서, 실행된 커맨드들의 Trace를 수집합니다.
-        /// UI에서 연출을 재생하고 싶을 때 사용합니다.
-        /// </summary>
-        public void ExecutePlayerTurnWithTrace(List<TcgBattleCommandTrace> traces)
-        {
-            if (IsBattleEnded) return;
-            if (!IsPlayerTurn) return;
-
-            _commandBuffer.Clear();
-            _playerController.DecideTurnActions(Context, _commandBuffer);
-            ExecuteCommandsWithTrace(_commandBuffer, traces);
-        }
-
-        /// <summary>
-        /// AI 턴용으로 커맨드를 수집/실행합니다.
-        /// </summary>
-        public void ExecuteEnemyTurn()
-        {
-            if (IsBattleEnded) return;
-            if (IsPlayerTurn) return;
-
-            _commandBuffer.Clear();
-            _enemyController.DecideTurnActions(Context, _commandBuffer);
-            ExecuteCommands(_commandBuffer);
-        }
-
-        /// <summary>
         /// AI 턴을 실행하면서, 실행된 커맨드들의 Trace를 수집합니다.
         /// UI에서 연출을 재생하고 싶을 때 사용합니다.
         /// </summary>
@@ -150,8 +108,8 @@ namespace GGemCo2DTcg
             // 4) field에 있는 카드 attack true 처리
             if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
             {
-                Context.Player.SetBoardUnitsCanAttack(true);
-                Context.Enemy.SetBoardUnitsCanAttack(true);
+                Context.Player.SetBoardCardCanAttack(true);
+                Context.Enemy.SetBoardCardCanAttack(true);
             }
 
             // 5) Start-of-Turn 초기 처리
@@ -160,9 +118,6 @@ namespace GGemCo2DTcg
 
             // 6) Start-of-Turn 효과 처리
             ResolveStartOfTurnEffects();
-
-            // 7) 전투 종료 여부 검사
-            TryCheckBattleEnd();
         }
         private void ResolveEndOfTurnEffects()
         {
@@ -214,29 +169,67 @@ namespace GGemCo2DTcg
         /// <summary>
         /// HP 등 상태를 확인하여 전투 종료 여부를 판정합니다.
         /// </summary>
-        private void TryCheckBattleEnd()
+        public void TryCheckBattleEnd()
         {
             if (IsBattleEnded) return;
 
             var playerHp = Context.Player.HeroHp;
             var enemyHp  = Context.Enemy.HeroHp;
 
+            // 1) HP 기반 종료 (최우선)
             if (playerHp <= 0 && enemyHp <= 0)
             {
                 IsBattleEnded = true;
-                Winner = ConfigCommonTcg.TcgPlayerSide.None;
+                Winner = ConfigCommonTcg.TcgPlayerSide.Draw; // 또는 None 대신 Draw 권장
+                TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
+                return;
             }
-            else if (playerHp <= 0)
+            if (playerHp <= 0)
             {
                 IsBattleEnded = true;
                 Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
+                TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
+                return;
             }
-            else if (enemyHp <= 0)
+            if (enemyHp <= 0)
             {
                 IsBattleEnded = true;
                 Winner = ConfigCommonTcg.TcgPlayerSide.Player;
+                TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
+                return;
             }
+
+            // 2) 카드 고갈 기반 종료 (HP 종료가 아닐 때만)
+            int playerHandCount = Context.Player.Hand.Count;
+            int enemyHandCount  = Context.Enemy.Hand.Count;
+            int playerDeckCount = Context.Player.TcgBattleDataDeck.Count;
+            int enemyDeckCount  = Context.Enemy.TcgBattleDataDeck.Count;
+
+            bool playerEmpty = (playerHandCount <= 0 && playerDeckCount <= 0);
+            bool enemyEmpty  = (enemyHandCount <= 0 && enemyDeckCount <= 0);
+
+            if (!playerEmpty && !enemyEmpty) return;
+
+            // 여기부터는 전투 종료
+            IsBattleEnded = true;
+
+            // 규칙은 프로젝트 의도에 맞게 결정해야 함:
+            // A) 한쪽 고갈 = 그쪽 패배 (많이 쓰는 규칙)
+            if (playerEmpty && !enemyEmpty)
+                Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
+            else if (enemyEmpty && !playerEmpty)
+                Winner = ConfigCommonTcg.TcgPlayerSide.Player;
+            else
+            {
+                // 양쪽 모두 고갈이면 HP 비교
+                if (playerHp > enemyHp) Winner = ConfigCommonTcg.TcgPlayerSide.Player;
+                else if (enemyHp > playerHp) Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
+                else Winner = ConfigCommonTcg.TcgPlayerSide.Draw;
+            }
+
+            TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
         }
+
 
         public void Dispose()
         {
@@ -246,19 +239,6 @@ namespace GGemCo2DTcg
         }
         
         #region Command Execution
-        /// <summary>
-        /// 외부(UI 등)에서 개별 전투 커맨드를 전달하여 실행할 때 사용합니다.
-        /// (FollowUpCommands 까지 포함해서 한 번에 처리됩니다.)
-        /// </summary>
-        public void ExecuteCommand(in TcgBattleCommand command)
-        {
-            if (IsBattleEnded) return;
-
-            _executionQueue.Clear();
-            _executionQueue.Add(command);
-
-            ProcessExecutionQueue();
-        }
 
         /// <summary>
         /// 외부(UI 등)에서 개별 전투 커맨드를 전달하여 실행하며,
@@ -275,22 +255,6 @@ namespace GGemCo2DTcg
             ProcessExecutionQueue(traces);
         }
 
-
-        /// <summary>
-        /// 여러 개의 커맨드를 순차적으로 실행합니다.
-        /// CommandResult.FollowUpCommands 까지 포함해 모두 처리합니다.
-        /// </summary>
-        public void ExecuteCommands(List<TcgBattleCommand> commands)
-        {
-            if (IsBattleEnded) return;
-            if (commands == null || commands.Count == 0) return;
-
-            _executionQueue.Clear();
-            _executionQueue.AddRange(commands);
-
-            ProcessExecutionQueue();
-        }
-
         /// <summary>
         /// 여러 개의 커맨드를 순차적으로 실행하며,
         /// 실행된 커맨드들의 Trace를 수집합니다.
@@ -305,29 +269,6 @@ namespace GGemCo2DTcg
             _executionQueue.AddRange(commands);
 
             ProcessExecutionQueue(traces);
-        }
-
-
-        /// <summary>
-        /// _executionQueue 에 들어있는 커맨드를 CommandResult 기반으로 모두 처리합니다.
-        /// </summary>
-        private void ProcessExecutionQueue()
-        {
-            while (_executionQueue.Count > 0 && !IsBattleEnded)
-            {
-                var cmd = _executionQueue[0];
-                _executionQueue.RemoveAt(0);
-
-                if (!_commandHandlers.TryGetValue(cmd.CommandType, out var handler))
-                {
-                    GcLogger.LogError(
-                        $"[{nameof(TcgBattleSession)}] 핸들러가 등록되지 않은 커맨드 타입: {cmd.CommandType}");
-                    continue;
-                }
-
-                var result = handler.Execute(Context, in cmd);
-                HandleCommandResult(result);
-            }
         }
 
         /// <summary>
@@ -377,9 +318,6 @@ namespace GGemCo2DTcg
             {
                 _executionQueue.AddRange(result.FollowUpCommands);
             }
-
-            // 전투 종료 여부 확인
-            TryCheckBattleEnd();
         }
         #endregion
     }

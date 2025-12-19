@@ -33,7 +33,8 @@
         {
             None = -1,
             Player = 0,  // 실제 유저
-            Enemy  = 1   // AI 또는 네트워크 상대 등
+            Enemy  = 1,   // AI 또는 네트워크 상대 등
+            Draw = 2
         }
 
         /// <summary>

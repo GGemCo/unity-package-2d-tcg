@@ -150,7 +150,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 턴 종료 시 호출: 보드 전체 유닛을 공격 가능 상태로 만듭니다.
         /// </summary>
-        public void SetBoardUnitsCanAttack(bool value)
+        public void SetBoardCardCanAttack(bool value)
         {
             SetAllBoardUnitsCanAttack(value);
         }

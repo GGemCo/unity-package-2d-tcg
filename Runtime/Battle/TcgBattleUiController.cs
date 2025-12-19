@@ -18,12 +18,8 @@ namespace GGemCo2DTcg
         private UIWindowTcgBattleHud   _battleHud;
         private readonly CompositeDisposable _disposables = new();
 
-        // ------------------------------
-        // Presentation Lock (연출 중 UI 갱신 지연)
-        // ------------------------------
-        private bool _presentationLocked;
-        private (int cur, int max)? _pendingPlayerMana;
-        private (int cur, int max)? _pendingEnemyMana;
+        private TcgBattleSession _session;
+        private Coroutine _presentationCoroutine;
         
         public bool IsReady =>
             _fieldEnemy  != null &&
@@ -86,81 +82,18 @@ namespace GGemCo2DTcg
             if (!IsReady || manager == null || session == null)
                 return;
 
-            BindMana(session);
+            _session = session;
+            // BindMana(session);
 
             _handPlayer.SetBattleManager(manager);
         }
 
-        private void BindMana(TcgBattleSession session)
+        private void BeginPresentation()
         {
-            var context = session.Context;
-            var player  = context.Player;
-            var enemy   = context.Enemy;
-
-            // Player
-            player.CurrentMana
-                .Subscribe(_ => UpdatePlayerMana(player))
-                .AddTo(_disposables);
-
-            player.CurrentManaMax
-                .Subscribe(_ => UpdatePlayerMana(player))
-                .AddTo(_disposables);
-
-            // Enemy
-            enemy.CurrentMana
-                .Subscribe(_ => UpdateEnemyMana(enemy))
-                .AddTo(_disposables);
-
-            enemy.CurrentManaMax
-                .Subscribe(_ => UpdateEnemyMana(enemy))
-                .AddTo(_disposables);
         }
 
-        private void UpdatePlayerMana(TcgBattleDataSide player)
+        private void EndPresentation(TcgBattleDataMain context)
         {
-            if (_handPlayer == null)
-                return;
-
-            if (_presentationLocked)
-            {
-                _pendingPlayerMana = (player.CurrentManaValue, player.CurrentManaValueMax);
-                return;
-            }
-
-            _handPlayer.SetMana(player.CurrentManaValue, player.CurrentManaValueMax);
-        }
-
-        private void UpdateEnemyMana(TcgBattleDataSide enemy)
-        {
-            if (_handEnemy == null)
-                return;
-
-            if (_presentationLocked)
-            {
-                _pendingEnemyMana = (enemy.CurrentManaValue, enemy.CurrentManaValueMax);
-                return;
-            }
-
-            _handEnemy.SetMana(enemy.CurrentManaValue, enemy.CurrentManaValueMax);
-        }
-
-        public void BeginPresentation()
-        {
-            _presentationLocked = true;
-            _pendingPlayerMana = null;
-            _pendingEnemyMana = null;
-        }
-
-        public void EndPresentation(TcgBattleDataMain context)
-        {
-            _presentationLocked = false;
-
-            if (_pendingPlayerMana.HasValue)
-                _handPlayer?.SetMana(_pendingPlayerMana.Value.cur, _pendingPlayerMana.Value.max);
-
-            if (_pendingEnemyMana.HasValue)
-                _handEnemy?.SetMana(_pendingEnemyMana.Value.cur, _pendingEnemyMana.Value.max);
-
             RefreshAll(context);
         }
 
@@ -181,7 +114,11 @@ namespace GGemCo2DTcg
             }
 
             BeginPresentation();
-            _battleHud.StartCoroutine(CoPlayPresentation(context, traces));
+            if (_presentationCoroutine != null)
+            {
+                _battleHud.StopCoroutine(_presentationCoroutine);
+            }
+            _presentationCoroutine = _battleHud.StartCoroutine(CoPlayPresentation(context, traces));
         }
 
         private IEnumerator CoPlayPresentation(TcgBattleDataMain context, IReadOnlyList<TcgBattleCommandTrace> traces)
@@ -197,6 +134,14 @@ namespace GGemCo2DTcg
                     foreach (var step in result.PresentationSteps)
                     {
                         yield return PlayStep(step);
+                        
+                        // 연출 하나가 종료될 때마다, 게임 종료 체크
+                        _session.TryCheckBattleEnd();
+                        if (_session.IsBattleEnded)
+                        {
+                            _battleHud.StopCoroutine(_presentationCoroutine);
+                            _presentationCoroutine = null;
+                        }
                     }
                 }
             }
@@ -262,11 +207,7 @@ namespace GGemCo2DTcg
             // 아이콘 이동
             // GcLogger.Log($"move icon: {icon.transform.position.x}, {icon.transform.position.y} =>" +
             //              $"to {pos.x}, {pos.y}");
-            yield return TcgUiTween.MoveTo(icon.transform, pos, 0.1f);
-
-            // 현재 아이콘은 RefreshAll에서 새로 생성될 것이므로, 임시로 숨김
-            // icon.gameObject.SetActive(false);
-
+            yield return TcgUiTween.MoveTo(icon.transform, pos, fieldWindow.timeToMove);
             yield return new WaitForSecondsRealtime(0.05f);
         }
 
@@ -400,7 +341,6 @@ namespace GGemCo2DTcg
             }
 
             yield return TcgUiTween.FadeTo(cg, 0f, 5.12f);
-            // icon.gameObject.SetActive(false);
         }
 
         private UIWindowTcgHandBase GetHandWindow(ConfigCommonTcg.TcgPlayerSide side)
@@ -429,6 +369,9 @@ namespace GGemCo2DTcg
             _fieldPlayer.RefreshBoard(player);
             _fieldEnemy.RefreshBoard(enemy);
             // _battleHud.Refresh(context);
+            
+            _handPlayer.SetMana(player.CurrentManaValue, player.CurrentManaValueMax);
+            _handEnemy.SetMana(enemy.CurrentManaValue, enemy.CurrentManaValueMax);
         }
 
         /// <summary>

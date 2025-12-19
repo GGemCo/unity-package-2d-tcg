@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GGemCo2DCore;
+using UnityEngine;
 
 namespace GGemCo2DTcg
 {
@@ -21,7 +22,7 @@ namespace GGemCo2DTcg
 
         // 서비스들
         private TcgBattleDeckController _deckController;
-        private TcgBattleUiController _ui;
+        private TcgBattleUiController _uiController;
         private TcgBattleSession _session;
 
         // 커맨드 연출 Trace 버퍼 (GC 최소화)
@@ -35,14 +36,14 @@ namespace GGemCo2DTcg
 
         public void Initialize(TcgPackageManager packageManager, SystemMessageManager systemMessageManager)
         {
-            _packageManager      = packageManager ?? throw new ArgumentNullException(nameof(packageManager));
-            _saveDataManagerTcg  = _packageManager.saveDataManagerTcg;
+            _packageManager = packageManager ?? throw new ArgumentNullException(nameof(packageManager));
+            _saveDataManagerTcg = _packageManager.saveDataManagerTcg;
             _systemMessageManager = systemMessageManager;
-            _tcgSettings         = AddressableLoaderSettingsTcg.Instance.tcgSettings;
-            _tableTcgCard        = TableLoaderManagerTcg.Instance.TableTcgCard;
+            _tcgSettings = AddressableLoaderSettingsTcg.Instance.tcgSettings;
+            _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
 
-            _deckController         = new TcgBattleDeckController(_saveDataManagerTcg, _tcgSettings, _tableTcgCard);
-            _ui                  = new TcgBattleUiController();
+            _deckController = new TcgBattleDeckController(_saveDataManagerTcg, _tcgSettings, _tableTcgCard);
+            _uiController = new TcgBattleUiController();
 
             InitializeDefaultCommandHandlers();
         }
@@ -63,7 +64,7 @@ namespace GGemCo2DTcg
                 EndBattleForce();
             }
 
-            if (!_ui.TrySetupWindows())
+            if (!_uiController.TrySetupWindows())
             {
                 GcLogger.LogError($"[{nameof(TcgBattleManager)}] 전투 UI 윈도우 설정에 실패했습니다.");
                 return;
@@ -116,9 +117,9 @@ namespace GGemCo2DTcg
             DrawCards(enemySide,  _tcgSettings.startingHandCardCount);
             
             // UI 바인딩 및 초기 갱신
-            _ui.BindBattleManager(this, _session);
-            _ui.ShowAll(true);
-            _ui.RefreshAll(_session.Context);
+            _uiController.BindBattleManager(this, _session);
+            _uiController.ShowAll(true);
+            _uiController.RefreshAll(_session.Context);
         }
 
         /// <summary>
@@ -133,10 +134,10 @@ namespace GGemCo2DTcg
                 _session = null;
             }
 
-            if (_ui != null)
+            if (_uiController != null)
             {
-                _ui.ShowAll(false);
-                _ui.Release();
+                _uiController.ShowAll(false);
+                _uiController.Release();
             }
         }
 
@@ -154,7 +155,7 @@ namespace GGemCo2DTcg
             var battleCard = actor.GetDataByIndex(indexInHand);
             var command = TcgBattleCommand.PlayCard(side, battleCard);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
-            _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+            _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -172,7 +173,7 @@ namespace GGemCo2DTcg
             var battleCardTarget = opponent.GetFieldDataByIndex(targetIndex);
             var command = TcgBattleCommand.AttackUnit(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
-            _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+            _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -199,24 +200,44 @@ namespace GGemCo2DTcg
         public void OnUiRequestEndTurn()
         {
             _session.EndTurn();
-            _ui.RefreshAll(_session.Context);
+            _uiController.RefreshAll(_session.Context);
 
             if (!_session.IsBattleEnded)
             {
                 // AI 턴 자동 실행
                 _session.ExecuteEnemyTurnWithTrace(_traceBuffer);
-                _ui.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+                _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
             }
         }
 
-        private void OnBattleEnded(ConfigCommonTcg.TcgPlayerSide winner)
+        public void OnBattleEnded(ConfigCommonTcg.TcgPlayerSide winner)
         {
             // TODO: 보상 지급, 결과 화면 표시 등 처리
             GcLogger.Log($"[{nameof(TcgBattleManager)}] 전투 종료. 승리: {winner}");
 
-            _ui.RefreshAll(_session.Context);
+            _uiController.RefreshAll(_session.Context);
             // 여기서 바로 EndBattleForce() 를 호출할지, 
             // 결과 UI에서 나갈 때까지 세션을 유지할지 정책에 따라 결정
+            
+            // todo. localization
+            var message = "전투가 종료되었습니다.";
+            if (winner == ConfigCommonTcg.TcgPlayerSide.Player)
+            {
+                message += "\n승자는 플레이어 입니다.";
+            }
+            else if (winner == ConfigCommonTcg.TcgPlayerSide.Enemy)
+            {
+                message += "\n승자는 AI 입니다.";
+            }
+            PopupMetadata popupMetadata = new PopupMetadata
+            {
+                PopupType  = PopupManager.Type.Default,
+                Title = "전투 종료",
+                Message = message,
+                MessageColor = Color.yellow,
+                OnConfirm = EndBattleForce,
+            };
+            SceneGame.Instance.popupManager.ShowPopup(popupMetadata);
         }
 
         #endregion

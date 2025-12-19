@@ -69,14 +69,7 @@ namespace GGemCo2DTcg
             {
                 var uiIcon = SetIconCount(i, card.Uid, 1);
                 if (!uiIcon) { i++; continue; }
-                var uiIconCard = uiIcon.GetComponent<UIIconCard>();
-                if (uiIconCard != null)
-                {
-                    var info = _tableTcgCard.GetDataByUid(card.Uid);
-                    if (info == null) continue;
-                    uiIconCard.UpdateAttack(info.GetAttack());
-                    uiIconCard.UpdateHealth(info.GetHealth());
-                }
+                UpdateCardInfo(uiIcon);
                 i++;
             }
         }
@@ -85,7 +78,18 @@ namespace GGemCo2DTcg
         {
             if (heroCard == null) return;
 
-            SetIconCount(0, heroCard.Uid, 1);
+            var uiIcon = SetIconCount(0, heroCard.Uid, 1);
+            UpdateCardInfo(uiIcon);
+        }
+
+        private void UpdateCardInfo(UIIcon uiIcon)
+        {
+            var info = _tableTcgCard.GetDataByUid(uiIcon.uid);
+            if (info == null) return;
+            var uiIconCard = uiIcon.GetComponent<UIIconCard>();
+            if (uiIconCard == null) return;
+            uiIconCard.UpdateAttack(info.GetAttack());
+            uiIconCard.UpdateHealth(info.GetHealth());
         }
 
         #endregion

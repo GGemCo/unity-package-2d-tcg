@@ -34,7 +34,7 @@
         RemoveBuff,
 
         // 종료
-        UnitDeath
+        EndBattle
     }
 
     /// <summary>

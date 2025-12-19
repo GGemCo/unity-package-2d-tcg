@@ -28,6 +28,7 @@ namespace GGemCo2DTcg
         
         public Image imageAttack;
         public Image imageHealth;
+        public Image imageMana;
 
         protected TableTcgCard tableTcgCard;
         

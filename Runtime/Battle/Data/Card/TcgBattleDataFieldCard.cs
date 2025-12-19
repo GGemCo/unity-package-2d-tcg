@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using GGemCo2DCore;
 using R3;
 
 namespace GGemCo2DTcg

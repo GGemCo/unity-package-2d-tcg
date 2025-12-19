@@ -34,7 +34,7 @@ namespace GGemCo2DTcg
 
         private void OnClickBattleExit()
         {
-            _battleManager.EndBattleForce();
+            _battleManager?.EndBattleForce();
         }
 
         public void Release()
