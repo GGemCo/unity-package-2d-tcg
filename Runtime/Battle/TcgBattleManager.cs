@@ -89,14 +89,11 @@ namespace GGemCo2DTcg
             }
 
             // 각 사이드 상태 생성
-            var playerSide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Player, playerDeck);
-            // todo. 정리 필요
-            playerSide.InitializeHeroHp(100, 100);
-            playerSide.InitializeMana(_tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
+            var playerSide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Player, playerDeck,
+                _tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
 
-            var enemySide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Enemy, enemyDeck);
-            enemySide.InitializeHeroHp(100, 100);
-            enemySide.InitializeMana(_tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
+            var enemySide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Enemy, enemyDeck,
+                _tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
 
             // 플레이어/적 컨트롤러 생성
             var playerController = new TcgBattleControllerPlayer(ConfigCommonTcg.TcgPlayerSide.Player);
@@ -112,6 +109,10 @@ namespace GGemCo2DTcg
                 _tcgSettings,
                 _systemMessageManager);
 
+            // 영웅 카드 셋팅
+            SetHeroCard(playerSide);
+            SetHeroCard(enemySide);
+            
             // 첫 드로우/턴 시작 로직
             DrawCards(playerSide, _tcgSettings.startingHandCardCount);
             DrawCards(enemySide,  _tcgSettings.startingHandCardCount);
@@ -120,6 +121,12 @@ namespace GGemCo2DTcg
             _uiController.BindBattleManager(this, _session);
             _uiController.ShowAll(true);
             _uiController.RefreshAll(_session.Context);
+        }
+
+        private void SetHeroCard(TcgBattleDataSide battleDataSide)
+        {
+            var cardHero = battleDataSide.TcgBattleDataDeck.HeroCard;
+            battleDataSide.AddCardToHandHero(cardHero);
         }
 
         /// <summary>
@@ -152,7 +159,7 @@ namespace GGemCo2DTcg
             if (!_session.IsPlayerTurn) return;
 
             var actor = _session.Context.GetSideState(side);
-            var battleCard = actor.GetDataByIndex(indexInHand);
+            var battleCard = actor.Hand.GetDataByIndex(indexInHand);
             var command = TcgBattleCommand.PlayCard(side, battleCard);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
@@ -169,8 +176,8 @@ namespace GGemCo2DTcg
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
             
-            var battleCardAttacker = actor.GetFieldDataByIndex(attackerIndex);
-            var battleCardTarget = opponent.GetFieldDataByIndex(targetIndex);
+            var battleCardAttacker = actor.Board.GetFieldDataByIndex(attackerIndex);
+            var battleCardTarget = opponent.Board.GetFieldDataByIndex(targetIndex);
             var command = TcgBattleCommand.AttackUnit(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
@@ -178,20 +185,21 @@ namespace GGemCo2DTcg
 
         /// <summary>
         /// UI에서 "크리처로 적 영웅 공격" 요청을 보냈을 때 호출됩니다.
+        /// 크리처는 피해를 받지 않습니다.
         /// </summary>
-        public void OnUiRequestAttackHero(int attackerBoardIndex)
+        public void OnUiRequestAttackHero(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex, int targetIndex)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
-            //
-            // var command = new TcgBattleCommand(
-            //     ConfigCommonTcg.TcgBattleCommandType.AttackHero,
-            //     ConfigCommonTcg.TcgPlayerSide.Player,
-            //     attackerBoardIndex,
-            //     -1);
-            //
-            // _session.ExecuteCommand(command);
-            // _ui.RefreshAll(_session.Context);
+
+            var actor = _session.Context.GetSideState(side);
+            var opponent = _session.Context.GetOpponentState(side);
+            
+            var battleCardAttacker = actor.Board.GetFieldDataByIndex(attackerIndex);
+            var battleCardTarget = opponent.Board.GetFieldDataByIndex(targetIndex);
+            var command = TcgBattleCommand.AttackHero(side, battleCardAttacker, battleCardTarget);
+            _session.ExecuteCommandWithTrace(command, _traceBuffer);
+            _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -260,13 +268,11 @@ namespace GGemCo2DTcg
             if (handler == null) return;
 
             var type = handler.CommandType;
-            if (_commandHandlers.ContainsKey(type))
+            if (!_commandHandlers.TryAdd(type, handler))
             {
                 GcLogger.LogWarning($"[{nameof(TcgBattleManager)}] 이미 등록된 커맨드 타입입니다: {type}");
                 return;
             }
-
-            _commandHandlers.Add(type, handler);
         }
 
         #endregion
@@ -282,7 +288,7 @@ namespace GGemCo2DTcg
 
             if (!deck.TryDraw(out var card)) return null;
             
-            battleDataSide.AddCardToHand(card);
+            battleDataSide.Hand.TryAdd(card);
             return card;
         }
         private void DrawCards(TcgBattleDataSide battleDataSide, int count)

@@ -45,7 +45,7 @@ namespace GGemCo2DTcg
             DetachAllIcons();
 
             int i = 0;
-            foreach (var card in battleDataSide.Board)
+            foreach (var card in battleDataSide.Board.Cards)
             {
                 var uiIcon = SetIconCount(i, card.Uid, 1);
                 if (!uiIcon) { i++; continue; }

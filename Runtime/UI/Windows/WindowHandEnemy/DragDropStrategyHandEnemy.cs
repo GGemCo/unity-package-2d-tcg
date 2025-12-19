@@ -8,6 +8,7 @@ namespace GGemCo2DTcg
     /// </summary>
     public class DragDropStrategyHandEnemy : IDragDropStrategy
     {
+        private TcgBattleManager _battleManager;
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
         {
             UIWindowTcgHandEnemy uiWindowTcgHandEnemy = window as UIWindowTcgHandEnemy;
@@ -54,7 +55,11 @@ namespace GGemCo2DTcg
             {
                 switch (droppedWindowUid)
                 {
-                    case UIWindowConstants.WindowUid.TcgCardCollection:
+                    case UIWindowConstants.WindowUid.TcgFieldPlayer:
+                        // 영웅을 공격 했을 때
+                        _battleManager ??= TcgPackageManager.Instance.battleManager;
+                        _battleManager.OnUiRequestAttackHero(ConfigCommonTcg.TcgPlayerSide.Player, dropIconSlotIndex,
+                            targetIconSlotIndex);
                         break;
                 }
             }

@@ -173,8 +173,8 @@ namespace GGemCo2DTcg
         {
             if (IsBattleEnded) return;
 
-            var playerHp = Context.Player.HeroHp;
-            var enemyHp  = Context.Enemy.HeroHp;
+            var playerHp = Context.Player.Hero.GetHp();
+            var enemyHp  = Context.Enemy.Hero.GetHp();
 
             // 1) HP 기반 종료 (최우선)
             if (playerHp <= 0 && enemyHp <= 0)
@@ -200,8 +200,8 @@ namespace GGemCo2DTcg
             }
 
             // 2) 카드 고갈 기반 종료 (HP 종료가 아닐 때만)
-            int playerHandCount = Context.Player.Hand.Count;
-            int enemyHandCount  = Context.Enemy.Hand.Count;
+            int playerHandCount = Context.Player.Hand.GetCount();
+            int enemyHandCount  = Context.Enemy.Hand.GetCount();
             int playerDeckCount = Context.Player.TcgBattleDataDeck.Count;
             int enemyDeckCount  = Context.Enemy.TcgBattleDataDeck.Count;
 
@@ -259,7 +259,7 @@ namespace GGemCo2DTcg
         /// 여러 개의 커맨드를 순차적으로 실행하며,
         /// 실행된 커맨드들의 Trace를 수집합니다.
         /// </summary>
-        public void ExecuteCommandsWithTrace(List<TcgBattleCommand> commands, List<TcgBattleCommandTrace> traces)
+        private void ExecuteCommandsWithTrace(List<TcgBattleCommand> commands, List<TcgBattleCommandTrace> traces)
         {
             if (IsBattleEnded) return;
             if (commands == null || commands.Count == 0) return;

@@ -17,10 +17,10 @@ namespace GGemCo2DTcg
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
             
-            if (!actor.ContainsOnBoard(attacker))
+            if (!actor.Board.Contains(attacker))
                 return CommandResult.Fail("Error_Tcg_NoAttackerOnBoard");
 
-            if (!opponent.ContainsOnBoard(target))
+            if (!opponent.Board.Contains(target))
                 return CommandResult.Fail("Error_Tcg_NoTargetOnBoard");
 
             if (!attacker.CanAttack)
@@ -38,16 +38,12 @@ namespace GGemCo2DTcg
 
             attacker.CanAttack = false;
 
-            // 사망 처리 전 count
-            int countActor = actor.Board.Count;
-            int countOpponent = opponent.Board.Count;
-            
             // 사망 처리
             if (target.Hp <= 0)
-                opponent.RemoveUnitFromBoard(target);
+                opponent.Board.Remove(target);
 
             if (attacker.Hp <= 0)
-                actor.RemoveUnitFromBoard(attacker);
+                actor.Board.Remove(attacker);
             
             return CommandResult.OkPresentation(new[]
             {

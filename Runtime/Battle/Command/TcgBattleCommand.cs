@@ -30,6 +30,8 @@ namespace GGemCo2DTcg
         /// 공격 시: 대상 유닛 (영웅 공격이면 null 로 사용).
         /// </summary>
         public TcgBattleDataFieldCard targetBattleData;
+        // 영웅 공격시
+        public TcgBattleDataFieldCard targetBattleDataHero;
 
         /// <summary>
         /// 확장용 추가 데이터 (예: 스펠 턴수, 선택된 옵션 등).
@@ -66,13 +68,15 @@ namespace GGemCo2DTcg
 
         public static TcgBattleCommand AttackHero(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataFieldCard attacker)
+            TcgBattleDataFieldCard attacker,
+            TcgBattleDataFieldCard target)
         {
             return new TcgBattleCommand
             {
                 CommandType = ConfigCommonTcg.TcgBattleCommandType.AttackHero,
                 Side = side,
-                Attacker = attacker
+                Attacker = attacker,
+                targetBattleDataHero = target
             };
         }
 

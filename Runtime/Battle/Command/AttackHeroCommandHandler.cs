@@ -8,37 +8,54 @@
         public CommandResult Execute(TcgBattleDataMain context, in TcgBattleCommand cmd)
         {
             var attacker = cmd.Attacker;
-            if (attacker == null)
-                return CommandResult.Fail("Error_Tcg_NoAttacker");
+            var target   = cmd.targetBattleDataHero;
+
+            if (attacker == null || target == null)
+                return CommandResult.Fail("Error_Tcg_NoAttackerOrTarget");
 
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
             
-            if (!actor.ContainsOnBoard(attacker))
+            if (!actor.Board.Contains(attacker))
                 return CommandResult.Fail("Error_Tcg_NoAttackerOnBoard");
+
+            if (!opponent.ContainsInHero(target))
+                return CommandResult.Fail("Error_Tcg_NoTargetOnHero");
 
             if (!attacker.CanAttack)
             {
                 // todo. localization
                 // _systemMessageManager.ShowMessageWarning("그 캐릭터는 이미 공격을 마쳤습니다.");
-                return CommandResult.Fail("Error_Tcg_AlreadyAttacked");
+                // _systemMessageManager.ShowMessageWarning("이번 턴에 낸 카드는 곧바로 공격할 수 없습니다.");
+                return CommandResult.Fail("Error_Tcg_NoAttackedInThisTurn");
             }
 
-            opponent.TakeHeroDamage(attacker.Attack);
+            // GcLogger.Log($"{actor.Side} attack to {opponent.Side}");
+            // 양쪽에 데미지 적용
+            target.ApplyDamage(attacker.Attack);
+
             attacker.CanAttack = false;
 
-            // TODO: 영웅 HP 0 이하이면 전투 종료 처리
-            if (opponent.HeroHp <= 0)
+            // 영웅 사망. UIController 에서 연출이 끝나고 TryCheckBattleEnd 함수로 게임 종료 처리
+            if (target.Hp <= 0)
             {
-                OnBattleEnd(actor.Side);
             }
-            
-            return CommandResult.Ok();
-        }
 
-        private void OnBattleEnd(ConfigCommonTcg.TcgPlayerSide actorSide)
-        {
+            return CommandResult.OkPresentation(new[]
+            {
+                new TcgPresentationStep(
+                    TcgPresentationStepType.AttackHero,
+                    cmd.Side,
+                    attacker: actor,
+                    target: opponent,
+                    fromIndex: attacker.Index,
+                    toIndex: target.Index,
+                    valueA: attacker.Hp,
+                    valueB: target.Hp,
+                    valueC: target.Attack,
+                    valueD: attacker.Attack
+                    )
+            });
         }
-
     }
 }

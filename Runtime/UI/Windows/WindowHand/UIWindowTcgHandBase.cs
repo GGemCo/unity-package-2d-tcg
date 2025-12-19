@@ -65,7 +65,7 @@ namespace GGemCo2DTcg
 
             // 1번부터: 핸드 카드
             int i = 1;
-            foreach (var card in battleDataSide.Hand)
+            foreach (var card in battleDataSide.Hand.Cards)
             {
                 var uiIcon = SetIconCount(i, card.Uid, 1);
                 if (!uiIcon) { i++; continue; }

@@ -44,24 +44,24 @@ namespace GGemCo2DTcg
             // 1) 필드에 유닛이 있으면, 적 유닛/영웅 공격 명령 추가 (아주 단순한 예시)
             Dictionary<int, TcgBattleDataFieldCard> deadUnits = new Dictionary<int, TcgBattleDataFieldCard>();
             Dictionary<int, TcgBattleDataFieldCard> alreadyAttack = new Dictionary<int, TcgBattleDataFieldCard>();
-            foreach (var myUnit in _me.Board)
+            foreach (var battleDataFieldCard in _me.Board.Cards)
             {
-                if (!myUnit.CanAttack)
+                if (!battleDataFieldCard.CanAttack)
                     continue;
-                if (myUnit.Hp <= 0)
+                if (battleDataFieldCard.Hp <= 0)
                 {
                     GcLogger.LogError($"hp가 0인데 공격 시도");
                     continue;
                 }
                 // 이미 공격한 카드는 넘어가기
-                if (alreadyAttack.ContainsKey(myUnit.Index)) continue;
+                if (alreadyAttack.ContainsKey(battleDataFieldCard.Index)) continue;
 
                 if (_opponent.Board.Count > 0)
                 {
                     // 가장 체력이 낮은 유닛을 대상으로 공격
                     TcgBattleDataFieldCard lowHpTarget = null;
                     int minHp = int.MaxValue;
-                    foreach (var enemy in _opponent.Board)
+                    foreach (var enemy in _opponent.Board.Cards)
                     {
                         if (enemy.Hp < minHp)
                         {
@@ -76,13 +76,13 @@ namespace GGemCo2DTcg
                     if (lowHpTarget != null)
                     {
                         outCommands.Add(
-                            TcgBattleCommand.AttackUnit(Side, myUnit, lowHpTarget));
+                            TcgBattleCommand.AttackUnit(Side, battleDataFieldCard, lowHpTarget));
                         
                         // 공격한 카드 수집
-                        alreadyAttack.TryAdd(myUnit.Index, myUnit);
+                        alreadyAttack.TryAdd(battleDataFieldCard.Index, battleDataFieldCard);
                         
                         // 사망한 타겟 수집
-                        if (minHp - myUnit.Attack <= 0)
+                        if (minHp - battleDataFieldCard.Attack <= 0)
                         {
                             deadUnits.TryAdd(lowHpTarget.Index, lowHpTarget);
                         }
@@ -96,9 +96,9 @@ namespace GGemCo2DTcg
             }
 
             // 2) 낼 수 있는 카드 중 코스트가 맞는 카드 찾아서 1장 사용(예시)
-            foreach (var card in _me.Hand)
+            foreach (var card in _me.Hand.Cards)
             {
-                if (card.Cost <= _me.CurrentManaValue)
+                if (card.Cost <= _me.Mana.Current)
                 {
                     outCommands.Add(TcgBattleCommand.PlayCard(Side, card));
                     break;

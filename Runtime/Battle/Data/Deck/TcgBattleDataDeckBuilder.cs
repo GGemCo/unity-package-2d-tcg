@@ -18,7 +18,7 @@ namespace GGemCo2DTcg
                     GcLogger.LogError($"Card UID {uid} not found in table.");
                     continue;
                 }
-                TcgBattleDataCard tcgBattleDataCard = TcgBattleDataCardFactory.CreateCardRuntime(row);
+                TcgBattleDataCard tcgBattleDataCard = TcgBattleDataCardFactory.CreateBattleDataCard(row);
 
                 list.Add(tcgBattleDataCard);
             }
@@ -29,7 +29,7 @@ namespace GGemCo2DTcg
         public static TcgBattleDataCard BuildRuntimeHeroCard(int uid)
         {
             var table = TableLoaderManagerTcg.Instance.TableTcgCard;
-            if (table.TryGetDataByUid(uid, out var row)) return TcgBattleDataCardFactory.CreateCardRuntime(row);
+            if (table.TryGetDataByUid(uid, out var row)) return TcgBattleDataCardFactory.CreateBattleDataCard(row);
             
             GcLogger.LogError($"Card UID {uid} not found in table.");
             return null;

@@ -26,10 +26,10 @@ namespace GGemCo2DTcg
             if (target.Hp <= 0)
             {
                 // 어느 쪽 보드에 있는지 확인 후 제거
-                if (sideCaster.ContainsOnBoard(target))
-                    sideCaster.RemoveUnitFromBoard(target);
-                else if (sideOpponent.ContainsOnBoard(target))
-                    sideOpponent.RemoveUnitFromBoard(target);
+                if (sideCaster.Board.Contains(target))
+                    sideCaster.Board.Remove(target);
+                else if (sideOpponent.Board.Contains(target))
+                    sideOpponent.Board.Remove(target);
             }
         }
     }
@@ -42,7 +42,7 @@ namespace GGemCo2DTcg
         public void Execute(TcgAbilityContext context)
         {
             var opponent = context.Opponent;
-            opponent.TakeHeroDamage(context.Value);
+            opponent.Hero.TakeDamage(context.Value);
 
             // 전투 종료 체크는 BattleManager 쪽에서 턴마다/능력마다 검사하도록 구성해도 됩니다.
         }
@@ -85,7 +85,7 @@ namespace GGemCo2DTcg
                 {
                     break;
                 }
-                caster.AddCardToHand(card);
+                caster.Hand.TryAdd(card);
             }
         }
     }

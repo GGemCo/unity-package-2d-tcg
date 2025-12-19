@@ -370,8 +370,8 @@ namespace GGemCo2DTcg
             _fieldEnemy.RefreshBoard(enemy);
             // _battleHud.Refresh(context);
             
-            _handPlayer.SetMana(player.CurrentManaValue, player.CurrentManaValueMax);
-            _handEnemy.SetMana(enemy.CurrentManaValue, enemy.CurrentManaValueMax);
+            _handPlayer.SetMana(player.Mana.Current, player.Mana.Max);
+            _handEnemy.SetMana(enemy.Mana.Current, enemy.Mana.Max);
         }
 
         /// <summary>
