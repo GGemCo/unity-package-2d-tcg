@@ -30,6 +30,9 @@
         /// 필드에 존재하는 영웅 카드의 런타임 데이터에 대한 읽기 전용 접근자입니다.
         /// </summary>
         public TcgBattleDataFieldCard HeroField => _heroField;
+        public int Uid => _heroField.Uid;
+        public int Attack => _heroField.Attack;
+        public int Hp => _heroField.Health;
 
         /// <summary>
         /// 영웅 데이터 슬롯을 초기화합니다.
@@ -63,13 +66,6 @@
             if (_heroField == null || target == null) return false;
             return _heroField.Uid == target.Uid;
         }
-
-        /// <summary>
-        /// 현재 영웅의 체력(Hp)을 반환합니다.
-        /// </summary>
-        /// <returns>영웅의 현재 Hp 값입니다.</returns>
-        public int GetHp()
-            => _heroField.Hp;
 
         /// <summary>
         /// 영웅에게 피해를 적용합니다.

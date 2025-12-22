@@ -48,7 +48,7 @@ namespace GGemCo2DTcg
             {
                 if (!battleDataFieldCard.CanAttack)
                     continue;
-                if (battleDataFieldCard.Hp <= 0)
+                if (battleDataFieldCard.Health <= 0)
                 {
                     GcLogger.LogError($"hp가 0인데 공격 시도");
                     continue;
@@ -63,12 +63,12 @@ namespace GGemCo2DTcg
                     int minHp = int.MaxValue;
                     foreach (var enemy in _opponent.Board.Cards)
                     {
-                        if (enemy.Hp < minHp)
+                        if (enemy.Health < minHp)
                         {
                             // 사망한 타겟이면 넘어가기
                             if (deadUnits.ContainsKey(enemy.Index)) continue;
                             
-                            minHp = enemy.Hp;
+                            minHp = enemy.Health;
                             lowHpTarget = enemy;
                         }
                     }

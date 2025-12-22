@@ -13,7 +13,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 필드에 배치된 카드의 내부 리스트입니다.
         /// </summary>
-        private readonly List<TcgBattleDataFieldCard> _cards;
+        private List<TcgBattleDataFieldCard> _cards;
 
         /// <summary>
         /// 외부에 노출되는 필드 카드 목록의 읽기 전용 뷰입니다.
@@ -56,7 +56,7 @@ namespace GGemCo2DTcg
         /// <param name="index">조회할 필드 인덱스입니다.</param>
         /// <returns>유효한 인덱스이면 카드 데이터, 아니면 null을 반환합니다.</returns>
         public TcgBattleDataFieldCard GetFieldDataByIndex(int index)
-            => (uint)index < (uint)_cards.Count ? _cards[index] : null;
+            => index < _cards.Count ? _cards[index] : null;
 
         /// <summary>
         /// 필드에 카드를 추가하고 인덱스를 설정합니다.

@@ -23,7 +23,7 @@ namespace GGemCo2DTcg
             var sideCaster = context.Caster;
             var sideOpponent = context.Opponent;
 
-            if (target.Hp <= 0)
+            if (target.Health <= 0)
             {
                 // 어느 쪽 보드에 있는지 확인 후 제거
                 if (sideCaster.Board.Contains(target))

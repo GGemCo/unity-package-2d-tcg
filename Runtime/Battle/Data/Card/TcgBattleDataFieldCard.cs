@@ -34,8 +34,8 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 체력(Observable)
         /// </summary>
-        public readonly BehaviorSubject<int> hp = new(0);
-        public int Hp => hp.Value;
+        public readonly BehaviorSubject<int> health = new(0);
+        public int Health => health.Value;
         
         public int MaxHp { get; private set; }
 
@@ -64,7 +64,7 @@ namespace GGemCo2DTcg
             SourceTcgBattleDataCard = sourceTcgBattleDataCard;
 
             this.attack.OnNext(attack);
-            this.hp.OnNext(hp);
+            this.health.OnNext(hp);
             
             MaxHp = hp;
             CanAttack = false;
@@ -78,19 +78,19 @@ namespace GGemCo2DTcg
         public void ApplyDamage(int value)
         {
             if (value <= 0) return;
-            var newValue = Hp - value;
+            var newValue = Health - value;
             if (newValue < 0) newValue = 0;
             // GcLogger.Log($"side:{OwnerSide}, ApplyDamage: {value}, old hp: {Hp} -> new hp: {newValue}");
-            hp.OnNext(newValue);
+            health.OnNext(newValue);
         }
 
         public void Heal(int value)
         {
             if (value <= 0) return;
-            var newValue = Hp + value;
+            var newValue = Health + value;
             if (newValue > MaxHp) newValue = MaxHp;
             // GcLogger.Log($"side:{OwnerSide}, Heal: {value}, old hp: {Hp} -> new hp: {newValue}");
-            hp.OnNext(newValue);
+            health.OnNext(newValue);
         }
 
         public void ModifyAttack(int value)

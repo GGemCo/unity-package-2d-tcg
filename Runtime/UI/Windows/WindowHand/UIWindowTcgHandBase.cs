@@ -61,7 +61,7 @@ namespace GGemCo2DTcg
             DetachAllIcons();
 
             // 0번: 영웅 카드
-            SetHeroCard(battleDataSide.TcgBattleDataDeck.HeroCard);
+            SetHeroCard(battleDataSide.Hero);
 
             // 1번부터: 핸드 카드
             int i = 1;
@@ -69,27 +69,25 @@ namespace GGemCo2DTcg
             {
                 var uiIcon = SetIconCount(i, card.Uid, 1);
                 if (!uiIcon) { i++; continue; }
-                UpdateCardInfo(uiIcon);
+                UpdateCardInfo(uiIcon, card.Attack, card.Health);
                 i++;
             }
         }
 
-        private void SetHeroCard(TcgBattleDataCard heroCard)
+        private void SetHeroCard(TcgBattleDataSideHero heroData)
         {
-            if (heroCard == null) return;
+            if (heroData == null) return;
 
-            var uiIcon = SetIconCount(0, heroCard.Uid, 1);
-            UpdateCardInfo(uiIcon);
+            var uiIcon = SetIconCount(0, heroData.Uid, 1);
+            UpdateCardInfo(uiIcon, heroData.Attack, heroData.Hp);
         }
 
-        private void UpdateCardInfo(UIIcon uiIcon)
+        private void UpdateCardInfo(UIIcon uiIcon, int attack, int health)
         {
-            var info = _tableTcgCard.GetDataByUid(uiIcon.uid);
-            if (info == null) return;
             var uiIconCard = uiIcon.GetComponent<UIIconCard>();
             if (uiIconCard == null) return;
-            uiIconCard.UpdateAttack(info.GetAttack());
-            uiIconCard.UpdateHealth(info.GetHealth());
+            uiIconCard.UpdateAttack(attack);
+            uiIconCard.UpdateHealth(health);
         }
 
         #endregion

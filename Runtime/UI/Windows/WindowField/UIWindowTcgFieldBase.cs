@@ -42,22 +42,32 @@ namespace GGemCo2DTcg
                 return;
             }
 
-            DetachAllIcons();
+            // DetachAllIcons();
 
-            int i = 0;
-            foreach (var card in battleDataSide.Board.Cards)
+            for (int i = 0; i < maxCountIcon; i++)
             {
-                var uiIcon = SetIconCount(i, card.Uid, 1);
-                if (!uiIcon) { i++; continue; }
-
-                card.Index = i;
-                var uiIconCard = uiIcon.GetComponent<UIIconCard>();
-                if (uiIconCard != null)
+                var slot = GetSlotByIndex(i);
+                if (slot == null) continue;
+                if (i < battleDataSide.Board.Cards.Count)
                 {
-                    uiIconCard.UpdateAttack(card.Attack);
-                    uiIconCard.UpdateHealth(card.Hp);
+                    slot.gameObject.SetActive(true);
+                    var card = battleDataSide.Board.Cards[i];
+                
+                    var uiIcon = SetIconCount(i, card.Uid, 1);
+                    if (!uiIcon) { i++; continue; }
+
+                    card.Index = i;
+                    var uiIconCard = uiIcon.GetComponent<UIIconCard>();
+                    if (uiIconCard != null)
+                    {
+                        uiIconCard.UpdateAttack(card.Attack);
+                        uiIconCard.UpdateHealth(card.Health);
+                    }
                 }
-                i++;
+                else
+                {
+                    slot.gameObject.SetActive(false);
+                }
             }
         }
 

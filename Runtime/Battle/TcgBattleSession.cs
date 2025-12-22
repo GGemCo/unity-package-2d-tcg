@@ -173,8 +173,8 @@ namespace GGemCo2DTcg
         {
             if (IsBattleEnded) return;
 
-            var playerHp = Context.Player.Hero.GetHp();
-            var enemyHp  = Context.Enemy.Hero.GetHp();
+            var playerHp = Context.Player.Hero.Hp;
+            var enemyHp  = Context.Enemy.Hero.Hp;
 
             // 1) HP 기반 종료 (최우선)
             if (playerHp <= 0 && enemyHp <= 0)

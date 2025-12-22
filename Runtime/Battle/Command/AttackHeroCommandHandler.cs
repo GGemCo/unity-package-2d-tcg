@@ -37,7 +37,7 @@
             attacker.CanAttack = false;
 
             // 영웅 사망. UIController 에서 연출이 끝나고 TryCheckBattleEnd 함수로 게임 종료 처리
-            if (target.Hp <= 0)
+            if (target.Health <= 0)
             {
             }
 
@@ -50,8 +50,8 @@
                     target: opponent,
                     fromIndex: attacker.Index,
                     toIndex: target.Index,
-                    valueA: attacker.Hp,
-                    valueB: target.Hp,
+                    valueA: attacker.Health,
+                    valueB: target.Health,
                     valueC: target.Attack,
                     valueD: attacker.Attack
                     )

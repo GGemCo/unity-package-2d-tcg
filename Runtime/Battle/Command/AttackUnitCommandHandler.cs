@@ -39,10 +39,10 @@ namespace GGemCo2DTcg
             attacker.CanAttack = false;
 
             // 사망 처리
-            if (target.Hp <= 0)
+            if (target.Health <= 0)
                 opponent.Board.Remove(target);
 
-            if (attacker.Hp <= 0)
+            if (attacker.Health <= 0)
                 actor.Board.Remove(attacker);
             
             return CommandResult.OkPresentation(new[]
@@ -54,8 +54,8 @@ namespace GGemCo2DTcg
                     target: opponent,
                     fromIndex: attacker.Index,
                     toIndex: target.Index,
-                    valueA: attacker.Hp,
-                    valueB: target.Hp,
+                    valueA: attacker.Health,
+                    valueB: target.Health,
                     valueC: target.Attack,
                     valueD: attacker.Attack
                     )

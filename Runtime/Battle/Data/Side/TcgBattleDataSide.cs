@@ -85,8 +85,8 @@
             Side = side;
             TcgBattleDataDeck = deckRuntime;
 
-            Hand = new TcgBattleDataSideHand(initialCapacity: 16, maxSize: MaxHandSize);
-            Board = new TcgBattleDataSideBoard(initialCapacity: 8);
+            Hand = new TcgBattleDataSideHand(initialCapacity: MaxHandSize, maxSize: MaxHandSize);
+            Board = new TcgBattleDataSideBoard(initialCapacity: MaxHandSize);
             Hero = new TcgBattleDataSideHero(side);
 
             // 마나는 현재 값과 최대값으로 초기화되며,

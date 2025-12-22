@@ -33,7 +33,9 @@ namespace GGemCo2DTcg
         public int Cost { get; }
 
         public readonly BehaviorSubject<int> attack = new(0);
+        public int Attack => attack.Value;
         public readonly BehaviorSubject<int> health = new(0);
+        public int Health => health.Value;
 
         public int MaxCopiesPerDeck { get; }
 

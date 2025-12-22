@@ -27,12 +27,13 @@ namespace GGemCo2DTcg
             if (handWindow == null || fieldWindow == null) yield break;
 
             // Hand UI: 0번은 영웅, 실제 손패는 1번부터(그래서 +1 오프셋)
-            int fromIndex = step.FromIndex + 1;
-            var slot = handWindow.GetSlotByIndex(fromIndex);
+            int fronIndexByWindow = step.FromIndex + 1;
+            var slot = handWindow.GetSlotByIndex(fronIndexByWindow);
             slot.gameObject.SetActive(false);
+            var icon = handWindow.GetIconByIndex(fronIndexByWindow);
             
-            var icon = handWindow.GetIconByIndex(fromIndex);
-            var destSlot = fieldWindow.GetSlotByIndex(step.ToIndex);
+            int toIndex = step.ToIndex;
+            var destSlot = fieldWindow.GetSlotByIndex(toIndex);
 
             if (icon == null || destSlot == null)
             {
@@ -49,15 +50,25 @@ namespace GGemCo2DTcg
                 pos = destSlot.transform.position;
             }
             // 이동 중 캔버스 정렬 문제를 피하기 위해 UI 루트로 일시 이동
-            GcLogger.Log($"카드 드로우 연출 / Canvas로 이동");
             icon.transform.SetParent(ctx.UIRoot, worldPositionStays: true);
-            yield return new WaitForSecondsRealtime(0.05f);
 
             yield return TcgUiTween.MoveTo(icon.transform, pos, fieldWindow.timeToMove);
             
-            yield return new WaitForSecondsRealtime(0.05f);
+            // 이미 데이터는 변경되었으므로, Board에서 정보를 가져온다.
+            var fromCard = step.Attacker.Board.GetFieldDataByIndex(toIndex);
+            var uiIcon = fieldWindow.SetIconCount(toIndex, fromCard.Uid, 1);
+            if (!uiIcon) {
+                yield return new WaitForSecondsRealtime(0.05f);
+                yield break;
+            }
+            var uiIconCard = uiIcon.GetComponent<UIIconCard>();
+            if (uiIconCard != null)
+            {
+                uiIconCard.UpdateAttack(fromCard.Attack);
+                uiIconCard.UpdateHealth(fromCard.Health);
+            }
+            
             // 원복
-            GcLogger.Log($"카드 드로우 연출 / 후 슬롯으로 되돌리기");
             icon.transform.SetParent(slot.transform, worldPositionStays: false);
             icon.transform.localPosition = Vector3.zero;
             yield return new WaitForSecondsRealtime(0.05f);
