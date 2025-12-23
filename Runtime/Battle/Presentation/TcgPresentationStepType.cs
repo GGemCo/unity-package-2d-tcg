@@ -34,7 +34,8 @@
         RemoveBuff,
 
         // 종료
-        EndBattle
+        EndBattle,
+        EndTurn
     }
 
     /// <summary>

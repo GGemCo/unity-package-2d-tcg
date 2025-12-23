@@ -122,7 +122,7 @@ namespace GGemCo2DTcg
                 new HandlerAttackUnit(),
                 new HandlerDeathFadeOut(),
                 new HandlerAttackHero(),
-                // new DamagePopupHandler(),
+                new HandlerEndTurn(),
             });
         }
 
