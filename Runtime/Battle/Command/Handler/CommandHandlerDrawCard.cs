@@ -3,7 +3,7 @@ using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
-    public class PlayCardCommandHandler : ITcgBattleCommandHandler
+    public class CommandHandlerDrawCard : ITcgBattleCommandHandler
     {
         public ConfigCommonTcg.TcgBattleCommandType CommandType =>
             ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand;

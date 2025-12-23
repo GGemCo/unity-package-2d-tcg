@@ -1,4 +1,5 @@
 ﻿using System;
+using GGemCo2DCore;
 using Random = UnityEngine.Random;
 
 namespace GGemCo2DTcg

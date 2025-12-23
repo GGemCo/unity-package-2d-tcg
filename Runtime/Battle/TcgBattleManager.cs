@@ -118,7 +118,7 @@ namespace GGemCo2DTcg
             DrawCards(enemySide,  _tcgSettings.startingHandCardCount);
             
             // UI 바인딩 및 초기 갱신
-            _uiController.BindBattleManager(this, _session);
+            _uiController.BindBattleManager(this, _session, _tcgSettings);
             _uiController.ShowAll(true);
             _uiController.RefreshAll(_session.Context);
         }
@@ -257,10 +257,10 @@ namespace GGemCo2DTcg
             _commandHandlers.Clear();
 
             // 핸들러 구현체들
-            RegisterCommandHandler(new PlayCardCommandHandler());
-            RegisterCommandHandler(new AttackUnitCommandHandler());
-            RegisterCommandHandler(new AttackHeroCommandHandler());
-            RegisterCommandHandler(new EndTurnCommandHandler());
+            RegisterCommandHandler(new CommandHandlerDrawCard());
+            RegisterCommandHandler(new CommandHandlerAttackUnit());
+            RegisterCommandHandler(new CommandHandlerAttackHero());
+            RegisterCommandHandler(new CommandHandlerEndTurn());
         }
 
         private void RegisterCommandHandler(ITcgBattleCommandHandler handler)

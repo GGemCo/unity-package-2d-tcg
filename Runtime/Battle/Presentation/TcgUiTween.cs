@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using GGemCo2DCore;
 using UnityEngine;
 
 namespace GGemCo2DTcg
@@ -9,7 +10,11 @@ namespace GGemCo2DTcg
     /// </summary>
     public static class TcgUiTween
     {
-        public static IEnumerator MoveTo(Transform transform, Vector3 worldDestination, float duration)
+        public static IEnumerator MoveTo(
+            Transform transform,
+            Vector3 worldDestination,
+            float duration,
+            Easing.EaseType easeType = Easing.EaseType.Linear)
         {
             if (transform == null)
                 yield break;
@@ -27,6 +32,8 @@ namespace GGemCo2DTcg
             {
                 time += Time.unscaledDeltaTime;
                 var t = Mathf.Clamp01(time / duration);
+                t = Easing.Apply(t, easeType);
+
                 transform.position = Vector3.LerpUnclamped(start, worldDestination, t);
                 yield return null;
             }
@@ -34,7 +41,12 @@ namespace GGemCo2DTcg
             transform.position = worldDestination;
         }
 
-        public static IEnumerator FadeTo(CanvasGroup canvasGroup, float toAlpha, float duration)
+        public static IEnumerator FadeTo(
+            CanvasGroup canvasGroup,
+            float fromAlpha,
+            float toAlpha,
+            float duration,
+            Easing.EaseType easeType = Easing.EaseType.Linear)
         {
             if (canvasGroup == null)
                 yield break;
@@ -45,18 +57,21 @@ namespace GGemCo2DTcg
                 yield break;
             }
 
-            var startAlpha = canvasGroup.alpha;
+            var startAlpha = fromAlpha;
             var time = 0f;
 
             while (time < duration)
             {
                 time += Time.unscaledDeltaTime;
                 var t = Mathf.Clamp01(time / duration);
+                t = Easing.Apply(t, easeType);
+
                 canvasGroup.alpha = Mathf.LerpUnclamped(startAlpha, toAlpha, t);
                 yield return null;
             }
 
             canvasGroup.alpha = toAlpha;
         }
+
     }
 }

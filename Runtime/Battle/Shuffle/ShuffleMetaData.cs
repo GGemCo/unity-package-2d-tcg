@@ -32,31 +32,34 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 셔플 모드를 변경하고, 해당 모드에 맞는 전략 객체를 설정한다.
         /// </summary>
-        public void SetMode(ConfigCommonTcg.ShuffleMode mode)
+        private void SetMode(ConfigCommonTcg.ShuffleMode mode)
         {
             Mode = mode;
             switch (mode)
             {
+                case ConfigCommonTcg.ShuffleMode.None:
+                    Strategy = new ShuffleStrategyNone();
+                    break;
                 case ConfigCommonTcg.ShuffleMode.PureRandom:
-                    Strategy = new PureRandomShuffleStrategy();
+                    Strategy = new ShuffleStrategyPureRandom();
                     break;
 
                 case ConfigCommonTcg.ShuffleMode.Weighted:
-                    Strategy = new WeightedShuffleStrategy();
+                    Strategy = new ShuffleStrategyWeighted();
                     break;
 
                 case ConfigCommonTcg.ShuffleMode.PhaseWeighted:
-                    Strategy = new PhaseWeightedShuffleStrategy();
+                    Strategy = new ShuffleStrategyPhaseWeighted();
                     break;
 
                 case ConfigCommonTcg.ShuffleMode.SeededReplay:
                     // 알고리즘 자체는 PureRandom 과 동일하게 사용하되,
                     // SeedManager.FixedSeed 를 통해 결과 재현성을 보장한다.
-                    Strategy = new PureRandomShuffleStrategy();
+                    Strategy = new ShuffleStrategyPureRandom();
                     break;
 
                 default:
-                    Strategy = new PureRandomShuffleStrategy();
+                    Strategy = new ShuffleStrategyPureRandom();
                     break;
             }
         }

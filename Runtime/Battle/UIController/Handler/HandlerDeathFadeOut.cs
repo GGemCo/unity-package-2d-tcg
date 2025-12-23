@@ -28,7 +28,7 @@ namespace GGemCo2DTcg
             if (icon == null)
             {
                 // 아이콘이 아직 반영되지 않은 프레임일 수 있으므로 짧게 대기
-                yield return new WaitForSecondsRealtime(0.05f);
+                yield return new WaitForSeconds(0.05f);
                 yield break;
             }
 
@@ -37,11 +37,11 @@ namespace GGemCo2DTcg
             {
                 // CanvasGroup이 없으면 안전하게 즉시 비활성화로 처리
                 icon.gameObject.SetActive(false);
-                yield return new WaitForSecondsRealtime(0.05f);
+                yield return new WaitForSeconds(0.05f);
                 yield break;
             }
 
-            yield return TcgUiTween.FadeTo(cg, 0f, field.timeToFadeOut);
+            yield return TcgUiTween.FadeTo(cg, 1f, 0f, field.fadeOutDuration);
         }
     }
 }

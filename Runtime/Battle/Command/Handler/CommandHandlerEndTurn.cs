@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     /// 실제 턴 전환 로직은 TcgBattleSession.EndTurn() 에 위임하여
     /// 규칙 변경이 필요할 때 단일 지점만 수정하도록 구성합니다.
     /// </summary>
-    public sealed class EndTurnCommandHandler : ITcgBattleCommandHandler
+    public sealed class CommandHandlerEndTurn : ITcgBattleCommandHandler
     {
         public ConfigCommonTcg.TcgBattleCommandType CommandType =>
             ConfigCommonTcg.TcgBattleCommandType.EndTurn;
@@ -19,7 +19,7 @@ namespace GGemCo2DTcg
 
             if (context.Owner is not TcgBattleSession session)
             {
-                GcLogger.LogError($"[{nameof(EndTurnCommandHandler)}] TcgBattleDataMain.Owner 가 Session 이 아닙니다.");
+                GcLogger.LogError($"[{nameof(CommandHandlerEndTurn)}] TcgBattleDataMain.Owner 가 Session 이 아닙니다.");
                 return CommandResult.Fail("Error_Tcg_NoBattleSession");
             }
             session.EndTurn();

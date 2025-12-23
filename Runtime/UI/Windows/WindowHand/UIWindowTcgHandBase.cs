@@ -58,19 +58,28 @@ namespace GGemCo2DTcg
                 return;
             }
 
-            DetachAllIcons();
-
             // 0번: 영웅 카드
             SetHeroCard(battleDataSide.Hero);
 
             // 1번부터: 핸드 카드
-            int i = 1;
-            foreach (var card in battleDataSide.Hand.Cards)
+            for (int i = 1; i < maxCountIcon; i++)
             {
-                var uiIcon = SetIconCount(i, card.Uid, 1);
-                if (!uiIcon) { i++; continue; }
-                UpdateCardInfo(uiIcon, card.Attack, card.Health);
-                i++;
+                var slot = GetSlotByIndex(i);
+                if (slot == null) continue;
+                int handIndex = i - 1;
+                if (handIndex < battleDataSide.Hand.Cards.Count)
+                {
+                    slot.gameObject.SetActive(true);
+                    var card = battleDataSide.Hand.Cards[handIndex];
+                    
+                    var uiIcon = SetIconCount(i, card.Uid, 1);
+                    if (!uiIcon)  continue;
+                    UpdateCardInfo(uiIcon, card.Attack, card.Health);
+                }
+                else
+                {
+                    slot.gameObject.SetActive(false);
+                }
             }
         }
 

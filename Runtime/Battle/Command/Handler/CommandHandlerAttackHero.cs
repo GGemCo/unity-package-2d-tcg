@@ -1,6 +1,6 @@
 ﻿namespace GGemCo2DTcg
 {
-    public class AttackHeroCommandHandler : ITcgBattleCommandHandler
+    public class CommandHandlerAttackHero : ITcgBattleCommandHandler
     {
         public ConfigCommonTcg.TcgBattleCommandType CommandType =>
             ConfigCommonTcg.TcgBattleCommandType.AttackHero;

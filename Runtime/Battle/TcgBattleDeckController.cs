@@ -53,7 +53,7 @@ namespace GGemCo2DTcg
             var deckRuntime    = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
-            LogShuffledDeckForDebug(deckRuntime, "Player");
+            LogShuffledDeckForDebug(deckRuntime, "Player", seed);
 
             var heroCard = TcgBattleDataDeckBuilder.BuildRuntimeHeroCard(deckInfo.heroCardUid);
             deckRuntime.SetHeroCard(heroCard);
@@ -72,7 +72,7 @@ namespace GGemCo2DTcg
             // AI 덱 구성 (현재는 테스트 프리셋 사용)
             List<int> cardUids = new List<int>();
             cardUids.Clear();
-            cardUids = _tcgSettings.testDeckPreset.BuildDeckUids(tableTcgCards);
+            cardUids = _tcgSettings.enemyDeckPreset.BuildDeckUids(tableTcgCards);
 
             Dictionary<int, int> cardList = new Dictionary<int, int>();
             cardList.Clear();
@@ -87,16 +87,16 @@ namespace GGemCo2DTcg
             var deckRuntime = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
-            LogShuffledDeckForDebug(deckRuntime, "Enemy");
+            LogShuffledDeckForDebug(deckRuntime, "Enemy", seed);
 
             int heroCardUid = 0;
-            if (_tcgSettings.testDeckPreset.heroCardUid > 0)
+            if (_tcgSettings.enemyDeckPreset.heroCardUid > 0)
             {
-                heroCardUid = _tcgSettings.testDeckPreset.heroCardUid;
+                heroCardUid = _tcgSettings.enemyDeckPreset.heroCardUid;
             }
-            else if (_tcgSettings.testDeckPreset.heroCardUids.Count > 0)
+            else if (_tcgSettings.enemyDeckPreset.heroCardUids.Count > 0)
             {
-                heroCardUid = _tcgSettings.testDeckPreset.heroCardUids[Random.Range(0, _tcgSettings.testDeckPreset.heroCardUids.Count)];
+                heroCardUid = _tcgSettings.enemyDeckPreset.heroCardUids[Random.Range(0, _tcgSettings.enemyDeckPreset.heroCardUids.Count)];
             }
 
             var heroCard = TcgBattleDataDeckBuilder.BuildRuntimeHeroCard(heroCardUid);
@@ -138,7 +138,8 @@ namespace GGemCo2DTcg
 
                 return new ShuffleMetaData(mode, _seedManager, config);
             }
-
+            if (mode == ConfigCommonTcg.ShuffleMode.None)
+                return new ShuffleMetaData(mode, _seedManager, new ShuffleConfig());
             // 설정 에셋 없이는 의미가 약하므로 PureRandom으로 안전 폴백
             return new ShuffleMetaData(ConfigCommonTcg.ShuffleMode.PureRandom, _seedManager, new ShuffleConfig());
         }
@@ -146,12 +147,16 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 디버그용으로 셔플된 덱 정보를 로그로 남깁니다.
         /// </summary>
-        private void LogShuffledDeckForDebug(TcgBattleDataDeck<TcgBattleDataCard> deckRuntime, string label)
+        private void LogShuffledDeckForDebug(TcgBattleDataDeck<TcgBattleDataCard> deckRuntime, string label, int seed)
         {
 #if UNITY_EDITOR
+            if (_tcgSettings.showShuffleInfo)
+            {
+                GcLogger.Log($"seed: {_seedManager.LastUsedSeed}");    
+            }
+            
             if (!_tcgSettings.showDeckInfo) return;
             if (deckRuntime == null) return;
-
             GcLogger.Log($"[TcgBattleDataDeck-{label}] 카드 개수: {deckRuntime.Count}");
             for (int i = 0; i < deckRuntime.Count; i++)
             {

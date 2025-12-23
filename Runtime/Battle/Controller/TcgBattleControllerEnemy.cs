@@ -42,7 +42,8 @@ namespace GGemCo2DTcg
             outCommands.Clear();
 
             // 1) 필드에 유닛이 있으면, 적 유닛/영웅 공격 명령 추가 (아주 단순한 예시)
-            Dictionary<int, TcgBattleDataFieldCard> deadUnits = new Dictionary<int, TcgBattleDataFieldCard>();
+            Dictionary<int, TcgBattleDataFieldCard> deadCardEnemy = new Dictionary<int, TcgBattleDataFieldCard>();
+            Dictionary<int, TcgBattleDataFieldCard> deadCardPlayer = new Dictionary<int, TcgBattleDataFieldCard>();
             Dictionary<int, TcgBattleDataFieldCard> alreadyAttack = new Dictionary<int, TcgBattleDataFieldCard>();
             foreach (var battleDataFieldCard in _me.Board.Cards)
             {
@@ -50,10 +51,10 @@ namespace GGemCo2DTcg
                     continue;
                 if (battleDataFieldCard.Health <= 0)
                 {
-                    GcLogger.LogError($"hp가 0인데 공격 시도");
+                    GcLogger.LogError($"[AI공격] hp가 0인데 공격 시도");
                     continue;
                 }
-                // 이미 공격한 카드는 넘어가기
+                // 이미 공격한 카드는 넘어가기ㅕ
                 if (alreadyAttack.ContainsKey(battleDataFieldCard.Index)) continue;
 
                 if (_opponent.Board.Count > 0)
@@ -61,15 +62,14 @@ namespace GGemCo2DTcg
                     // 가장 체력이 낮은 유닛을 대상으로 공격
                     TcgBattleDataFieldCard lowHpTarget = null;
                     int minHp = int.MaxValue;
-                    foreach (var enemy in _opponent.Board.Cards)
+                    foreach (var player in _opponent.Board.Cards)
                     {
-                        if (enemy.Health < minHp)
+                        // 사망한 타겟이면 넘어가기
+                        if (deadCardPlayer.ContainsKey(player.Index)) continue;
+                        if (player.Health < minHp)
                         {
-                            // 사망한 타겟이면 넘어가기
-                            if (deadUnits.ContainsKey(enemy.Index)) continue;
-                            
-                            minHp = enemy.Health;
-                            lowHpTarget = enemy;
+                            minHp = player.Health;
+                            lowHpTarget = player;
                         }
                     }
 
@@ -80,11 +80,13 @@ namespace GGemCo2DTcg
                         
                         // 공격한 카드 수집
                         alreadyAttack.TryAdd(battleDataFieldCard.Index, battleDataFieldCard);
+                        GcLogger.Log($"[AI공격] 공격한 index: {battleDataFieldCard.Index}");
                         
-                        // 사망한 타겟 수집
+                        // 타겟이 사망했을 때,
                         if (minHp - battleDataFieldCard.Attack <= 0)
                         {
-                            deadUnits.TryAdd(lowHpTarget.Index, lowHpTarget);
+                            deadCardPlayer.TryAdd(lowHpTarget.Index, lowHpTarget);
+                            GcLogger.Log($"[AI공격] 죽은 플레이어 카드. uid: {lowHpTarget.Uid}, index: {lowHpTarget.Index}");
                         }
                     }
                 }

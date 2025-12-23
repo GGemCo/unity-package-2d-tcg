@@ -69,7 +69,8 @@ namespace GGemCo2DTcg
 
             _cards.Add(unit);
             var index = _cards.Count - 1;
-            unit.Index = index;
+            // 연출이 끝난 후 Refresh All 에서 바꿔준다. 
+            // unit.Index = index;
 
             return index;
         }
@@ -89,11 +90,12 @@ namespace GGemCo2DTcg
             _cards.RemoveAt(index);
 
             // 제거 이후 남아 있는 카드들의 Index 값을 재정렬합니다.
-            for (int i = index; i < _cards.Count; i++)
-            {
-                var u = _cards[i];
-                if (u != null) u.Index = i;
-            }
+            // 연출이 끝난 후 Refresh All 에서 바꿔준다. 
+            // for (int i = index; i < _cards.Count; i++)
+            // {
+            //     var u = _cards[i];
+            //     if (u != null) u.Index = i;
+            // }
 
             return true;
         }

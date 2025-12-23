@@ -18,7 +18,7 @@ namespace GGemCo2DTcg
     ///   초/중/후반 코스트 가중치가 반영된 순서로 배치되고,
     /// - 그 이후 카드들은 완전 랜덤 순서가 유지된다.
     /// </summary>
-    public class PhaseWeightedShuffleStrategy : IShuffleStrategy
+    public class ShuffleStrategyPhaseWeighted : IShuffleStrategy
     {
         public void Shuffle<TCard>(List<TCard> cards, ShuffleMetaData metaData)
             where TCard : ICardInfo

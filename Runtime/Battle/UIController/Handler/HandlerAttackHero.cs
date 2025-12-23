@@ -26,12 +26,12 @@ namespace GGemCo2DTcg
         /// <returns>코루틴 이터레이터.</returns>
         public IEnumerator Play(TcgPresentationContext ctx, TcgPresentationStep step)
         {
-            var attackerSide = step.Side;
+            var attackerSide  = step.Side;
             var attackerIndex = step.FromIndex;
             var defenderIndex = step.ToIndex;
 
-            int attackerHp = step.ValueA;
-            int targetHp   = step.ValueB;
+            int attackerHp     = step.ValueA;
+            int targetHp       = step.ValueB;
             int attackerDamage = step.ValueC;
             int targetDamage   = step.ValueD;
 
@@ -44,12 +44,14 @@ namespace GGemCo2DTcg
 
             var attackerSlot = attackerFieldWindow.GetSlotByIndex(attackerIndex);
             var attackerIcon = attackerFieldWindow.GetIconByIndex(attackerIndex);
+            
+            var defenderSlot = targetHandWindow.GetSlotByIndex(defenderIndex);
             var defenderIcon = targetHandWindow.GetIconByIndex(defenderIndex);
 
             // UI가 아직 생성/동기화되지 않은 프레임일 수 있으므로 짧게 대기 후 종료
             if (attackerIcon == null || defenderIcon == null || attackerSlot == null)
             {
-                yield return new WaitForSecondsRealtime(0.05f);
+                yield return new WaitForSeconds(0.05f);
                 yield break;
             }
 
@@ -62,35 +64,50 @@ namespace GGemCo2DTcg
             }
             Vector3 targetPos = iconHero.transform.position;
 
-            // 이동 중 정렬/가림 방지를 위해 UI 루트로 일시 이동(월드 좌표 유지)
-            attackerIcon.transform.SetParent(ctx.UIRoot);
+            var iconTr = attackerIcon.transform;
 
-            yield return TcgUiTween.MoveTo(attackerIcon.transform, targetPos - new Vector3(20, 20), attackerFieldWindow.timeToMove);
+            // 이동 중 캔버스 정렬 문제를 피하기 위해 UI 루트로 일시 이동
+            iconTr.SetParent(ctx.UIRoot, worldPositionStays: true);
 
-            // 이동 연출 종료 후 원래 부모로 복귀 및 로컬 위치 리셋
-            attackerIcon.transform.SetParent(attackerSlot.transform);
-            attackerIcon.transform.localPosition = Vector3.zero;
+            // ---- 1) 대상보다 조금 왼쪽 아래로 "바로" 이동 ----
+            var snapPos = targetPos + attackerFieldWindow.leftDownOffset;
+            iconTr.position = snapPos;
 
-            // 체력/데미지 표시 갱신(UIIconCard일 때만 업데이트)
+            // ---- 2) 뒤로 천천히 이동했다가 ----
+            var backPos = snapPos + new Vector3(0, attackerFieldWindow.backDistance, 0);
+
+            yield return TcgUiTween.MoveTo(iconTr, backPos, attackerFieldWindow.backDuration, attackerFieldWindow.backEasing);
+
+            // ---- 3) 빠른 속도로 상대 카드를 치는 듯한 느낌 ----
+            yield return TcgUiTween.MoveTo(iconTr, snapPos, attackerFieldWindow.hitDuration, attackerFieldWindow.hitEasing);
+
+            // 잠시 대기 후 원복
+            yield return new WaitForSeconds(0.1f);
+            iconTr.SetParent(attackerSlot.transform, worldPositionStays: false);
+            iconTr.localPosition = Vector3.zero;
+
+            // 체력/데미지 표시
             if (defenderIcon is UIIconCard defenderCardIcon)
                 defenderCardIcon.UpdateHealth(targetHp, targetDamage);
 
+            // 사망 페이드 아웃
             if (targetHp <= 0)
             {
-                
+                yield return FadeOutIfPossible(defenderSlot, attackerFieldWindow.fadeOutDuration, attackerFieldWindow.fadeOutEasing);
+                yield return new WaitForSeconds(1.0f);
             }
         }
-
-        /// <summary>
-        /// 아이콘에 <see cref="CanvasGroup"/>이 존재할 경우, 지정 시간 동안 알파를 0으로 페이드아웃합니다.
-        /// </summary>
-        /// <param name="icon">페이드아웃 대상 컴포넌트(아이콘).</param>
-        /// <param name="duration">페이드아웃 시간(초).</param>
-        private static IEnumerator FadeOutIfPossible(Component icon, float duration)
+        private static IEnumerator FadeOutIfPossible(Component icon, float duration, Easing.EaseType easeType = Easing.EaseType.Linear)
         {
             var cg = icon.GetComponent<CanvasGroup>();
-            if (cg == null) yield break;
-            yield return TcgUiTween.FadeTo(cg, 0f, duration);
+            if (cg == null)
+            {
+                // CanvasGroup이 없으면 안전하게 즉시 비활성화로 처리
+                icon.gameObject.SetActive(false);
+                yield return new WaitForSeconds(0.05f);
+                yield break;
+            }
+            yield return TcgUiTween.FadeTo(cg, 1f, 0f, duration, easeType);
         }
     }
 }

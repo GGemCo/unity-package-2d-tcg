@@ -11,7 +11,8 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgBattleDataFieldCard
     {
-        public int Index { get; set; }
+        private int _index;
+        public int Index => _index;
         public int Uid { get; }
         public ConfigCommonTcg.TcgPlayerSide OwnerSide { get; }
 
@@ -31,6 +32,7 @@ namespace GGemCo2DTcg
         /// </summary>
         public int Attack => attack.Value;
         
+        public void SetIndex(int index) => _index = index;
         /// <summary>
         /// 체력(Observable)
         /// </summary>

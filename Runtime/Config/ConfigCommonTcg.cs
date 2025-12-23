@@ -8,6 +8,10 @@
         public enum ShuffleMode
         {
             /// <summary>
+            /// 고정된 순서를 위해 추가
+            /// </summary>
+            None = 0,
+            /// <summary>
             /// 완전 랜덤 셔플 (Fisher–Yates).
             /// </summary>
             PureRandom,

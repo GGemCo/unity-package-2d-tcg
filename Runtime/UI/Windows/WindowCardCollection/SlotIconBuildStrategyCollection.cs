@@ -57,6 +57,8 @@ namespace GGemCo2DTcg
                 uiIconCard.Initialize(uIWindowTcgCardCollection, uIWindowTcgCardCollection.uid, index, index, iconSize, slotSize);
                 // count, 레벨 1로 초기화
                 uiIconCard.ChangeInfoByUid(info.uid, 1, 1);
+                uiIconCard.UpdateAttack(info.GetAttack());
+                uiIconCard.UpdateHealth(info.GetHealth());
                 
                 icons[index] = icon;
                 index++;

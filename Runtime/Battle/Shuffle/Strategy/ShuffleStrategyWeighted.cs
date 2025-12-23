@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GGemCo2DTcg
 {
-    public class WeightedShuffleStrategy : IShuffleStrategy
+    public class ShuffleStrategyWeighted : IShuffleStrategy
     {
         public void Shuffle<TCard>(List<TCard> cards, ShuffleMetaData context) where TCard : ICardInfo
         {

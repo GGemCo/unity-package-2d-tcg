@@ -6,7 +6,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// Fisher–Yates 알고리즘 기반의 완전 랜덤 셔플.
     /// </summary>
-    public class PureRandomShuffleStrategy : IShuffleStrategy
+    public class ShuffleStrategyPureRandom : IShuffleStrategy
     {
         public void Shuffle<TCard>(List<TCard> cards, ShuffleMetaData metaData)
             where TCard : GGemCo2DTcg.ICardInfo

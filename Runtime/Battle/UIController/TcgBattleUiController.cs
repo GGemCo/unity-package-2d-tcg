@@ -93,7 +93,8 @@ namespace GGemCo2DTcg
         /// </summary>
         /// <param name="manager">전투 로직/명령을 제공하는 매니저.</param>
         /// <param name="session">현재 전투 세션.</param>
-        public void BindBattleManager(TcgBattleManager manager, TcgBattleSession session)
+        /// <param name="settings">TCG 설정.</param>
+        public void BindBattleManager(TcgBattleManager manager, TcgBattleSession session, GGemCoTcgSettings settings)
         {
             if (!IsReady || manager == null || session == null) return;
 
@@ -101,12 +102,12 @@ namespace GGemCo2DTcg
             _handPlayer.SetBattleManager(manager);
 
             // 연출 핸들러들이 참조할 UI/세션 묶음 컨텍스트
-            _ctx = new TcgPresentationContext(_session, _fieldEnemy, _fieldPlayer, _handPlayer, _handEnemy, _battleHud);
+            _ctx = new TcgPresentationContext(_session, _fieldEnemy, _fieldPlayer, _handPlayer, _handEnemy, _battleHud, settings);
 
             // 커맨드 결과의 PresentationSteps를 타입별 핸들러로 순차 실행
             _runner = new TcgPresentationRunner(new ITcgPresentationHandler[]
             {
-                new HandlerSummonFromHandToBoard(),
+                new HandlerDrawCard(),
                 new HandlerAttackUnit(),
                 new HandlerDeathFadeOut(),
                 new HandlerAttackHero(),
@@ -168,6 +169,8 @@ namespace GGemCo2DTcg
         public void RefreshAll(TcgBattleDataMain context)
         {
             if (!IsReady || context == null) return;
+            
+            // GcLogger.Log($"{nameof(TcgBattleUiController)} RefreshAll");
 
             var player = context.Player;
             var enemy  = context.Enemy;

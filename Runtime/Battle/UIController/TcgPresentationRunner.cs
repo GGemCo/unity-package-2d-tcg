@@ -66,6 +66,8 @@ namespace GGemCo2DTcg
                         // 알 수 없는 StepType은 무시(안전)
                         yield return null;
                     }
+                    // 다음 공격 까지 조금 텀을 준다.
+                    yield return new WaitForSeconds(ctx.Settings.timeAfterUICutscene);
 
                     perStepEnded?.Invoke();
                 }
