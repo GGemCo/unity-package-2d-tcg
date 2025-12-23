@@ -80,13 +80,13 @@ namespace GGemCo2DTcg
                         
                         // 공격한 카드 수집
                         alreadyAttack.TryAdd(battleDataFieldCard.Index, battleDataFieldCard);
-                        GcLogger.Log($"[AI공격] 공격한 index: {battleDataFieldCard.Index}");
+                        // GcLogger.Log($"[AI공격] 공격한 index: {battleDataFieldCard.Index}");
                         
                         // 타겟이 사망했을 때,
                         if (minHp - battleDataFieldCard.Attack <= 0)
                         {
                             deadCardPlayer.TryAdd(lowHpTarget.Index, lowHpTarget);
-                            GcLogger.Log($"[AI공격] 죽은 플레이어 카드. uid: {lowHpTarget.Uid}, index: {lowHpTarget.Index}");
+                            // GcLogger.Log($"[AI공격] 죽은 플레이어 카드. uid: {lowHpTarget.Uid}, index: {lowHpTarget.Index}");
                         }
                     }
                 }

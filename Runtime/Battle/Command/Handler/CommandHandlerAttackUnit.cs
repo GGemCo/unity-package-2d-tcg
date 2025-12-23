@@ -45,7 +45,7 @@ namespace GGemCo2DTcg
             if (attacker.Health <= 0)
                 actor.Board.Remove(attacker);
             
-            GcLogger.Log($"attacker index: {attacker.Index}, target index: {target.Index}");
+            // GcLogger.Log($"attacker index: {attacker.Index}, target index: {target.Index}");
             return CommandResult.OkPresentation(new[]
             {
                 new TcgPresentationStep(

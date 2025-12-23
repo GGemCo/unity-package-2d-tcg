@@ -47,7 +47,7 @@ namespace GGemCo2DTcg
                 textName.text = _struckTableTcgCard.name;
             }
 
-            ImageIcon.color = _struckTableTcgCard.type == CardConstants.Type.Hero ? Color.gold : Color.white;
+            ImageIcon.color = _struckTableTcgCard.type == CardConstants.Type.Hero ? Color.yellow : Color.white;
             
             UpdateInfo();
             return true;

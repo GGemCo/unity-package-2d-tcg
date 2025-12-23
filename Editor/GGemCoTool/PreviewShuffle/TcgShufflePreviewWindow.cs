@@ -81,12 +81,10 @@ namespace GGemCo2DTcgEditor
         private string _lastLog;
         
         private TableLoaderManagerTcg _tableLoaderManagerTcg;
-        private ConfigPackageInfo.PackageType _packageType;
         
         protected void OnEnable()
         {
             _tableLoaderManagerTcg = new TableLoaderManagerTcg();
-            _packageType = ConfigPackageInfo.PackageType.Core;
             _cardTableCache = _tableLoaderManagerTcg.LoadTableTcgCard().GetDatas();
         }
         
