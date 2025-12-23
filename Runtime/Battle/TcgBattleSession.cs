@@ -202,11 +202,13 @@ namespace GGemCo2DTcg
             // 2) 카드 고갈 기반 종료 (HP 종료가 아닐 때만)
             int playerHandCount = Context.Player.Hand.GetCount();
             int enemyHandCount  = Context.Enemy.Hand.GetCount();
+            int playerBoardCount = Context.Player.Board.GetCount();
+            int enemyBoardCount  = Context.Enemy.Board.GetCount();
             int playerDeckCount = Context.Player.TcgBattleDataDeck.Count;
             int enemyDeckCount  = Context.Enemy.TcgBattleDataDeck.Count;
 
-            bool playerEmpty = (playerHandCount <= 0 && playerDeckCount <= 0);
-            bool enemyEmpty  = (enemyHandCount <= 0 && enemyDeckCount <= 0);
+            bool playerEmpty = (playerHandCount <= 0 && playerBoardCount <= 0 && playerDeckCount <= 0);
+            bool enemyEmpty  = (enemyHandCount <= 0 && enemyBoardCount <= 0 && enemyDeckCount <= 0);
 
             if (!playerEmpty && !enemyEmpty) return;
 

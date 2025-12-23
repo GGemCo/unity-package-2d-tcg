@@ -112,5 +112,10 @@ namespace GGemCo2DTcg
                 if (u != null) u.CanAttack = canAttack;
             }
         }
+
+        public int GetCount()
+        {
+            return _cards.Count;
+        }
     }
 }
