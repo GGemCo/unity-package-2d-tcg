@@ -44,7 +44,7 @@ namespace GGemCo2DTcg
         private static void ValidateShuffleSettings(string label, ConfigCommonTcg.ShuffleMode mode, ScriptableObject settingsAsset)
         {
             // PureRandom/SeededReplay는 설정이 없어도 문제 없음
-            if (mode == ConfigCommonTcg.ShuffleMode.PureRandom || mode == ConfigCommonTcg.ShuffleMode.SeededReplay)
+            if (mode == ConfigCommonTcg.ShuffleMode.None || mode == ConfigCommonTcg.ShuffleMode.PureRandom || mode == ConfigCommonTcg.ShuffleMode.SeededReplay)
                 return;
 
             if (settingsAsset == null)
@@ -113,6 +113,14 @@ namespace GGemCo2DTcg
         [Tooltip("최대 턴 수")]
         [Min(0)]
         public int maxTurns = 10;
+        
+        // ──────────────────────────────────────────────────────────────────────────────
+        // UI 연출
+        // ──────────────────────────────────────────────────────────────────────────────
+        [Header("UI 연출")]
+        [Tooltip("연출 종료 후 대기 시간")]
+        [Min(0)]
+        public float timeAfterUICutscene = 1.0f;
 
         // ──────────────────────────────────────────────────────────────────────────────
         // Shuffle
@@ -124,6 +132,8 @@ namespace GGemCo2DTcg
         [Tooltip("플레이어 섞기 모드 설정 파일 (모드에 맞는 ScriptableObject를 지정)")]
         public ScriptableObject playerShuffleSettings;
 
+        [Tooltip("적 덱 프리셋")]
+        public EnemyDeckPreset enemyDeckPreset;
         [Tooltip("적 섞기 모드")]
         public ConfigCommonTcg.ShuffleMode enemyShuffleMode = ConfigCommonTcg.ShuffleMode.PureRandom;
 
@@ -149,8 +159,8 @@ namespace GGemCo2DTcg
         // ──────────────────────────────────────────────────────────────────────────────
         [Header("테스트용")]
         public int testSeed;
-        public EnemyDeckPreset testDeckPreset;
         public bool showDeckInfo;
+        public bool showShuffleInfo;
         public bool showCardUid;
 
         [ContextMenu("Rebuild Cache & Raise Changed")]

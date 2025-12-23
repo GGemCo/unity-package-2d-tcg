@@ -16,6 +16,7 @@ namespace GGemCo2DTcgEditor
     {
         private SerializedProperty _playerShuffleMode;
         private SerializedProperty _playerShuffleSettings;
+        private SerializedProperty _enemyDeckPreset;
         private SerializedProperty _enemyShuffleMode;
         private SerializedProperty _enemyShuffleSettings;
 
@@ -23,6 +24,7 @@ namespace GGemCo2DTcgEditor
         {
             _playerShuffleMode     = serializedObject.FindProperty("playerShuffleMode");
             _playerShuffleSettings = serializedObject.FindProperty("playerShuffleSettings");
+            _enemyDeckPreset       = serializedObject.FindProperty("enemyDeckPreset");
             _enemyShuffleMode      = serializedObject.FindProperty("enemyShuffleMode");
             _enemyShuffleSettings  = serializedObject.FindProperty("enemyShuffleSettings");
         }
@@ -39,6 +41,7 @@ namespace GGemCo2DTcgEditor
 
             DrawShuffleBlock(
                 label: "플레이어 셔플 설정",
+                deckProp: null,
                 modeProp: _playerShuffleMode,
                 settingsProp: _playerShuffleSettings);
 
@@ -46,6 +49,7 @@ namespace GGemCo2DTcgEditor
 
             DrawShuffleBlock(
                 label: "적 셔플 설정",
+                deckProp: _enemyDeckPreset,
                 modeProp: _enemyShuffleMode,
                 settingsProp: _enemyShuffleSettings);
 
@@ -61,6 +65,7 @@ namespace GGemCo2DTcgEditor
                 serializedObject,
                 "playerShuffleMode",
                 "playerShuffleSettings",
+                "enemyDeckPreset",
                 "enemyShuffleMode",
                 "enemyShuffleSettings");
         }
@@ -70,6 +75,7 @@ namespace GGemCo2DTcgEditor
         /// </summary>
         private void DrawShuffleBlock(
             string label,
+            SerializedProperty deckProp,
             SerializedProperty modeProp,
             SerializedProperty settingsProp)
         {
@@ -77,6 +83,9 @@ namespace GGemCo2DTcgEditor
 
             EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
 
+            if (deckProp != null)
+                EditorGUILayout.PropertyField(deckProp);
+            
             EditorGUILayout.PropertyField(modeProp);
 
             var shuffleMode = (ConfigCommonTcg.ShuffleMode)modeProp.enumValueIndex;
