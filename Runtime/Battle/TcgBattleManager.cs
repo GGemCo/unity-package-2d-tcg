@@ -157,12 +157,13 @@ namespace GGemCo2DTcg
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
 
             var actor = _session.Context.GetSideState(side);
             var battleCard = actor.Hand.GetDataByIndex(indexInHand);
             var command = TcgBattleCommand.PlayCard(side, battleCard);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
-            _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -172,6 +173,7 @@ namespace GGemCo2DTcg
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
 
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
@@ -180,7 +182,7 @@ namespace GGemCo2DTcg
             var battleCardTarget = opponent.Board.GetFieldDataByIndex(targetIndex);
             var command = TcgBattleCommand.AttackUnit(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
-            _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -191,6 +193,7 @@ namespace GGemCo2DTcg
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
 
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
@@ -199,7 +202,7 @@ namespace GGemCo2DTcg
             var battleCardTarget = opponent.Hero.GetFieldDataByIndex(targetIndex);
             var command = TcgBattleCommand.AttackHero(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
-            _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
         /// <summary>
@@ -207,14 +210,17 @@ namespace GGemCo2DTcg
         /// </summary>
         public void OnUiRequestEndTurn()
         {
+            if (!IsBattleRunning) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
+            
             _session.EndTurn();
-            _uiController.RefreshAll(_session.Context);
+            _uiController?.RefreshAll(_session.Context);
 
             if (!_session.IsBattleEnded)
             {
                 // AI 턴 자동 실행
                 _session.ExecuteEnemyTurnWithTrace(_traceBuffer);
-                _uiController.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+                _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
             }
         }
 

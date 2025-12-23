@@ -44,6 +44,17 @@ namespace GGemCo2DTcg
             _handEnemy   != null &&
             _battleHud   != null;
 
+        // ------------------------------
+        // Interaction Lock (연출 중 입력 차단)
+        // ------------------------------
+        private int _interactionLockDepth;
+
+        /// <summary>현재 연출 재생으로 인해 인터렉션이 잠겨 있는지 여부.</summary>
+        public bool IsInteractionLocked => _interactionLockDepth > 0;
+
+        /// <summary>현재 커맨드 연출 코루틴이 재생 중인지 여부.</summary>
+        public bool IsPresenting => _presentationCoroutine != null;
+        
         /// <summary>
         /// SceneGame의 <see cref="UIWindowManager"/>에서 전투 관련 윈도우를 찾아 캐싱합니다.
         /// </summary>
@@ -125,6 +136,13 @@ namespace GGemCo2DTcg
             if (!IsReady || context == null)
                 return;
 
+            // 연출이 없다면 입력 차단 없이 즉시 최종 UI로 동기화
+            if (!HasAnyPresentation(traces))
+            {
+                RefreshAll(context);
+                return;
+            }
+            
             // 연출 실행에 필요한 구성요소가 없으면, 연출 없이 즉시 최종 UI로 동기화
             if (_battleHud == null || _runner == null || _ctx == null)
             {
@@ -134,7 +152,12 @@ namespace GGemCo2DTcg
 
             // 기존 연출 코루틴이 돌고 있으면 중지 후 새로 시작
             if (_presentationCoroutine != null)
+            {
                 _battleHud.StopCoroutine(_presentationCoroutine);
+                _presentationCoroutine = null;
+                // StopCoroutine 경로에서는 finally가 보장되지 않으므로 잠금 상태를 직접 복구
+                ResetInteractionLock();
+            }
 
             _presentationCoroutine = _battleHud.StartCoroutine(CoPlayPresentation(context, traces));
         }
@@ -145,21 +168,24 @@ namespace GGemCo2DTcg
         /// </summary>
         private IEnumerator CoPlayPresentation(TcgBattleDataMain context, IReadOnlyList<TcgBattleCommandTrace> traces)
         {
-            // BeginPresentation(); // 필요하면 유지
+            BeginInteractionLock();
 
-            yield return _runner.Run(
-                _ctx,
-                traces,
-                _battleHud,
-                // 세션이 없거나 전투가 종료되면 즉시 중단
-                shouldStop: () => _session == null || _session.IsBattleEnded,
-                // 스텝마다 전투 종료 판정 후 코루틴 정리
-                perStepEnded: () => _ctx.CheckBattleEndAndStop(_battleHud, ref _presentationCoroutine)
-            );
-
-            // EndPresentation
-            RefreshAll(context);
-            _presentationCoroutine = null;
+            try
+            {
+                yield return _runner.Run(
+                    _ctx,
+                    traces,
+                    _battleHud,
+                    shouldStop: () => _session == null || _session.IsBattleEnded,
+                    perStepEnded: () => _ctx.CheckBattleEndAndStop(_battleHud, ref _presentationCoroutine)
+                );
+            }
+            finally
+            {
+                RefreshAll(context);
+                _presentationCoroutine = null;
+                EndInteractionLock();
+            }
         }
 
         /// <summary>
@@ -184,12 +210,53 @@ namespace GGemCo2DTcg
             _handPlayer.SetMana(player.Mana.Current, player.Mana.Max);
             _handEnemy.SetMana(enemy.Mana.Current, enemy.Mana.Max);
         }
+        private void BeginInteractionLock()
+        {
+            _interactionLockDepth++;
+            if (_interactionLockDepth == 1)
+            {
+                // _battleHud?.SetInteractionLocked(true);
+                SceneGame.Instance.bgBlackForMapLoading.SetActive(true);
+            }
+        }
 
+        private void EndInteractionLock()
+        {
+            if (_interactionLockDepth <= 0)
+                return;
+
+            _interactionLockDepth--;
+            if (_interactionLockDepth == 0)
+            {
+                // _battleHud?.SetInteractionLocked(false);
+                SceneGame.Instance.bgBlackForMapLoading.SetActive(false);
+            }
+        }
+        private void ResetInteractionLock()
+        {
+            _interactionLockDepth = 0;
+            // _battleHud?.SetInteractionLocked(false);
+            SceneGame.Instance.bgBlackForMapLoading.SetActive(false);
+        }
+        
+        private static bool HasAnyPresentation(IReadOnlyList<TcgBattleCommandTrace> traces)
+        {
+            if (traces == null || traces.Count == 0)
+                return false;
+
+            for (int i = 0; i < traces.Count; i++)
+            {
+                if (traces[i].Result != null && traces[i].Result.HasPresentation)
+                    return true;
+            }
+            return false;
+        }
         /// <summary>
         /// 씬 전환 등으로 컨트롤러를 더 이상 사용하지 않을 때, 모든 참조/구독을 해제합니다.
         /// </summary>
         public void Release()
         {
+            ResetInteractionLock();
             _disposables.Clear(); // 또는 _disposables.Dispose();
 
             _fieldEnemy?.Release();

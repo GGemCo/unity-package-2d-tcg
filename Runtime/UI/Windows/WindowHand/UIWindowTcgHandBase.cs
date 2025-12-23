@@ -21,7 +21,7 @@ namespace GGemCo2DTcg
         protected abstract ISetIconHandler CreateSetIconHandler();
         protected abstract IDragDropStrategy CreateDragDropStrategy();
 
-        private TableTcgCard _tableTcgCard;
+        private bool _possibleDrag;
         
         protected override void Awake()
         {
@@ -40,7 +40,9 @@ namespace GGemCo2DTcg
 
             IconPoolManager.SetSetIconHandler(CreateSetIconHandler());
             DragDropHandler.SetStrategy(CreateDragDropStrategy());
-            _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
+            _possibleDrag = true;
+            if (WindowUid == UIWindowConstants.WindowUid.TcgHandEnemy)
+                _possibleDrag = false;
         }
 
         public void Release()
@@ -74,6 +76,8 @@ namespace GGemCo2DTcg
                     
                     var uiIcon = SetIconCount(i, card.Uid, 1);
                     if (!uiIcon)  continue;
+                    // AI쪽은 드래그 되지 않도록 처리
+                    uiIcon.SetDrag(_possibleDrag);
                     UpdateCardInfo(uiIcon, card.Attack, card.Health);
                 }
                 else

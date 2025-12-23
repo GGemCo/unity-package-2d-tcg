@@ -29,6 +29,8 @@ namespace GGemCo2DTcg
         
         protected abstract ISetIconHandler CreateSetIconHandler();
         protected abstract IDragDropStrategy CreateDragDropStrategy();
+
+        private bool _possibleDrag;
         
         protected override void Awake()
         {
@@ -43,6 +45,9 @@ namespace GGemCo2DTcg
 
             IconPoolManager.SetSetIconHandler(CreateSetIconHandler());
             DragDropHandler.SetStrategy(CreateDragDropStrategy());
+            _possibleDrag = true;
+            if (WindowUid == UIWindowConstants.WindowUid.TcgFieldEnemy)
+                _possibleDrag = false;
         }
         
         public void RefreshBoard(TcgBattleDataSide battleDataSide)
@@ -61,8 +66,11 @@ namespace GGemCo2DTcg
                     var uiIcon = SetIconCount(i, card.Uid, 1);
                     if (!uiIcon) { i++; continue; }
 
+                    // AI쪽은 드래그 되지 않도록 처리
+                    uiIcon.SetDrag(_possibleDrag);
+                    
                     card.SetIndex(i);
-                    GcLogger.Log($"window: {WindowUid}, uid: {card.Uid}, index: {i}");
+                    // GcLogger.Log($"window: {WindowUid}, uid: {card.Uid}, index: {i}");
                     if (slot.CanvasGroup)
                     {
                         slot.CanvasGroup.alpha = 1f;
