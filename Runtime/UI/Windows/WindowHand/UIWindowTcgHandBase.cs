@@ -89,7 +89,7 @@ namespace GGemCo2DTcg
 
         private void SetHeroCard(TcgBattleDataSideHero heroData)
         {
-            if (heroData == null) return;
+            if (heroData == null || heroData.Hp <= 0) return;
 
             var uiIcon = SetIconCount(0, heroData.Uid, 1);
             UpdateCardInfo(uiIcon, heroData.Attack, heroData.Hp);

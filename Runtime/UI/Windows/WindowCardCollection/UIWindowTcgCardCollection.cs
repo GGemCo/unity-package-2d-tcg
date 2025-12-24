@@ -196,7 +196,18 @@ namespace GGemCo2DTcg
             }
             onFiltering?.Invoke();
         }
+        private static bool TryGetMultiSelect(TMP_Dropdown dropdown, out bool isMultiSelect)
+        {
+            isMultiSelect = false;
+            if (dropdown == null) return false;
 
+            var prop = dropdown.GetType().GetProperty("MultiSelect");
+            if (prop == null || prop.PropertyType != typeof(bool))
+                return false;
+
+            isMultiSelect = (bool)prop.GetValue(dropdown);
+            return true;
+        }
         /// <summary>
         /// TMP_Dropdown에서 선택된 인덱스 목록을 얻는다.
         /// - MultiSelect == false : dropdown.value 하나만 반환
@@ -210,7 +221,7 @@ namespace GGemCo2DTcg
                 return;
 
             // Multi Select 모드
-            if (dropdown.MultiSelect)
+            if (TryGetMultiSelect(dropdown, out var isMultiSelect) && isMultiSelect)
             {
                 int mask = dropdown.value; // 0..255 비트마스크
 
