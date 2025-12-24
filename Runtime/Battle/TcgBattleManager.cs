@@ -250,8 +250,11 @@ namespace GGemCo2DTcg
                 Message = message,
                 MessageColor = Color.yellow,
                 OnConfirm = EndBattleForce,
+                IsClosableByClick = false
             };
             SceneGame.Instance.popupManager.ShowPopup(popupMetadata);
+            // 안전장치: 어떤 경로든 입력 차단 해제
+            _uiController?.ResetInteractionLock();
         }
 
         #endregion

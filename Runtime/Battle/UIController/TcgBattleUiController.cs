@@ -177,9 +177,10 @@ namespace GGemCo2DTcg
                     traces,
                     _battleHud,
                     shouldStop: () => _session == null || _session.IsBattleEnded,
-                    perStepEnded: () => _ctx.CheckBattleEndAndStop(_battleHud, ref _presentationCoroutine)
+                    perStepEnded: () => _session.TryCheckBattleEnd()
                 );
             }
+            // 정상적으로 코루틴이 실행되거나 yield break; 가 호출되면 finally 가 호출 됩니다. StopCoroutine 으로 종료하면 finally 가 호출되지 않습니다. 
             finally
             {
                 RefreshAll(context);
@@ -232,7 +233,8 @@ namespace GGemCo2DTcg
                 SceneGame.Instance.bgBlackForMapLoading.SetActive(false);
             }
         }
-        private void ResetInteractionLock()
+
+        public void ResetInteractionLock()
         {
             _interactionLockDepth = 0;
             // _battleHud?.SetInteractionLocked(false);

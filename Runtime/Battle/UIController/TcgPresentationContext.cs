@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using GGemCo2DCore;
+﻿using GGemCo2DCore;
 using UnityEngine;
 
 namespace GGemCo2DTcg
@@ -75,23 +74,5 @@ namespace GGemCo2DTcg
         /// 연출 중 아이콘을 최상단에 올리기 위해 사용하는 UI 루트 트랜스폼.
         /// </summary>
         public Transform UIRoot => SceneGame.Instance.canvasUI.transform;
-
-        /// <summary>
-        /// 매 스텝 종료 시 전투 종료 여부를 확인하고,
-        /// 종료되었다면 진행 중인 연출 코루틴을 중지/정리합니다.
-        /// </summary>
-        /// <param name="coroutineHost">코루틴을 실행/중지할 호스트.</param>
-        /// <param name="running">현재 실행 중인 코루틴 참조(중지 시 null로 설정).</param>
-        public void CheckBattleEndAndStop(MonoBehaviour coroutineHost, ref Coroutine running)
-        {
-            Session.TryCheckBattleEnd();
-            if (!Session.IsBattleEnded) return;
-
-            if (running != null)
-            {
-                coroutineHost.StopCoroutine(running);
-                running = null;
-            }
-        }
     }
 }
