@@ -50,95 +50,36 @@ namespace GGemCo2DTcg
                 if (string.IsNullOrEmpty(trimmed))
                     continue;
 
-                // EffectId:Value:TargetType:Extra
+                // Legacy string format:
+                //   "AbilityId" 또는 "AbilityId:..." 형태를 허용합니다.
+                //   - 신규 구조에서는 Ability 파라미터는 tcg_ability 테이블의 ParamA/B/C로 관리합니다.
+                //   - 구형 테이블의 Value/TargetType/Extra 는 호환을 위해 토큰 파싱만 하되,
+                //     실제 적용은 Ability 정의가 우선입니다.
                 var tokens = trimmed.Split(':');
-                if (tokens.Length < 3)
+                if (tokens.Length < 1)
+                    continue;
+
+                var abilityIdRaw = tokens[0].Trim();
+                if (!int.TryParse(abilityIdRaw, out int abilityId) || abilityId <= 0)
                 {
-                    GcLogger.LogWarning($"[TcgCardRuntimeFactory] Invalid effect format: {trimmed}");
+                    GcLogger.LogWarning($"[TcgCardRuntimeFactory] Invalid AbilityId: {abilityIdRaw}");
                     continue;
                 }
 
-                var effectIdRaw   = tokens[0].Trim();
-                var valueRaw      = tokens[1].Trim();
-                var targetTypeRaw = tokens[2].Trim();
-                var extraRaw      = tokens.Length >= 4 ? tokens[3].Trim() : string.Empty;
-
-                if (!Enum.TryParse<TcgAbilityConstants.TcgAbilityId>(effectIdRaw, true, out var effectId))
-                {
-                    GcLogger.LogWarning($"[TcgCardRuntimeFactory] Unknown EffectId: {effectIdRaw}");
-                    continue;
-                }
-
-                int.TryParse(valueRaw, out int value);
-
-                var targetType = CardConstants.TargetType.None;
-                if (!string.IsNullOrEmpty(targetTypeRaw))
-                {
-                    if (!Enum.TryParse<CardConstants.TargetType>(targetTypeRaw, true, out targetType))
-                    {
-                        GcLogger.LogWarning($"[TcgCardRuntimeFactory] Unknown TargetType: {targetTypeRaw}");
-                        targetType = CardConstants.TargetType.None;
-                    }
-                }
-
-                var extraParams = ParseExtraParams(extraRaw);
-
-                result.Add(new TcgAbilityData
-                {
-                    abilityId = effectId,
-                    value = value,
-                    targetType = targetType,
-                    extraParams = extraParams
-                });
+                result.Add(new TcgAbilityData { abilityUid = abilityId });
             }
 
             return result;
         }
 
-        /// <summary>
-        /// "Key=Value&Key2=Value2" 형태를 Dictionary 로 파싱.
-        /// </summary>
-        private static Dictionary<string, string> ParseExtraParams(string extraRaw)
-        {
-            var dict = new Dictionary<string, string>();
-            if (string.IsNullOrWhiteSpace(extraRaw))
-                return dict;
-
-            var pairs = extraRaw.Split('&');
-            foreach (var p in pairs)
-            {
-                var trimmed = p.Trim();
-                if (string.IsNullOrEmpty(trimmed))
-                    continue;
-
-                var kv = trimmed.Split('=');
-                if (kv.Length != 2)
-                    continue;
-
-                var key = kv[0].Trim();
-                var value = kv[1].Trim();
-                if (!string.IsNullOrEmpty(key))
-                {
-                    dict[key] = value;
-                }
-            }
-
-            return dict;
-        }
         public static TcgBattleDataCard CreateBattleDataCard(StruckTableTcgCard row)
         {
             var keywords         = ParseKeywords(row.keywordRaw);
-            var summonEffects    = ParseEffects(row.summonEffectsRaw);
-            var spellEffects     = ParseEffects(row.spellEffectsRaw);
-            var deathEffects    = ParseEffects(row.deathEffectsRaw);
 
             return new TcgBattleDataCard(
             
                 row,
-                keywords,
-                summonEffects,
-                spellEffects,
-                deathEffects);
+                keywords);
         }
         
         /// <summary>

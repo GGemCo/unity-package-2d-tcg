@@ -56,23 +56,6 @@
         }
 
         /// <summary>
-        /// 카드가 효과를 적용할 때 선택할 수 있는 대상 종류.
-        /// 실제 전투 시스템에서는 이걸 더 쪼개서 사용하면 됩니다.
-        /// </summary>
-        public enum TargetType
-        {
-            None,
-            Self,
-            AllyCreature,
-            EnemyCreature,
-            AnyCreature,
-            EnemyHero,
-            AllyHero,
-            AllAllies,
-            AllEnemies,
-            BoardAll
-        }
-        /// <summary>
         /// Creature가 보유할 수 있는 고유 특성(패시브) 키워드 집합.
         /// - 모든 키워드는 공통 규칙으로 처리되며 카드 개별 능력과는 별도로 동작합니다.
         /// - 이펙트(Effect)와 달리 고정적인 성질을 나타냅니다.

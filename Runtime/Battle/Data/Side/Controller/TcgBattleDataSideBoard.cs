@@ -55,7 +55,7 @@ namespace GGemCo2DTcg
         /// </summary>
         /// <param name="index">조회할 필드 인덱스입니다.</param>
         /// <returns>유효한 인덱스이면 카드 데이터, 아니면 null을 반환합니다.</returns>
-        public TcgBattleDataFieldCard GetFieldDataByIndex(int index)
+        public TcgBattleDataFieldCard GetByIndex(int index)
             => index < _cards.Count ? _cards[index] : null;
 
         /// <summary>

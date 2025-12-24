@@ -28,7 +28,6 @@ namespace GGemCo2DTcg
 
         public CardConstants.Type Type { get; }
         public CardConstants.Grade Grade { get; }
-        public CardConstants.TargetType TargetType { get; }
 
         public int Cost { get; }
 
@@ -40,24 +39,23 @@ namespace GGemCo2DTcg
         public int MaxCopiesPerDeck { get; }
 
         public string ImageFileName { get; }
+        /// <summary>
+/// 타입별 상세 테이블 데이터(있는 경우)입니다.
+/// 단일 테이블 기반(legacy) 데이터와 병행 운용하는 동안, 런타임 판단/실행에 사용됩니다.
+/// </summary>
+        public StruckTableTcgCardSpell SpellDetail { get; }
+        public StruckTableTcgCardEquipment EquipmentDetail { get; }
+        public StruckTableTcgCardPermanent PermanentDetail { get; }
+        public StruckTableTcgCardEvent EventDetail { get; }
+
         public string Description { get; }
 
         public IReadOnlyList<ConfigCommonTcg.TcgKeyword> Keywords => _keywords;
-        public IReadOnlyList<TcgAbilityData> SummonEffects => _summonEffects;
-        public IReadOnlyList<TcgAbilityData> SpellEffects => _spellEffects;
-        public IReadOnlyList<TcgAbilityData> DeathEffects => _deathEffects;
-
         private readonly List<ConfigCommonTcg.TcgKeyword> _keywords = new List<ConfigCommonTcg.TcgKeyword>(4);
-        private readonly List<TcgAbilityData> _summonEffects = new List<TcgAbilityData>(4);
-        private readonly List<TcgAbilityData> _spellEffects = new List<TcgAbilityData>(4);
-        private readonly List<TcgAbilityData> _deathEffects = new List<TcgAbilityData>(4);
         
         public TcgBattleDataCard(
             StruckTableTcgCard row,
-            IReadOnlyList<ConfigCommonTcg.TcgKeyword> keywords,
-            IReadOnlyList<TcgAbilityData> summonEffects,
-            IReadOnlyList<TcgAbilityData> spellEffects,
-            IReadOnlyList<TcgAbilityData> deathEffects)
+            IReadOnlyList<ConfigCommonTcg.TcgKeyword> keywords)
         {
             Uid = row.uid;
             Name = row.name;
@@ -68,13 +66,15 @@ namespace GGemCo2DTcg
             ImageFileName = row.imageFileName;
             Description = row.description;
 
+            SpellDetail = row.struckTableTcgCardSpell;
+            EquipmentDetail = row.struckTableTcgCardEquipment;
+            PermanentDetail = row.struckTableTcgCardPermanent;
+            EventDetail = row.struckTableTcgCardEvent;
+
             attack.OnNext(row.GetAttack());
             health.OnNext(row.GetHealth());
 
             if (keywords != null) _keywords.AddRange(keywords);
-            if (summonEffects != null) _summonEffects.AddRange(summonEffects);
-            if (spellEffects != null) _spellEffects.AddRange(spellEffects);
-            if (deathEffects != null) _deathEffects.AddRange(deathEffects);
         }
     }
 }

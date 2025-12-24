@@ -3,7 +3,6 @@ using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
-
     public class StruckTableTcgCard
     {
         public int uid;
@@ -14,122 +13,204 @@ namespace GGemCo2DTcg
         public int maxCopiesPerDeck;
         public string imageFileName;
         public string description;
-        
-        public string keywordRaw;          // CSV 문자열 그대로 (예: "Rush|Taunt")
-        public string summonEffectsRaw;     // "DealDamageToTargetUnit:3:EnemyCreature;..."
-        public string spellEffectsRaw;      // 스펠 사용 시
-        public string deathEffectsRaw;      // 사망 시
-        
-        // 세부 카드 데이터 (Creature/Spell 전용 정보)
+
+        // (구) 단일 테이블에 능력을 문자열로 저장하던 방식과의 호환을 위해 남겨둡니다.
+        // 신규 테이블 구조에서는 대부분 비어있으며, 향후 제거 대상입니다.
+        public string keywordRaw;
+
+        // 세부 카드 데이터 (타입별)
         public StruckTableTcgCardCreature struckTableTcgCardCreature;
         public StruckTableTcgCardSpell struckTableTcgCardSpell;
         public StruckTableTcgCardHero struckTableTcgCardHero;
+        public StruckTableTcgCardEquipment struckTableTcgCardEquipment;
+        public StruckTableTcgCardPermanent struckTableTcgCardPermanent;
+        public StruckTableTcgCardEvent struckTableTcgCardEvent;
 
         public int GetAttack()
         {
             return type switch
             {
-                CardConstants.Type.Hero when struckTableTcgCardHero is { attack: > 0 } => struckTableTcgCardHero.attack,
-                CardConstants.Type.Creature when struckTableTcgCardCreature is { attack: > 0 } =>
-                    struckTableTcgCardCreature.attack,
+                CardConstants.Type.Hero => struckTableTcgCardHero?.attack ?? 0,
+                CardConstants.Type.Creature => struckTableTcgCardCreature?.attack ?? 0,
                 _ => 0
             };
         }
+
         public int GetHealth()
         {
             return type switch
             {
-                CardConstants.Type.Hero when struckTableTcgCardHero is { health: > 0 } => struckTableTcgCardHero.health,
-                CardConstants.Type.Creature when struckTableTcgCardCreature is { health: > 0 } =>
-                    struckTableTcgCardCreature.health,
+                CardConstants.Type.Hero => struckTableTcgCardHero?.health ?? 0,
+                CardConstants.Type.Creature => struckTableTcgCardCreature?.health ?? 0,
                 _ => 0
             };
         }
     }
+
     public class TableTcgCard : DefaultTable<StruckTableTcgCard>
     {
         public override string Key => ConfigAddressableTableTcg.TcgCard;
-        
+
         private TableTcgCardCreature _tableTcgCardCreature;
         private TableTcgCardSpell _tableTcgCardSpell;
         private TableTcgCardHero _tableTcgCardHero;
-        
+        private TableTcgCardEquipment _tableTcgCardEquipment;
+        private TableTcgCardPermanent _tableTcgCardPermanent;
+        private TableTcgCardEvent _tableTcgCardEvent;
+
+        private TableTcgAbility _tableTcgAbility;
+
         protected override void OnLoadedData(StruckTableTcgCard row)
         {
-            if (row == null)
-            {
-                return;
-            }
+            if (row == null) return;
+
+            // 로더 준비 여부 확인 및 테이블 캐싱
+            if (!TryEnsureTablesCached()) return;
+
             switch (row.type)
             {
                 case CardConstants.Type.Creature:
-                    AttachDataCreature(row);
+                    AttachCreature(row);
                     break;
+
                 case CardConstants.Type.Spell:
-                    AttachDataSpell(row);
+                    AttachSpell(row);
+                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardSpell?.abilityUid ?? 0);
                     break;
+
+                case CardConstants.Type.Equipment:
+                    AttachEquipment(row);
+                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardEquipment?.abilityUid ?? 0);
+                    break;
+
+                case CardConstants.Type.Permanent:
+                    AttachPermanent(row);
+                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardPermanent?.abilityUid ?? 0);
+                    break;
+
+                case CardConstants.Type.Event:
+                    AttachEvent(row);
+                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardEvent?.abilityUid ?? 0);
+                    break;
+
                 case CardConstants.Type.Hero:
-                    AttachDataHero(row);
+                    AttachHero(row);
                     break;
             }
         }
-        private void AttachDataCreature(StruckTableTcgCard row)
-        {
-            if (!TableLoaderManagerTcg.Instance) return;
-            _tableTcgCardCreature ??= TableLoaderManagerTcg.Instance.TableTcgCardCreature;
-            if (_tableTcgCardCreature == null)
-            {
-                return;
-            }
 
+        private bool TryEnsureTablesCached()
+        {
+            if (!TableLoaderManagerTcg.Instance) return false;
+
+            // 타입별 상세 테이블
+            _tableTcgCardCreature ??= TableLoaderManagerTcg.Instance.TableTcgCardCreature;
+            _tableTcgCardSpell ??= TableLoaderManagerTcg.Instance.TableTcgCardSpell;
+            _tableTcgCardHero ??= TableLoaderManagerTcg.Instance.TableTcgCardHero;
+            _tableTcgCardEquipment ??= TableLoaderManagerTcg.Instance.TableTcgCardEquipment;
+            _tableTcgCardPermanent ??= TableLoaderManagerTcg.Instance.TableTcgCardPermanent;
+            _tableTcgCardEvent ??= TableLoaderManagerTcg.Instance.TableTcgCardEvent;
+
+            // Ability 테이블 (Spell/Equipment/Permanent/Event에서 사용)
+            _tableTcgAbility ??= TableLoaderManagerTcg.Instance.TableTcgAbility;
+
+            return true;
+        }
+
+        private void AttachCreature(StruckTableTcgCard row)
+        {
+            if (_tableTcgCardCreature == null) return;
             row.struckTableTcgCardCreature = _tableTcgCardCreature.GetDataByUid(row.uid);
         }
 
-        private void AttachDataSpell(StruckTableTcgCard row)
+        private void AttachSpell(StruckTableTcgCard row)
         {
-            if (!TableLoaderManagerTcg.Instance) return;
-            _tableTcgCardSpell ??= TableLoaderManagerTcg.Instance.TableTcgCardSpell;
-            if (_tableTcgCardSpell == null)
-            {
-                return;
-            }
-
+            if (_tableTcgCardSpell == null) return;
             row.struckTableTcgCardSpell = _tableTcgCardSpell.GetDataByUid(row.uid);
         }
 
-        private void AttachDataHero(StruckTableTcgCard row)
+        private void AttachHero(StruckTableTcgCard row)
         {
-            if (!TableLoaderManagerTcg.Instance) return;
-            _tableTcgCardHero ??= TableLoaderManagerTcg.Instance.TableTcgCardHero;
-            if (_tableTcgCardHero == null)
-            {
-                return;
-            }
-
+            if (_tableTcgCardHero == null) return;
             row.struckTableTcgCardHero = _tableTcgCardHero.GetDataByUid(row.uid);
         }
+
+        private void AttachEquipment(StruckTableTcgCard row)
+        {
+            if (_tableTcgCardEquipment == null) return;
+            row.struckTableTcgCardEquipment = _tableTcgCardEquipment.GetDataByUid(row.uid);
+        }
+
+        private void AttachPermanent(StruckTableTcgCard row)
+        {
+            if (_tableTcgCardPermanent == null) return;
+            row.struckTableTcgCardPermanent = _tableTcgCardPermanent.GetDataByUid(row.uid);
+        }
+
+        private void AttachEvent(StruckTableTcgCard row)
+        {
+            if (_tableTcgCardEvent == null) return;
+            row.struckTableTcgCardEvent = _tableTcgCardEvent.GetDataByUid(row.uid);
+        }
+
+        /// <summary>
+        /// abilityUid가 유효하면 Ability 테이블에서 description을 가져와 카드 description을 갱신합니다.
+        /// - 카드 테이블의 Description을 기본값으로 두고,
+        /// - Ability.description이 비어있지 않으면 우선 적용합니다.
+        /// </summary>
+        private void ApplyAbilityDescriptionIfNeeded(StruckTableTcgCard row, int abilityUid)
+        {
+            if (row == null) return;
+            if (abilityUid <= 0) return;
+            if (_tableTcgAbility == null) return;
+
+            var ability = _tableTcgAbility.GetDataByUid(abilityUid);
+            if (ability == null) return;
+
+            if (!string.IsNullOrEmpty(ability.description))
+            {
+                row.description = ability.description;
+            }
+        }
+
         protected override StruckTableTcgCard BuildRow(Dictionary<string, string> data)
         {
-            var name = data["Name"];
-# if UNITY_EDITOR
-            if (AddressableLoaderSettingsTcg.Instance?.tcgSettings && AddressableLoaderSettingsTcg.Instance.tcgSettings.showCardUid)
-                name = $"[{data["Uid"]}] {name}";
-# endif
+            // 필수 컬럼은 GetValue로 강제하고, 선택 컬럼은 TryGetValue로 방어합니다.
+            var uidStr = GetValue(data, "Uid");
+            var name = GetValue(data, "Name");
+
+#if UNITY_EDITOR
+            if (AddressableLoaderSettingsTcg.Instance?.tcgSettings &&
+                AddressableLoaderSettingsTcg.Instance.tcgSettings.showCardUid)
+            {
+                name = $"[{uidStr}] {name}";
+            }
+#endif
+
             return new StruckTableTcgCard
             {
-                uid = MathHelper.ParseInt(data["Uid"]),
+                uid = MathHelper.ParseInt(uidStr),
                 name = name,
-                type = EnumHelper.ConvertEnum<CardConstants.Type>(data["Type"]),
-                grade = EnumHelper.ConvertEnum<CardConstants.Grade>(data["Grade"]),
-                cost = MathHelper.ParseInt(data["Cost"]),
-                maxCopiesPerDeck = MathHelper.ParseInt(data["MaxCopiesPerDeck"]),
-                imageFileName = data["ImageFileName"],
-                description = data["Description"],
-                keywordRaw = data["Keyword"],
-                summonEffectsRaw = data["SummonEffects"],
-                spellEffectsRaw = data["SpellEffects"],
-                deathEffectsRaw = data["DeathEffects"]
+                type = EnumHelper.ConvertEnum<CardConstants.Type>(GetValue(data, "Type")),
+                grade = EnumHelper.ConvertEnum<CardConstants.Grade>(GetValue(data, "Grade")),
+                cost = MathHelper.ParseInt(GetValue(data, "Cost")),
+                maxCopiesPerDeck = MathHelper.ParseInt(GetValue(data, "MaxCopiesPerDeck")),
+                imageFileName = GetValueOrEmpty(data, "ImageFileName"),
+                description = GetValueOrEmpty(data, "Description"),
+                keywordRaw = GetValueOrEmpty(data, "Keyword"),
             };
+        }
+
+        private static string GetValue(Dictionary<string, string> data, string key)
+        {
+            // 테이블 포맷 오류를 초기에 빠르게 드러내기 위해 KeyNotFound는 허용합니다.
+            // (원하면 여기서 LogError 후 string.Empty 반환으로 변경 가능합니다.)
+            return data[key];
+        }
+
+        private static string GetValueOrEmpty(Dictionary<string, string> data, string key)
+        {
+            return data.TryGetValue(key, out var v) ? v : string.Empty;
         }
     }
 }

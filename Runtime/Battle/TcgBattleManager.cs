@@ -178,8 +178,8 @@ namespace GGemCo2DTcg
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
             
-            var battleCardAttacker = actor.Board.GetFieldDataByIndex(attackerIndex);
-            var battleCardTarget = opponent.Board.GetFieldDataByIndex(targetIndex);
+            var battleCardAttacker = actor.Board.GetByIndex(attackerIndex);
+            var battleCardTarget = opponent.Board.GetByIndex(targetIndex);
             var command = TcgBattleCommand.AttackUnit(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
@@ -198,7 +198,7 @@ namespace GGemCo2DTcg
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
             
-            var battleCardAttacker = actor.Board.GetFieldDataByIndex(attackerIndex);
+            var battleCardAttacker = actor.Board.GetByIndex(attackerIndex);
             var battleCardTarget = opponent.Hero.GetFieldDataByIndex(targetIndex);
             var command = TcgBattleCommand.AttackHero(side, battleCardAttacker, battleCardTarget);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
@@ -266,7 +266,7 @@ namespace GGemCo2DTcg
             _commandHandlers.Clear();
 
             // 핸들러 구현체들
-            RegisterCommandHandler(new CommandHandlerDrawCard());
+            RegisterCommandHandler(new CommandHandlerPlayCardFromHand());
             RegisterCommandHandler(new CommandHandlerAttackUnit());
             RegisterCommandHandler(new CommandHandlerAttackHero());
             RegisterCommandHandler(new CommandHandlerEndTurn());

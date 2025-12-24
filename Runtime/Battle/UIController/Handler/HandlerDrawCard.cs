@@ -36,7 +36,7 @@ namespace GGemCo2DTcg
 
             // 이미 데이터는 변경되었으므로, Board에서 정보를 가져온다.
             int toIndex = step.ToIndex;
-            var fromCard = step.Attacker.Board.GetFieldDataByIndex(toIndex);
+            var fromCard = step.Attacker.Board.GetByIndex(toIndex);
             var uiIcon = fieldWindow.SetIconCount(toIndex, fromCard.Uid, 1);
             if (!uiIcon) {
                 yield return new WaitForSeconds(0.05f);

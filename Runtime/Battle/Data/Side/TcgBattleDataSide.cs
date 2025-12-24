@@ -1,4 +1,6 @@
-﻿namespace GGemCo2DTcg
+using System;
+
+namespace GGemCo2DTcg
 {
     /// <summary>
     /// 전투에서 한 쪽 플레이어(Player / Enemy)의 런타임 상태를 관리하는 도메인 클래스입니다.
@@ -50,6 +52,22 @@
         public TcgBattleDataSideMana Mana { get; }
 
         /// <summary>
+        /// Permanent(지속 카드) 영역을 관리합니다.
+        /// </summary>
+        public TcgBattleDataSidePermanents Permanents { get; }
+
+        /// <summary>
+        /// Event(이벤트/시크릿) 영역을 관리합니다.
+        /// </summary>
+        public TcgBattleDataSideEvents Events { get; }
+
+        /// <summary>
+        /// 카드가 손패로 드로우되었을 때 발생하는 이벤트입니다.
+        /// Start-of-Turn 드로우, 효과 드로우 등 모든 드로우 경로에서 호출됩니다.
+        /// </summary>
+        public event Action<TcgBattleDataCard> CardDrawn;
+
+        /// <summary>
         /// 게임 도중 이 플레이어가 가질 수 있는 최대 마나 한계값입니다.
         /// (예: 하스스톤의 10 마나)
         /// </summary>
@@ -92,6 +110,9 @@
             // 마나는 현재 값과 최대값으로 초기화되며,
             // 전투 중 IncreaseMaxMana 를 통해 단계적으로 증가합니다.
             Mana = new TcgBattleDataSideMana(currentMana, currentManaMax);
+
+            Permanents = new TcgBattleDataSidePermanents();
+            Events = new TcgBattleDataSideEvents();
 
             _maxMana = maxMana;
         }
@@ -181,8 +202,9 @@
                 return;
             }
 
-            // 4) 드로우 트리거 처리
-            TriggerOnDraw(card);
+            // 4) 드로우 트리거(도메인 이벤트)
+            CardDrawn?.Invoke(card);
+
         }
 
         /// <summary>
@@ -213,9 +235,5 @@
         /// <param name="card">
         /// 드로우된 카드
         /// </param>
-        private void TriggerOnDraw(TcgBattleDataCard card)
-        {
-            // Draw 트리거 처리
-        }
     }
 }

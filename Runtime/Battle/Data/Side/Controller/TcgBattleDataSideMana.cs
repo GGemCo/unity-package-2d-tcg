@@ -69,5 +69,16 @@
 
             _max = newMax;
         }
+
+        /// <summary>
+        /// 현재 마나를 증가시킵니다.
+        /// - 기본 구현은 "현재"만 증가시키며, 최대 마나를 초과하지 않습니다.
+        /// </summary>
+        public void Add(int amount)
+        {
+            if (amount <= 0) return;
+            _current += amount;
+            if (_current > _max) _current = _max;
+        }
     }
 }

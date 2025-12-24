@@ -1,36 +1,37 @@
-﻿using System.Collections.Generic;
-
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// 능력 실행 시 필요한 모든 컨텍스트 정보.
-    /// - 어떤 카드에서 실행되는지, 시전자/상대/타겟은 누구인지 등을 포함합니다.
+    /// Ability 실행 시 필요한 컨텍스트 정보.
+    /// - 실행 대상/파라미터는 <see cref="StruckTableTcgAbility"/> 정의를 기준으로 합니다.
+    /// - 타겟이 UI/AI에 의해 이미 결정된 경우 <see cref="TargetBattleData"/>에 주입합니다.
     /// </summary>
     public sealed class TcgAbilityContext
     {
         public TcgBattleDataMain BattleDataMain { get; }
         public TcgBattleDataSide Caster { get; }
         public TcgBattleDataSide Opponent { get; }
+        public TcgBattleDataCard SourceCard { get; }
 
-        public TcgBattleDataCard SourceTcgBattleDataCard { get; }
-        public TcgBattleDataFieldCard TargetBattleData { get; set; }  // 필요 시 설정
+        public StruckTableTcgAbility Ability { get; }
 
-        public int Value { get; set; }
+        public TcgBattleDataFieldCard TargetBattleData { get; set; }
 
-        public Dictionary<string, string> ExtraParams { get; }
+        public int ParamA => Ability.paramA;
+        public int ParamB => Ability.paramB;
+        public int ParamC => Ability.paramC;
 
         public TcgAbilityContext(
+            TcgBattleDataMain battleDataMain,
             TcgBattleDataSide caster,
             TcgBattleDataSide opponent,
-            TcgBattleDataCard sourceTcgBattleDataCard,
-            int value,
-            Dictionary<string, string> extraParams = null)
+            TcgBattleDataCard sourceCard,
+            StruckTableTcgAbility ability)
         {
+            BattleDataMain = battleDataMain;
             Caster = caster;
             Opponent = opponent;
-            SourceTcgBattleDataCard = sourceTcgBattleDataCard;
-            Value = value;
-            ExtraParams = extraParams ?? new Dictionary<string, string>();
+            SourceCard = sourceCard;
+            Ability = ability;
         }
     }
 }

@@ -34,6 +34,13 @@ namespace GGemCo2DTcg
         private TcgPresentationRunner _runner;
         private TcgPresentationContext _ctx;
 
+        // ------------------------------
+        // Ability Presentation (AbilityType별 UI 연출)
+        // ------------------------------
+        private readonly Queue<TcgAbilityPresentationEvent> _abilityFxQueue = new Queue<TcgAbilityPresentationEvent>(16);
+        private Coroutine _abilityFxCoroutine;
+        private System.Action<TcgAbilityPresentationEvent> _onAbilityPresentation;
+
         /// <summary>
         /// 전투 UI 구성 요소(필드/핸드/HUD)가 모두 준비되었는지 여부.
         /// </summary>
@@ -109,8 +116,16 @@ namespace GGemCo2DTcg
         {
             if (!IsReady || manager == null || session == null) return;
 
+            // 기존 세션 구독 해제
+            if (_session != null && _onAbilityPresentation != null)
+                _session.AbilityPresentation -= _onAbilityPresentation;
+
             _session = session;
             _handPlayer.SetBattleManager(manager);
+
+            // Ability 실행 이벤트 구독(AbilityType별 UI 연출용)
+            _onAbilityPresentation = OnAbilityPresentation;
+            _session.AbilityPresentation += _onAbilityPresentation;
 
             // 연출 핸들러들이 참조할 UI/세션 묶음 컨텍스트
             _ctx = new TcgPresentationContext(_session, _fieldEnemy, _fieldPlayer, _handPlayer, _handEnemy, _battleHud, settings);
@@ -119,11 +134,71 @@ namespace GGemCo2DTcg
             _runner = new TcgPresentationRunner(new ITcgPresentationHandler[]
             {
                 new HandlerDrawCard(),
+                new HandlerMoveCardHandToGrave(),
                 new HandlerAttackUnit(),
                 new HandlerDeathFadeOut(),
                 new HandlerAttackHero(),
                 new HandlerEndTurn(),
             });
+        }
+
+        private void OnAbilityPresentation(TcgAbilityPresentationEvent evt)
+        {
+            // 실제 "효과"가 끝난 뒤 시점에만 UI 연출을 재생하는 것이 일반적으로 자연스럽습니다.
+            if (evt.EventPhase != TcgAbilityPresentationEvent.Phase.End)
+                return;
+
+            if (_battleHud == null)
+                return;
+
+            _abilityFxQueue.Enqueue(evt);
+            if (_abilityFxCoroutine == null)
+                _abilityFxCoroutine = _battleHud.StartCoroutine(CoPlayAbilityFx());
+        }
+
+        private IEnumerator CoPlayAbilityFx()
+        {
+            while (_battleHud != null && _abilityFxQueue.Count > 0)
+            {
+                var evt = _abilityFxQueue.Dequeue();
+
+                // 커맨드 연출과 동일한 입력 차단 체계를 재사용(중첩 가능)
+                BeginInteractionLock();
+                try
+                {
+                    // HUD에 위임(프리팹에서 연결되어 있으면 실제 연출 실행)
+                    if (_battleHud.gameObjectAbilityPresentation != null)
+                    {
+                        yield return _battleHud.ShowAbilityTypePresentation(evt);
+                    }
+                    else
+                    {
+                        yield return GetDefaultAbilityFxWait(evt.AbilityType);
+                    }
+                }
+                finally
+                {
+                    EndInteractionLock();
+                }
+            }
+
+            _abilityFxCoroutine = null;
+        }
+
+        private static IEnumerator GetDefaultAbilityFxWait(TcgAbilityType abilityType)
+        {
+            // 기본값은 "최소 대기"만 제공(프리팹/연출이 연결되면 HUD에서 실제 연출 재생)
+            float seconds = abilityType switch
+            {
+                TcgAbilityType.Damage => 0.25f,
+                TcgAbilityType.Heal => 0.20f,
+                TcgAbilityType.Draw => 0.15f,
+                TcgAbilityType.GainMana => 0.15f,
+                TcgAbilityType.ExtraAction => 0.20f,
+                _ => 0.12f
+            };
+
+            yield return new WaitForSeconds(seconds);
         }
 
         /// <summary>
@@ -259,6 +334,20 @@ namespace GGemCo2DTcg
         public void Release()
         {
             ResetInteractionLock();
+
+            if (_battleHud != null)
+            {
+                if (_presentationCoroutine != null) _battleHud.StopCoroutine(_presentationCoroutine);
+                if (_abilityFxCoroutine != null) _battleHud.StopCoroutine(_abilityFxCoroutine);
+            }
+
+            _presentationCoroutine = null;
+            _abilityFxCoroutine = null;
+            _abilityFxQueue.Clear();
+
+            if (_session != null && _onAbilityPresentation != null)
+                _session.AbilityPresentation -= _onAbilityPresentation;
+            _onAbilityPresentation = null;
             _disposables.Clear(); // 또는 _disposables.Dispose();
 
             _fieldEnemy?.Release();

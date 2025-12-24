@@ -35,6 +35,11 @@
         public int Hp => _heroField.Health;
 
         /// <summary>
+        /// 영웅이 사망했는지 여부입니다.
+        /// </summary>
+        public bool IsDead => _heroField != null && _heroField.Health <= 0;
+
+        /// <summary>
         /// 영웅 데이터 슬롯을 초기화합니다.
         /// </summary>
         /// <param name="side">이 영웅이 속한 플레이어 진영입니다.</param>

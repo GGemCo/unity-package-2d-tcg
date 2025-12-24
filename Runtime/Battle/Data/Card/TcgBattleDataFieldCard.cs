@@ -102,6 +102,24 @@ namespace GGemCo2DTcg
             attack.OnNext(newValue);
         }
 
+        /// <summary>
+        /// 최대 체력과 현재 체력을 함께 증감합니다.
+        /// - value가 양수면 최대/현재 체력 증가
+        /// - value가 음수면 최대/현재 체력 감소(현재 체력은 0..MaxHp로 클램프)
+        /// </summary>
+        public void ModifyHealth(int value)
+        {
+            if (value == 0) return;
+
+            MaxHp += value;
+            if (MaxHp < 1) MaxHp = 1;
+
+            var newHp = Health + value;
+            if (newHp < 0) newHp = 0;
+            if (newHp > MaxHp) newHp = MaxHp;
+            health.OnNext(newHp);
+        }
+
         public bool HasKeyword(ConfigCommonTcg.TcgKeyword keyword)
         {
             return Keywords.Contains(keyword);

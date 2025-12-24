@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace GGemCo2DTcg
+﻿namespace GGemCo2DTcg
 {
     /// <summary>
     /// 단일 능력 데이터.
@@ -9,14 +7,15 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgAbilityData
     {
-        public TcgAbilityConstants.TcgAbilityId abilityId;
-        public int value; // 데미지/힐/버프 수치 등
-
-        public CardConstants.TargetType targetType;
+        /// <summary>
+        /// <see cref="TableTcgAbility"/>의 AbilityUid 를 참조합니다.
+        /// </summary>
+        public int abilityUid;
 
         /// <summary>
-        /// 추가 파라미터가 필요할 때 사용 (예: 드로우 개수와 별개 옵션 등).
+        /// (선택) 명시적으로 타겟이 결정된 경우 전달합니다.
+        /// - 기본적으로 타겟 규칙은 Ability 정의(<see cref="StruckTableTcgAbility.targetType"/>)에 따릅니다.
         /// </summary>
-        public Dictionary<string, string> extraParams;
+        public TcgBattleDataFieldCard explicitTarget;
     }
 }
