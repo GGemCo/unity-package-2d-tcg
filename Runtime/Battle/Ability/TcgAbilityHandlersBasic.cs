@@ -16,34 +16,34 @@ namespace GGemCo2DTcg
             if (ctx.TargetBattleData != null)
                 return ctx.TargetBattleData;
 
-            var tt = ctx.Ability.targetType;
+            var tt = ctx.Ability.tcgAbilityTargetType;
             switch (tt)
             {
-                case TcgAbilityConstants.TargetType.Self:
+                case TcgAbilityConstants.TcgAbilityTargetType.Self:
                 {
                     // SourceCard 가 Creature/Hero가 아니라면 Self 타겟은 명시적으로 주입되는 것이 안전합니다.
                     return null;
                 }
 
-                case TcgAbilityConstants.TargetType.EnemyHero:
+                case TcgAbilityConstants.TcgAbilityTargetType.EnemyHero:
                     return ctx.Opponent?.Hero?.HeroField;
 
-                case TcgAbilityConstants.TargetType.AllyHero:
+                case TcgAbilityConstants.TcgAbilityTargetType.AllyHero:
                     return ctx.Caster?.Hero?.HeroField;
 
-                case TcgAbilityConstants.TargetType.EnemyCreature:
+                case TcgAbilityConstants.TcgAbilityTargetType.EnemyCreature:
                 {
                     var board = ctx.Opponent?.Board;
                     return (board != null && board.Count > 0) ? board.GetByIndex(0) : null;
                 }
 
-                case TcgAbilityConstants.TargetType.AllyCreature:
+                case TcgAbilityConstants.TcgAbilityTargetType.AllyCreature:
                 {
                     var board = ctx.Caster?.Board;
                     return (board != null && board.Count > 0) ? board.GetByIndex(0) : null;
                 }
 
-                case TcgAbilityConstants.TargetType.AnyCreature:
+                case TcgAbilityConstants.TcgAbilityTargetType.AnyCreature:
                 {
                     var enemyBoard = ctx.Opponent?.Board;
                     if (enemyBoard != null && enemyBoard.Count > 0) return enemyBoard.GetByIndex(0);

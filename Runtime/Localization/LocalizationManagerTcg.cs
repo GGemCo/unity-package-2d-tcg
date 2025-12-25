@@ -79,8 +79,12 @@ namespace GGemCo2DTcg
         /// </summary>
         public string GetUIWindowCardInfoByKey(string key) => GetString(LocalizationConstantsTcg.Tables.UIWindowCardInfo, key);
 
-        public object GetCardNameByKey(string key) => GetString(LocalizationConstantsTcg.Tables.CardName, key);
+        public string GetCardNameByKey(string key) => GetString(LocalizationConstantsTcg.Tables.CardName, key);
 
         public string GetUIWindowMyDeckByKey(string key) => GetString(LocalizationConstantsTcg.Tables.UIWindowMyDeck, key);
+
+        public string GetAbilityDescriptionByKey(string key) => GetString(LocalizationConstantsTcg.Tables.AbilityDescription, key);
+
+        public string GetAbilityTriggerByKey(string key) => GetString(LocalizationConstantsTcg.Tables.AbilityTrigger, key);
     }
 }

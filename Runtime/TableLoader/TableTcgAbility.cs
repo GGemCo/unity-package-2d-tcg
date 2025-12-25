@@ -13,10 +13,10 @@ namespace GGemCo2DTcg
         // DefaultTable 의 Key 필드 규약(uid)을 유지하기 위한 alias.
         public int uid;
         public int abilityId;
-        public TcgAbilityType abilityType;
+        public TcgAbilityConstants.TcgAbilityType abilityType;
         public string name;
-        public TcgAbilityConstants.TriggerType triggerType;
-        public TcgAbilityConstants.TargetType targetType;
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
+        public TcgAbilityConstants.TcgAbilityTargetType tcgAbilityTargetType;
         public int paramA;
         public int paramB;
         public int paramC;
@@ -33,10 +33,10 @@ namespace GGemCo2DTcg
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
                 abilityId = MathHelper.ParseInt(data["Uid"]),
-                abilityType = EnumHelper.ConvertEnum<TcgAbilityType>(data["AbilityType"]),
+                abilityType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityType>(data["AbilityType"]),
                 name = data["Name"],
-                triggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TriggerType>(data["TriggerType"]),
-                targetType = EnumHelper.ConvertEnum<TcgAbilityConstants.TargetType>(data["TargetType"]),
+                tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
+                tcgAbilityTargetType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTargetType>(data["TargetType"]),
                 paramA = MathHelper.ParseInt(data["ParamA"]),
                 paramB = MathHelper.ParseInt(data["ParamB"]),
                 paramC = MathHelper.ParseInt(data["ParamC"]),

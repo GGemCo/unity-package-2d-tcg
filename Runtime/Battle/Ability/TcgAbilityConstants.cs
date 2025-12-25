@@ -1,12 +1,29 @@
 ﻿namespace GGemCo2DTcg
 {
-    public class TcgAbilityConstants
+    public static class TcgAbilityConstants
     {
+        /// <summary>
+        /// 테이블 기반 Ability 실행을 위한 상위 분류.
+        /// - 테이블에서 문자열로 관리(예: "Damage", "Heal")하고,
+        ///   런타임에서는 이 값을 기준으로 핸들러를 선택합니다.
+        /// </summary>
+        public enum TcgAbilityType
+        {
+            None = 0,
+            Damage,
+            Heal,
+            Draw,
+            BuffAttack,
+            BuffHealth,
+            GainMana,
+            ExtraAction,
+            BuffAttackHealth
+        }
         /// <summary>
         /// 카드가 효과를 적용할 때 선택할 수 있는 대상 종류.
         /// 실제 전투 시스템에서는 이걸 더 쪼개서 사용하면 됩니다.
         /// </summary>
-        public enum TargetType
+        public enum TcgAbilityTargetType
         {
             None,
             Self,
@@ -23,7 +40,7 @@
         /// <summary>
         /// 카드 능력(Ability) 및 각종 지속/이벤트 효과가 발동되는 시점을 나타냅니다.
         /// </summary>
-        public enum TriggerType
+        public enum TcgAbilityTriggerType
         {
             None = 0,
 

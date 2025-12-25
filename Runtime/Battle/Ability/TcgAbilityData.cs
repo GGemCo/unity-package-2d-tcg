@@ -14,7 +14,7 @@
 
         /// <summary>
         /// (선택) 명시적으로 타겟이 결정된 경우 전달합니다.
-        /// - 기본적으로 타겟 규칙은 Ability 정의(<see cref="StruckTableTcgAbility.targetType"/>)에 따릅니다.
+        /// - 기본적으로 타겟 규칙은 Ability 정의(<see cref="StruckTableTcgAbility.tcgAbilityTargetType"/>)에 따릅니다.
         /// </summary>
         public TcgBattleDataFieldCard explicitTarget;
     }

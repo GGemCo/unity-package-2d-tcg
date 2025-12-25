@@ -114,17 +114,17 @@ namespace GGemCo2DTcg
                 inDur, holdDur, outDur, fadeOption, true);
         }
 
-        private static string GetAbilityPresentationText(TcgAbilityType type)
+        private static string GetAbilityPresentationText(TcgAbilityConstants.TcgAbilityType type)
         {
             return type switch
             {
-                TcgAbilityType.Damage => "DAMAGE",
-                TcgAbilityType.Heal => "HEAL",
-                TcgAbilityType.Draw => "DRAW",
-                TcgAbilityType.BuffAttack => "BUFF ATTACK",
-                TcgAbilityType.BuffHealth => "BUFF HEALTH",
-                TcgAbilityType.GainMana => "GAIN MANA",
-                TcgAbilityType.ExtraAction => "EXTRA ACTION",
+                TcgAbilityConstants.TcgAbilityType.Damage => "DAMAGE",
+                TcgAbilityConstants.TcgAbilityType.Heal => "HEAL",
+                TcgAbilityConstants.TcgAbilityType.Draw => "DRAW",
+                TcgAbilityConstants.TcgAbilityType.BuffAttack => "BUFF ATTACK",
+                TcgAbilityConstants.TcgAbilityType.BuffHealth => "BUFF HEALTH",
+                TcgAbilityConstants.TcgAbilityType.GainMana => "GAIN MANA",
+                TcgAbilityConstants.TcgAbilityType.ExtraAction => "EXTRA ACTION",
                 _ => type.ToString().ToUpperInvariant()
             };
         }

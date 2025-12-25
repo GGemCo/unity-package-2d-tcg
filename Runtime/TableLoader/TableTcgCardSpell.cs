@@ -8,7 +8,7 @@ namespace GGemCo2DTcg
         // DefaultTable 규약(uid) 유지
         public int uid;
         public int abilityUid;
-        public TcgAbilityConstants.TriggerType triggerType;
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
 
         public float castingTime;
         public float duration;
@@ -26,7 +26,7 @@ namespace GGemCo2DTcg
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
                 abilityUid = MathHelper.ParseInt(data["AbilityUid"]),
-                triggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TriggerType>(data["TriggerType"]),
+                tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
 
                 castingTime = data.TryGetValue("CastingTime", out var ct) ? MathHelper.ParseFloat(ct) : 0f,
                 duration = data.TryGetValue("Duration", out var du) ? MathHelper.ParseFloat(du) : 0f,

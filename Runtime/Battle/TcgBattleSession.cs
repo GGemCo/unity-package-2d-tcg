@@ -144,7 +144,7 @@ namespace GGemCo2DTcg
             var activeSide = Context.GetSideState(Context.ActiveSide);
 
             // Permanent/Event 등 턴 종료 트리거 처리
-            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TriggerType.OnTurnEnd, sourceCard: null);
+            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnEnd, sourceCard: null);
         }
 
         private void ResolveStartOfTurnEffects()
@@ -154,7 +154,7 @@ namespace GGemCo2DTcg
             var activeSide = Context.GetSideState(Context.ActiveSide);
 
             // Permanent/Event 등 턴 시작 트리거 처리
-            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TriggerType.OnTurnStart, sourceCard: null);
+            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnStart, sourceCard: null);
         }
 
         private void DrawStartOfTurnCard()
@@ -193,7 +193,7 @@ namespace GGemCo2DTcg
             if (side == null) return;
             if (drawnCard == null) return;
 
-            ResolveTriggersForSide(side, TcgAbilityConstants.TriggerType.OnDraw, drawnCard);
+            ResolveTriggersForSide(side, TcgAbilityConstants.TcgAbilityTriggerType.OnDraw, drawnCard);
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace GGemCo2DTcg
         /// </summary>
         private void ResolveTriggersForSide(
             TcgBattleDataSide ownerSide,
-            TcgAbilityConstants.TriggerType triggerType,
+            TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
             TcgBattleDataCard sourceCard)
         {
             if (IsBattleEnded) return;
@@ -223,7 +223,7 @@ namespace GGemCo2DTcg
                     var p = permanents[i];
                     if (p == null) continue;
 
-                    if (p.Definition.triggerType != triggerType)
+                    if (p.Definition.tcgAbilityTriggerType != tcgAbilityTriggerType)
                         continue;
 
                     // IntervalTurn 규칙 (1이면 매번, 2 이상이면 N턴마다)
@@ -244,7 +244,7 @@ namespace GGemCo2DTcg
                         abilityUid: p.Definition.abilityUid,
                         ownerSide: ownerSide,
                         opponentSide: opponentSide,
-                        triggerType: triggerType,
+                        tcgAbilityTriggerType: tcgAbilityTriggerType,
                         sourceCard: sourceCard,
                         sourceInstance: p);
 
@@ -267,14 +267,14 @@ namespace GGemCo2DTcg
                     var e = events[i];
                     if (e == null) continue;
 
-                    if (e.Definition.triggerType != triggerType)
+                    if (e.Definition.tcgAbilityTriggerType != tcgAbilityTriggerType)
                         continue;
 
                     RunAbilityById(
                         abilityUid: e.Definition.abilityUid,
                         ownerSide: ownerSide,
                         opponentSide: opponentSide,
-                        triggerType: triggerType,
+                        tcgAbilityTriggerType: tcgAbilityTriggerType,
                         sourceCard: sourceCard,
                         sourceInstance: e);
 
@@ -292,7 +292,7 @@ namespace GGemCo2DTcg
             int abilityUid,
             TcgBattleDataSide ownerSide,
             TcgBattleDataSide opponentSide,
-            TcgAbilityConstants.TriggerType triggerType,
+            TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
             TcgBattleDataCard sourceCard,
             object sourceInstance)
         {
@@ -306,7 +306,7 @@ namespace GGemCo2DTcg
                 sourceCard,
                 new List<TcgAbilityData>(1) { new TcgAbilityData { abilityUid = abilityUid } },
                 explicitTargetBattleData: null,
-                triggerType: triggerType,
+                tcgAbilityTriggerType: tcgAbilityTriggerType,
                 presentationEvent: PublishAbilityPresentation);
 
             // 실행 후 전투 종료 조건 체크(안전)

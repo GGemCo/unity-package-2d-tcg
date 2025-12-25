@@ -6,31 +6,31 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 테이블 기반 Ability 실행기.
     /// - <see cref="TableTcgAbility"/>의 AbilityId로 정의를 조회하고,
-    ///   <see cref="TcgAbilityType"/>에 따라 핸들러를 선택하여 실행합니다.
+    ///   <see cref="TcgAbilityConstants.TcgAbilityType"/>에 따라 핸들러를 선택하여 실행합니다.
     /// </summary>
     public static class TcgAbilityRunner
     {
-        private static readonly Dictionary<TcgAbilityType, ITcgAbilityHandler> Handlers;
+        private static readonly Dictionary<TcgAbilityConstants.TcgAbilityType, ITcgAbilityHandler> Handlers;
 
         static TcgAbilityRunner()
         {
-            Handlers = new Dictionary<TcgAbilityType, ITcgAbilityHandler>();
+            Handlers = new Dictionary<TcgAbilityConstants.TcgAbilityType, ITcgAbilityHandler>();
             RegisterDefaultHandlers();
         }
 
         private static void RegisterDefaultHandlers()
         {
             // 기본 핸들러 등록
-            Handlers[TcgAbilityType.Damage] = new TcgAbilityHandlersBasic.Damage();
-            Handlers[TcgAbilityType.Heal] = new TcgAbilityHandlersBasic.Heal();
-            Handlers[TcgAbilityType.Draw] = new TcgAbilityHandlersBasic.Draw();
-            Handlers[TcgAbilityType.BuffAttack] = new TcgAbilityHandlersBasic.BuffAttack();
-            Handlers[TcgAbilityType.BuffHealth] = new TcgAbilityHandlersBasic.BuffHealth();
-            Handlers[TcgAbilityType.GainMana] = new TcgAbilityHandlersBasic.GainMana();
-            Handlers[TcgAbilityType.ExtraAction] = new TcgAbilityHandlersBasic.ExtraAction();
+            Handlers[TcgAbilityConstants.TcgAbilityType.Damage] = new TcgAbilityHandlersBasic.Damage();
+            Handlers[TcgAbilityConstants.TcgAbilityType.Heal] = new TcgAbilityHandlersBasic.Heal();
+            Handlers[TcgAbilityConstants.TcgAbilityType.Draw] = new TcgAbilityHandlersBasic.Draw();
+            Handlers[TcgAbilityConstants.TcgAbilityType.BuffAttack] = new TcgAbilityHandlersBasic.BuffAttack();
+            Handlers[TcgAbilityConstants.TcgAbilityType.BuffHealth] = new TcgAbilityHandlersBasic.BuffHealth();
+            Handlers[TcgAbilityConstants.TcgAbilityType.GainMana] = new TcgAbilityHandlersBasic.GainMana();
+            Handlers[TcgAbilityConstants.TcgAbilityType.ExtraAction] = new TcgAbilityHandlersBasic.ExtraAction();
         }
 
-        public static void RegisterHandler(TcgAbilityType type, ITcgAbilityHandler handler, bool overwrite = false)
+        public static void RegisterHandler(TcgAbilityConstants.TcgAbilityType type, ITcgAbilityHandler handler, bool overwrite = false)
         {
             if (handler == null) return;
             if (Handlers.TryAdd(type, handler)) return;
@@ -54,7 +54,7 @@ namespace GGemCo2DTcg
             TcgBattleDataCard sourceCard,
             IReadOnlyList<TcgAbilityData> abilityDataList,
             TcgBattleDataFieldCard explicitTargetBattleData = null,
-            TcgAbilityConstants.TriggerType triggerType = TcgAbilityConstants.TriggerType.None,
+            TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType = TcgAbilityConstants.TcgAbilityTriggerType.None,
             System.Action<TcgAbilityPresentationEvent> presentationEvent = null)
         {
             if (battleDataMain == null || caster == null || opponent == null || sourceCard == null)
@@ -100,7 +100,7 @@ namespace GGemCo2DTcg
                     casterSide: caster.Side,
                     sourceCard: sourceCard,
                     targetCard: ctx.TargetBattleData,
-                    triggerType: triggerType));
+                    tcgAbilityTriggerType: tcgAbilityTriggerType));
 
                 handler.Execute(ctx);
 
@@ -112,7 +112,7 @@ namespace GGemCo2DTcg
                     casterSide: caster.Side,
                     sourceCard: sourceCard,
                     targetCard: ctx.TargetBattleData,
-                    triggerType: triggerType));
+                    tcgAbilityTriggerType: tcgAbilityTriggerType));
             }
         }
     }

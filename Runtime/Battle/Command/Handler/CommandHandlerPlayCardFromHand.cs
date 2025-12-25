@@ -113,7 +113,7 @@ namespace GGemCo2DTcg
                         var inst = new TcgBattlePermanentInstance(card, card.PermanentDetail);
                         actor.Permanents.Add(inst);
 
-                        if (card.PermanentDetail.triggerType == TcgAbilityConstants.TriggerType.OnPlay)
+                        if (card.PermanentDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
                         {
                             TryRunOnPlayAbility(context, actor, opponent, card, card.PermanentDetail.abilityUid, steps);
                         }
@@ -137,7 +137,7 @@ namespace GGemCo2DTcg
                         var inst = new TcgBattleEventInstance(card, card.EventDetail);
                         actor.Events.Add(inst);
 
-                        if (card.EventDetail.triggerType == TcgAbilityConstants.TriggerType.OnPlay)
+                        if (card.EventDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
                         {
                             TryRunOnPlayAbility(context, actor, opponent, card, card.EventDetail.abilityUid, steps);
 
@@ -202,7 +202,7 @@ namespace GGemCo2DTcg
                 sourceCard,
                 list,
                 explicitTargetBattleData: null,
-                triggerType: TcgAbilityConstants.TriggerType.OnPlay,
+                tcgAbilityTriggerType: TcgAbilityConstants.TcgAbilityTriggerType.OnPlay,
                 presentationEvent: session != null ? session.PublishAbilityPresentation : null);
 
             // 연출(선택): 실제 타겟/값은 AbilityRunner/Handler에서 Step으로 올리는 구조로 확장 가능

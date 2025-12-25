@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     {
         public int uid;
         public int abilityUid;
-        public TcgAbilityConstants.TriggerType triggerType;
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
 
         public int intervalTurn;
         public int maxStacks;
@@ -23,7 +23,7 @@ namespace GGemCo2DTcg
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
                 abilityUid = MathHelper.ParseInt(data["AbilityUid"]),
-                triggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TriggerType>(data["TriggerType"]),
+                tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
                 intervalTurn = data.TryGetValue("IntervalTurn", out var it) ? MathHelper.ParseInt(it) : 1,
                 maxStacks = data.TryGetValue("MaxStacks", out var ms) ? MathHelper.ParseInt(ms) : 1,
             };

@@ -15,6 +15,10 @@ namespace GGemCo2DTcg
             
             public const string CardName = ConfigDefine.NameSDK+"_Tcg_Card_Name";
             
+            public const string AbilityDescription = ConfigDefine.NameSDK+"_Tcg_Ability_Description";
+            public const string AbilityTrigger = ConfigDefine.NameSDK+"_Tcg_Ability_Trigger";
+            public const string AbilityTarget = ConfigDefine.NameSDK+"_Tcg_Ability_Target";
+            
             /// <summary>
             /// 모든 테이블 이름을 배열로 제공합니다.
             /// </summary>
@@ -23,6 +27,9 @@ namespace GGemCo2DTcg
                 UIWindowGameMenu,
                 UIWindowCardInfo,
                 CardName,
+                AbilityDescription,
+                AbilityTrigger,
+                AbilityTarget,
             };
         }
 

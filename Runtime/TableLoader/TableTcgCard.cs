@@ -59,6 +59,7 @@ namespace GGemCo2DTcg
         private TableTcgCardEvent _tableTcgCardEvent;
 
         private TableTcgAbility _tableTcgAbility;
+        private TcgAbilityDescriptionProvider _abilityDescriptionProvider;
 
         protected override void OnLoadedData(StruckTableTcgCard row)
         {
@@ -113,6 +114,8 @@ namespace GGemCo2DTcg
 
             // Ability 테이블 (Spell/Equipment/Permanent/Event에서 사용)
             _tableTcgAbility ??= TableLoaderManagerTcg.Instance.TableTcgAbility;
+            
+            _abilityDescriptionProvider ??= new TcgAbilityDescriptionProvider();
 
             return true;
         }
@@ -166,10 +169,10 @@ namespace GGemCo2DTcg
 
             var ability = _tableTcgAbility.GetDataByUid(abilityUid);
             if (ability == null) return;
-
-            if (!string.IsNullOrEmpty(ability.description))
+            var description = _abilityDescriptionProvider.GetDescription(ability);
+            if (!string.IsNullOrEmpty(description))
             {
-                row.description = ability.description;
+                row.description = description;
             }
         }
 

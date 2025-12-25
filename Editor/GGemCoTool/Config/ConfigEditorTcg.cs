@@ -13,6 +13,7 @@ namespace GGemCo2DTcgEditor
             SettingSceneGame,
             Development = 100,
             CreateSampleAiDeck,
+            CreateAbilityLocalization,
             Test = 200,
             PreviewShuffle,
             Etc = 900,
@@ -29,6 +30,7 @@ namespace GGemCo2DTcgEditor
         // 개발툴
         private const string NameToolDevelopment = NameToolGGemCo + "개발툴/";
         public const string NameToolCreateSampleAiDeck = NameToolDevelopment + "샘플 AI 덱 만들기";
+        public const string NameToolCreateAbilityLocalization = NameToolDevelopment + "Ability Localization 만들기";
         
         // 테스트
         private const string NameToolTest = NameToolGGemCo + "태스트툴/";

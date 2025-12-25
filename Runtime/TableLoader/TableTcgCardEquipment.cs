@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     {
         public int uid;
         public int abilityUid;
-        public TcgAbilityConstants.TriggerType triggerType;
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
 
         public string slot;
         public int attackBonus;
@@ -25,7 +25,7 @@ namespace GGemCo2DTcg
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
                 abilityUid = MathHelper.ParseInt(data["AbilityUid"]),
-                triggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TriggerType>(data["TriggerType"]),
+                tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
                 slot = data.TryGetValue("Slot", out var v) ? v : string.Empty,
                 attackBonus = data.TryGetValue("AttackBonus", out var a) ? MathHelper.ParseInt(a) : 0,
                 healthBonus = data.TryGetValue("HealthBonus", out var h) ? MathHelper.ParseInt(h) : 0,

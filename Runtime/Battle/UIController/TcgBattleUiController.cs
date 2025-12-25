@@ -185,16 +185,16 @@ namespace GGemCo2DTcg
             _abilityFxCoroutine = null;
         }
 
-        private static IEnumerator GetDefaultAbilityFxWait(TcgAbilityType abilityType)
+        private static IEnumerator GetDefaultAbilityFxWait(TcgAbilityConstants.TcgAbilityType abilityType)
         {
             // 기본값은 "최소 대기"만 제공(프리팹/연출이 연결되면 HUD에서 실제 연출 재생)
             float seconds = abilityType switch
             {
-                TcgAbilityType.Damage => 0.25f,
-                TcgAbilityType.Heal => 0.20f,
-                TcgAbilityType.Draw => 0.15f,
-                TcgAbilityType.GainMana => 0.15f,
-                TcgAbilityType.ExtraAction => 0.20f,
+                TcgAbilityConstants.TcgAbilityType.Damage => 0.25f,
+                TcgAbilityConstants.TcgAbilityType.Heal => 0.20f,
+                TcgAbilityConstants.TcgAbilityType.Draw => 0.15f,
+                TcgAbilityConstants.TcgAbilityType.GainMana => 0.15f,
+                TcgAbilityConstants.TcgAbilityType.ExtraAction => 0.20f,
                 _ => 0.12f
             };
 

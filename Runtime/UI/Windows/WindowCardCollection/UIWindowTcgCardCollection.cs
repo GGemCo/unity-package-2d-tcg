@@ -28,6 +28,8 @@ namespace GGemCo2DTcg
         
         private UIWindowTcgMyDeck _uiWindowTcgTcgMyDeck;
         private TableTcgCard _tableTcgCard;
+        private TableTcgAbility _tableTcgAbility;
+        private TcgAbilityDescriptionProvider _abilityDescriptionProvider;
         
         // GC 할당 줄이기용 버퍼
         private static readonly List<int> BufferTypeIndices  = new List<int>(8);
@@ -39,6 +41,7 @@ namespace GGemCo2DTcg
             uid = UIWindowConstants.WindowUid.TcgCardCollection;
             if (TableLoaderManager.Instance == null) return;
             _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
+            _tableTcgAbility = TableLoaderManagerTcg.Instance.TableTcgAbility;
             maxCountIcon = _tableTcgCard.GetCount();
             
             // 순서 중요. IconPoolManager 에서 사용한다.
@@ -53,6 +56,8 @@ namespace GGemCo2DTcg
 
             InitializeDropDown();
             InitializeButton();
+
+            _abilityDescriptionProvider ??= new TcgAbilityDescriptionProvider();
         }
 
         private void InitializeButton()
@@ -264,6 +269,26 @@ namespace GGemCo2DTcg
 
             // true면 실제 필터 조건이 있음
             return indices.Count > 0;
+        }
+
+        public string GetAbilityDescription(int cardUid)
+        {
+            var info = _tableTcgCard.GetDataByUid(cardUid);
+            if (info == null) return string.Empty;
+            int abilityUid = 0;
+            if (info.type == CardConstants.Type.Permanent) 
+                abilityUid = info.struckTableTcgCardPermanent.abilityUid;
+            else if (info.type == CardConstants.Type.Event) 
+                abilityUid = info.struckTableTcgCardEvent.abilityUid;
+            else if (info.type == CardConstants.Type.Spell) 
+                abilityUid = info.struckTableTcgCardSpell.abilityUid;
+            else if (info.type == CardConstants.Type.Equipment)
+                abilityUid = info.struckTableTcgCardEquipment.abilityUid;
+            if (abilityUid == 0) return string.Empty;
+            var ability = _tableTcgAbility.GetDataByUid(abilityUid);
+            
+            _abilityDescriptionProvider ??= new TcgAbilityDescriptionProvider();
+            return _abilityDescriptionProvider.GetDescription(ability);
         }
     }
 }

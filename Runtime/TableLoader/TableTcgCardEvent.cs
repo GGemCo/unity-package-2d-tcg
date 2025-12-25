@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     {
         public int uid;
         public int abilityUid;
-        public TcgAbilityConstants.TriggerType triggerType;
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
 
         /// <summary>
         /// 트리거 발동 후 카드를 소모(묘지로 이동)할지 여부.
@@ -25,7 +25,7 @@ namespace GGemCo2DTcg
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
                 abilityUid = MathHelper.ParseInt(data["AbilityUid"]),
-                triggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TriggerType>(data["TriggerType"]),
+                tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
                 consumeOnTrigger = data.TryGetValue("ConsumeOnTrigger", out var v) && MathHelper.ParseInt(v) != 0
             };
         }
