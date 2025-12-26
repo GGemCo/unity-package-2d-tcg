@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using GGemCo2DCore;
 using UnityEngine;
 
 namespace GGemCo2DTcg
@@ -41,7 +42,9 @@ namespace GGemCo2DTcg
                 yield break;
             }
 
-            yield return TcgUiTween.FadeTo(cg, 1f, 0f, field.fadeOutDuration);
+            var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
+            defaultFadeOption.easeType = field.fadeOutEasing;
+            yield return UiFadeUtility.FadeOut(field, icon.gameObject, field.fadeOutDuration, defaultFadeOption);
         }
     }
 }

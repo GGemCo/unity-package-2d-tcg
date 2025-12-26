@@ -75,8 +75,8 @@ namespace GGemCo2DTcg
             gameObjectEndTurn.SetActive(true);
             var fadeOption = UiFadeSequenceUtility.FadeSequenceOptions.Default;
             fadeOption.startAlpha = 0f;
-            fadeOption.fadeIn.easingFunc  = Easing.EaseOutQuad;
-            fadeOption.fadeOut.easingFunc = Easing.EaseInQuad;
+            fadeOption.fadeIn.easeType  = Easing.EaseType.EaseOutQuad;
+            fadeOption.fadeOut.easeType = Easing.EaseType.EaseInQuad;
 
             yield return UiFadeSequenceUtility.FadeInHoldFadeOut(this, gameObjectEndTurn,
                 fadeInDuration, holdDuration,
@@ -103,8 +103,8 @@ namespace GGemCo2DTcg
 
             var fadeOption = UiFadeSequenceUtility.FadeSequenceOptions.Default;
             fadeOption.startAlpha = 0f;
-            fadeOption.fadeIn.easingFunc  = Easing.EaseOutQuad;
-            fadeOption.fadeOut.easingFunc = Easing.EaseInQuad;
+            fadeOption.fadeIn.easeType  = Easing.EaseType.EaseOutQuad;
+            fadeOption.fadeOut.easeType = Easing.EaseType.EaseInQuad;
 
             float inDur = abilityFadeInDuration > 0f ? abilityFadeInDuration : fadeInDuration;
             float holdDur = abilityHoldDuration > 0f ? abilityHoldDuration : holdDuration;

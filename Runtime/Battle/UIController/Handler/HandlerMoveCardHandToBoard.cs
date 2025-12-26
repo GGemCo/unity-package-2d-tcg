@@ -7,7 +7,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 손패의 카드를 필드(보드) 슬롯으로 이동시키는 소환 연출 핸들러.
     /// </summary>
-    public sealed class HandlerDrawCard : ITcgPresentationHandler
+    public sealed class HandlerMoveCardHandToBoard : ITcgPresentationHandler
     {
         /// <summary>
         /// 이 핸들러가 처리하는 프레젠테이션 스텝 타입.
@@ -50,22 +50,11 @@ namespace GGemCo2DTcg
             }
             var targetSlot = fieldWindow.GetSlotByIndex(toIndex);
 
-            yield return FadeInIfPossible(targetSlot, fieldWindow.fadeInDuration, fieldWindow.fadeInEasing);   
-            
+            var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
+            defaultFadeOption.easeType = fieldWindow.fadeInEasing;
+            yield return UiFadeUtility.FadeIn(fieldWindow, targetSlot.gameObject, fieldWindow.fadeInDuration, defaultFadeOption);
+                
             yield return new WaitForSeconds(0.05f);
-        }
-        private static IEnumerator FadeInIfPossible(UISlot slot, float duration, Easing.EaseType easeType = Easing.EaseType.Linear)
-        {
-            var cg = slot.CanvasGroup;
-            if (cg == null)
-            {
-                // CanvasGroup이 없으면 안전하게 즉시 활성화로 처리
-                GcLogger.LogError($"슬로 프리팹의 UISlot.UseCanvasGroup을 활성화 해주세요.");
-                slot.gameObject.SetActive(true);
-                yield return new WaitForSeconds(0.05f);
-                yield break;
-            }
-            yield return TcgUiTween.FadeTo(cg, 0f, 1f, duration, easeType);
         }
     }
 }

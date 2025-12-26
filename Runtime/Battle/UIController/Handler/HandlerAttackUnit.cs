@@ -55,7 +55,7 @@ namespace GGemCo2DTcg
             iconTr.SetParent(ctx.UIRoot, worldPositionStays: true);
             
             // 슬롯은 안보이게 
-            yield return FadeOutIfPossible(attackerSlot, 0);
+            yield return UiFadeUtility.FadeOutImmediately(attackerFieldWindow, attackerSlot.gameObject);
             
             // ---- 1) 대상보다 조금 왼쪽 아래로 "바로" 이동 ----
             var snapPos = targetPos + attackerFieldWindow.leftDownOffset;
@@ -64,14 +64,21 @@ namespace GGemCo2DTcg
             // ---- 2) 뒤로 천천히 이동했다가 ----
             var backPos = snapPos + new Vector3(0, attackerFieldWindow.backDistance, 0);
 
-            yield return TcgUiTween.MoveTo(iconTr, backPos, attackerFieldWindow.backDuration, attackerFieldWindow.backEasing);
+            var defaultMoveOption = MoveOptions.Default;
+            defaultMoveOption.easeType = attackerFieldWindow.backEasing;
+            yield return UiMoveTransform.MoveTo(attackerFieldWindow, iconTr, backPos,
+                attackerFieldWindow.backDuration, defaultMoveOption);
 
             // ---- 3) 빠른 속도로 상대 카드를 치는 듯한 느낌 ----
-            yield return TcgUiTween.MoveTo(iconTr, snapPos, attackerFieldWindow.hitDuration, attackerFieldWindow.hitEasing);
+            defaultMoveOption = MoveOptions.Default;
+            defaultMoveOption.easeType = attackerFieldWindow.hitEasing;
+            yield return UiMoveTransform.MoveTo(attackerFieldWindow, iconTr, snapPos,
+                attackerFieldWindow.hitDuration, defaultMoveOption);
 
             yield return new WaitForSeconds(0.1f);
             // 원복
-            yield return FadeInIfPossible(attackerSlot, 0);
+            yield return UiFadeUtility.FadeInImmediately(attackerFieldWindow, attackerSlot.gameObject);
+            
             iconTr.SetParent(attackerSlot.transform, worldPositionStays: false);
             iconTr.localPosition = Vector3.zero;
 
@@ -83,8 +90,12 @@ namespace GGemCo2DTcg
             if (attackerHp <= 0)
             {
                 yield return new WaitForSeconds(attackerFieldWindow.fadeOutDelayTime);
-                yield return FadeOutIfPossible(attackerSlot, attackerFieldWindow.fadeOutDuration, attackerFieldWindow.fadeOutEasing);
-                // attackerSlot.gameObject.SetActive(false);
+                
+                var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
+                defaultFadeOption.easeType = attackerFieldWindow.fadeOutEasing;
+                defaultFadeOption.startAlpha = 1f;
+                yield return UiFadeUtility.FadeOut(attackerFieldWindow, attackerSlot.gameObject, attackerFieldWindow.fadeOutDuration, defaultFadeOption);
+                
                 isFadeOut = true;
             }
 
@@ -93,9 +104,13 @@ namespace GGemCo2DTcg
 
             if (targetHp <= 0)
             {
-                yield return new WaitForSeconds(attackerFieldWindow.fadeOutDelayTime);
-                yield return FadeOutIfPossible(defenderSlot, attackerFieldWindow.fadeOutDuration, attackerFieldWindow.fadeOutEasing);
-                // defenderSlot.gameObject.SetActive(false);
+                yield return new WaitForSeconds(defenderField.fadeOutDelayTime);
+                
+                var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
+                defaultFadeOption.easeType = defenderField.fadeOutEasing;
+                defaultFadeOption.startAlpha = 1f;
+                yield return UiFadeUtility.FadeOut(defenderField, defenderSlot.gameObject, defenderField.fadeOutDuration, defaultFadeOption);
+
                 isFadeOut = true;
             }
             // 사망한 카드가 없으면, 조금 텀을 주기 위해서 fade out 시간만큼 대기한다.
@@ -103,33 +118,6 @@ namespace GGemCo2DTcg
             {
                 yield return new WaitForSeconds(attackerFieldWindow.fadeOutDuration);
             }
-        }
-
-        private static IEnumerator FadeOutIfPossible(Component icon, float duration, Easing.EaseType easeType = Easing.EaseType.Linear)
-        {
-            var cg = icon.GetComponent<CanvasGroup>();
-            if (cg == null)
-            {
-                // CanvasGroup이 없으면 안전하게 즉시 비활성화로 처리
-                icon.gameObject.SetActive(false);
-                yield return new WaitForSeconds(0.05f);
-                yield break;
-            }
-            yield return TcgUiTween.FadeTo(cg, 1f, 0f, duration, easeType);
-        }
-
-        private static IEnumerator FadeInIfPossible(Component icon, float duration, Easing.EaseType easeType = Easing.EaseType.Linear)
-        {
-            var cg = icon.GetComponent<CanvasGroup>();
-            if (cg == null)
-            {
-                // CanvasGroup이 없으면 안전하게 즉시 활성화로 처리
-                GcLogger.LogError($"슬로 프리팹의 UISlot.UseCanvasGroup을 활성화 해주세요.");
-                icon.gameObject.SetActive(true);
-                yield return new WaitForSeconds(0.05f);
-                yield break;
-            }
-            yield return TcgUiTween.FadeTo(cg, 0f, 1f, duration, easeType);
         }
     }
 }

@@ -76,10 +76,16 @@ namespace GGemCo2DTcg
             // ---- 2) 뒤로 천천히 이동했다가 ----
             var backPos = snapPos + new Vector3(0, attackerFieldWindow.backDistance, 0);
 
-            yield return TcgUiTween.MoveTo(iconTr, backPos, attackerFieldWindow.backDuration, attackerFieldWindow.backEasing);
+            var defaultMoveOption = MoveOptions.Default;
+            defaultMoveOption.easeType = attackerFieldWindow.backEasing;
+            yield return UiMoveTransform.MoveTo(attackerFieldWindow, iconTr, backPos,
+                attackerFieldWindow.backDuration, defaultMoveOption);
 
             // ---- 3) 빠른 속도로 상대 카드를 치는 듯한 느낌 ----
-            yield return TcgUiTween.MoveTo(iconTr, snapPos, attackerFieldWindow.hitDuration, attackerFieldWindow.hitEasing);
+            defaultMoveOption = MoveOptions.Default;
+            defaultMoveOption.easeType = attackerFieldWindow.hitEasing;
+            yield return UiMoveTransform.MoveTo(attackerFieldWindow, iconTr, snapPos,
+                attackerFieldWindow.hitDuration, defaultMoveOption);
 
             // 잠시 대기 후 원복
             yield return new WaitForSeconds(0.1f);
@@ -93,21 +99,12 @@ namespace GGemCo2DTcg
             // 사망 페이드 아웃
             if (targetHp <= 0)
             {
-                yield return FadeOutIfPossible(defenderSlot, attackerFieldWindow.fadeOutDuration, attackerFieldWindow.fadeOutEasing);
+                var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
+                defaultFadeOption.easeType = attackerFieldWindow.fadeOutEasing;
+                yield return UiFadeUtility.FadeOut(attackerFieldWindow, defenderSlot.gameObject, attackerFieldWindow.fadeOutDuration, defaultFadeOption);
+                
                 yield return new WaitForSeconds(1.0f);
             }
-        }
-        private static IEnumerator FadeOutIfPossible(Component icon, float duration, Easing.EaseType easeType = Easing.EaseType.Linear)
-        {
-            var cg = icon.GetComponent<CanvasGroup>();
-            if (cg == null)
-            {
-                // CanvasGroup이 없으면 안전하게 즉시 비활성화로 처리
-                icon.gameObject.SetActive(false);
-                yield return new WaitForSeconds(0.05f);
-                yield break;
-            }
-            yield return TcgUiTween.FadeTo(cg, 1f, 0f, duration, easeType);
         }
     }
 }

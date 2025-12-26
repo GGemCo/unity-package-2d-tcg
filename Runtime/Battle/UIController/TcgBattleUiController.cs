@@ -133,7 +133,7 @@ namespace GGemCo2DTcg
             // 커맨드 결과의 PresentationSteps를 타입별 핸들러로 순차 실행
             _runner = new TcgPresentationRunner(new ITcgPresentationHandler[]
             {
-                new HandlerDrawCard(),
+                new HandlerMoveCardHandToBoard(),
                 new HandlerMoveCardHandToGrave(),
                 new HandlerAttackUnit(),
                 new HandlerDeathFadeOut(),
