@@ -2,6 +2,9 @@
 {
     public class ConfigCommonTcg
     {
+        // 영웅 슬롯 index
+        public const int IndexHeroSlot = 99999;
+        
         /// <summary>
         /// 덱 셔플 동작 모드.
         /// </summary>

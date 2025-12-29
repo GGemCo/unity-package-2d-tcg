@@ -18,8 +18,7 @@ namespace GGemCo2DTcg
             var handWindow = ctx.GetHandWindow(step.Side);
             if (handWindow == null) yield break;
 
-            // Hand UI: 0번은 영웅, 실제 손패는 1번부터(그래서 +1 오프셋)
-            var slot = handWindow.GetSlotByIndex(step.FromIndex + 1);
+            var slot = handWindow.GetSlotByIndex(step.FromIndex);
             if (slot)
             {
                 slot.gameObject.SetActive(false);
