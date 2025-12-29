@@ -4,15 +4,27 @@ using GGemCo2DCore;
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// 기본 Ability 핸들러 묶음.
-    /// - 테이블에서 <see cref="TcgAbilityType"/>로 매핑되어 실행됩니다.
-    /// - 타겟 자동 선택은 최소 규칙만 제공합니다(명시 타겟이 없으면 첫 번째 후보 등).
+    /// 기본 Ability 타입에 대한 실행 핸들러 모음입니다.
+    /// 
+    /// - 테이블에서 정의된 <see cref="TcgAbilityConstants.TcgAbilityType"/> 값에 따라
+    ///   대응되는 핸들러가 선택되어 실행됩니다.
+    /// - 명시적인 타겟이 지정되지 않은 경우, 최소한의 규칙으로 자동 타겟을 결정합니다.
+    ///   (예: 첫 번째 크리처, 영웅 등)
     /// </summary>
     public static class TcgAbilityHandlersBasic
     {
-        internal static TcgBattleDataFieldCard ResolveTarget(
+        /// <summary>
+        /// Ability 컨텍스트를 기준으로 실제 적용 대상을 결정합니다.
+        /// </summary>
+        /// <param name="ctx">Ability 실행 컨텍스트입니다.</param>
+        /// <returns>
+        /// 결정된 전투 필드 카드 데이터이며,
+        /// 타겟을 결정할 수 없는 경우 null을 반환합니다.
+        /// </returns>
+        private static TcgBattleDataFieldCard ResolveTarget(
             TcgAbilityContext ctx)
         {
+            // UI/AI에서 이미 타겟이 지정된 경우 이를 우선 사용합니다.
             if (ctx.TargetBattleData != null)
                 return ctx.TargetBattleData;
 
@@ -21,7 +33,8 @@ namespace GGemCo2DTcg
             {
                 case TcgAbilityConstants.TcgAbilityTargetType.Self:
                 {
-                    // SourceCard 가 Creature/Hero가 아니라면 Self 타겟은 명시적으로 주입되는 것이 안전합니다.
+                    // SourceCard가 Creature/Hero가 아닐 수 있으므로
+                    // Self 타겟은 외부에서 명시적으로 주입되는 것이 안전합니다.
                     return null;
                 }
 
@@ -34,21 +47,22 @@ namespace GGemCo2DTcg
                 case TcgAbilityConstants.TcgAbilityTargetType.EnemyCreature:
                 {
                     var board = ctx.Opponent?.Board;
-                    return (board != null && board.Count > 0) ? board.GetByIndex(0) : null;
+                    return board is { Count: > 0 } ? board.GetByIndex(0) : null;
                 }
 
                 case TcgAbilityConstants.TcgAbilityTargetType.AllyCreature:
                 {
                     var board = ctx.Caster?.Board;
-                    return (board != null && board.Count > 0) ? board.GetByIndex(0) : null;
+                    return board is { Count: > 0 } ? board.GetByIndex(0) : null;
                 }
 
                 case TcgAbilityConstants.TcgAbilityTargetType.AnyCreature:
                 {
                     var enemyBoard = ctx.Opponent?.Board;
-                    if (enemyBoard != null && enemyBoard.Count > 0) return enemyBoard.GetByIndex(0);
+                    if (enemyBoard is { Count: > 0 }) return enemyBoard.GetByIndex(0);
+
                     var allyBoard = ctx.Caster?.Board;
-                    return (allyBoard != null && allyBoard.Count > 0) ? allyBoard.GetByIndex(0) : null;
+                    return allyBoard is { Count: > 0 } ? allyBoard.GetByIndex(0) : null;
                 }
 
                 default:
@@ -56,8 +70,15 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// Damage Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class Damage : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 대상에게 피해를 적용합니다.
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
                 if (context == null) return;
@@ -76,8 +97,15 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// Heal Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class Heal : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 대상의 체력을 회복시킵니다.
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
                 if (context == null) return;
@@ -96,25 +124,40 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// Draw Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class Draw : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 시전자 기준으로 카드를 드로우합니다.
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
                 if (context == null) return;
+
                 var drawCount = Math.Max(0, context.ParamA);
                 if (drawCount <= 0) return;
 
-                // 드로우는 Caster 기준
                 for (int i = 0; i < drawCount; i++)
                     context.Caster?.DrawOneCard();
             }
         }
 
+        /// <summary>
+        /// 공격력 증가 버프 Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class BuffAttack : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 대상의 공격력을 변경합니다.
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
                 if (context == null) return;
+
                 var value = context.ParamA;
                 if (value == 0) return;
 
@@ -129,11 +172,19 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// 체력 증가 버프 Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class BuffHealth : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 대상의 체력을 변경합니다.
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
                 if (context == null) return;
+
                 var value = context.ParamA;
                 if (value == 0) return;
 
@@ -148,22 +199,39 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// 마나 획득 Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class GainMana : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 시전자에게 마나를 추가합니다.
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
                 if (context == null) return;
+
                 var value = context.ParamA;
                 if (value <= 0) return;
+
                 context.Caster?.Mana?.Add(value);
             }
         }
 
+        /// <summary>
+        /// 추가 행동 Ability 실행 핸들러입니다.
+        /// </summary>
         public sealed class ExtraAction : ITcgAbilityHandler
         {
+            /// <summary>
+            /// 추가 행동을 부여합니다.
+            /// (현재는 미구현 상태입니다.)
+            /// </summary>
+            /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
-                // TODO: 프로젝트 규칙에 맞게 "추가 행동"을 표현하는 상태/리소스를 도입한 후 구현합니다.
+                // TODO: 프로젝트 규칙에 맞는 "추가 행동" 상태/리소스 도입 후 구현
                 GcLogger.Log("[Ability] ExtraAction is not implemented yet.");
             }
         }

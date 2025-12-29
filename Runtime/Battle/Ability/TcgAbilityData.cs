@@ -8,13 +8,14 @@
     public sealed class TcgAbilityData
     {
         /// <summary>
-        /// <see cref="TableTcgAbility"/>의 AbilityUid 를 참조합니다.
+        /// 인라인 Ability 정의입니다.
         /// </summary>
-        public int abilityUid;
+        public TcgAbilityDefinition ability;
+
 
         /// <summary>
         /// (선택) 명시적으로 타겟이 결정된 경우 전달합니다.
-        /// - 기본적으로 타겟 규칙은 Ability 정의(<see cref="StruckTableTcgAbility.tcgAbilityTargetType"/>)에 따릅니다.
+        /// - 기본적으로 타겟 규칙은 Ability 정의(<see cref="TcgAbilityDefinition.tcgAbilityTargetType"/>)에 따릅니다.
         /// </summary>
         public TcgBattleDataFieldCard explicitTarget;
     }

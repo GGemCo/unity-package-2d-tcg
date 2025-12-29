@@ -3,11 +3,15 @@ using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
-    public sealed class StruckTableTcgCardPermanent
+    public sealed class StruckTableTcgCardPermanent : ITcgCardAbilityRow
     {
-        public int uid;
-        public int abilityUid;
-        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
+        public int uid { get; set; }
+        public TcgAbilityConstants.TcgAbilityType abilityType { get; set; }
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType { get; set; }
+        public TcgAbilityConstants.TcgAbilityTargetType tcgAbilityTargetType { get; set; }
+        public int paramA { get; set; }
+        public int paramB { get; set; }
+        public int paramC { get; set; }
 
         public int intervalTurn;
         public int maxStacks;
@@ -22,10 +26,14 @@ namespace GGemCo2DTcg
             return new StruckTableTcgCardPermanent
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
-                abilityUid = MathHelper.ParseInt(data["AbilityUid"]),
+                abilityType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityType>(data["AbilityType"]),
                 tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
-                intervalTurn = data.TryGetValue("IntervalTurn", out var it) ? MathHelper.ParseInt(it) : 1,
-                maxStacks = data.TryGetValue("MaxStacks", out var ms) ? MathHelper.ParseInt(ms) : 1,
+                tcgAbilityTargetType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTargetType>(data["TargetType"]),
+                paramA = MathHelper.ParseInt(data["ParamA"]),
+                paramB = MathHelper.ParseInt(data["ParamB"]),
+                paramC = MathHelper.ParseInt(data["ParamC"]),
+                intervalTurn = data.TryGetValue("IntervalTurn", out var interval) ? MathHelper.ParseInt(interval) : 1,
+                maxStacks = data.TryGetValue("MaxStacks", out var ms) ? MathHelper.ParseInt(ms) : 0
             };
         }
     }

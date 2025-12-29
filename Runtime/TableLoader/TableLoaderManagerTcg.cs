@@ -13,8 +13,6 @@ namespace GGemCo2DTcg
         public TableTcgCardPermanent TableTcgCardPermanent { get; private set; } = new TableTcgCardPermanent();
         public TableTcgCardEvent TableTcgCardEvent { get; private set; } = new TableTcgCardEvent();
         public TableTcgCardHero TableTcgCardHero { get; private set; } = new TableTcgCardHero();
-
-        public TableTcgAbility TableTcgAbility { get; private set; } = new TableTcgAbility();
         
         protected void Awake()
         {
@@ -23,9 +21,8 @@ namespace GGemCo2DTcg
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
 
-                registry = new TableRegistry();
                 // 순서 중요.
-                registry.Register(TableTcgAbility);
+                registry = new TableRegistry();
                 registry.Register(TableTcgCardHero);
                 registry.Register(TableTcgCardCreature);
                 registry.Register(TableTcgCardSpell);

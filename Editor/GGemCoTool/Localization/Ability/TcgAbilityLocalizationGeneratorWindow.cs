@@ -40,7 +40,10 @@ namespace GGemCo2DTcgEditor
     public sealed class TcgAbilityLocalizationGeneratorWindow : EditorWindow
     {
         [Header("입력")]
-        private TextAsset _tsvAsset;
+        private TextAsset _spellTsv;
+        private TextAsset _equipmentTsv;
+        private TextAsset _permanentTsv;
+        private TextAsset _eventTsv;
 
         [Header("컬렉션")] 
         private const string AbilityCollectionName = LocalizationConstantsTcg.Tables.AbilityDescription;
@@ -85,8 +88,12 @@ namespace GGemCo2DTcgEditor
 
             using (new EditorGUILayout.VerticalScope("box"))
             {
-                _tsvAsset = (TextAsset)EditorGUILayout.ObjectField("Ability txt 파일(tcg_ability)", _tsvAsset, typeof(TextAsset), false);
-                _outputFolder = (DefaultAsset)EditorGUILayout.ObjectField("출력 폴더(Assets/...)", _outputFolder, typeof(DefaultAsset), false);
+                _spellTsv = (TextAsset)EditorGUILayout.ObjectField("Spell txt 파일(tcg_card_spell)", _spellTsv, typeof(TextAsset), false);
+                _equipmentTsv = (TextAsset)EditorGUILayout.ObjectField("Equipment txt 파일(tcg_card_equipment)", _equipmentTsv, typeof(TextAsset), false);
+                _permanentTsv = (TextAsset)EditorGUILayout.ObjectField("Permanent txt 파일(tcg_card_permanent)", _permanentTsv, typeof(TextAsset), false);
+                _eventTsv = (TextAsset)EditorGUILayout.ObjectField("Event txt 파일(tcg_card_event)", _eventTsv, typeof(TextAsset), false);
+
+                _outputFolder = (DefaultAsset)EditorGUILayout.ObjectField("출력 폴더(Assets/)", _outputFolder, typeof(DefaultAsset), false);
 
                 EditorGUILayout.Space(4);
                 _overwriteExisting = EditorGUILayout.ToggleLeft("기존 항목 덮어쓰기. (변경된 내용이 없으면 갱신하지 않습니다.)", _overwriteExisting);
@@ -135,7 +142,7 @@ namespace GGemCo2DTcgEditor
 
             EditorGUILayout.Space(12);
 
-            using (new EditorGUI.DisabledScope(_tsvAsset == null || _outputFolder == null))
+            using (new EditorGUI.DisabledScope((_spellTsv == null && _equipmentTsv == null && _permanentTsv == null && _eventTsv == null) || _outputFolder == null))
             {
                 if (GUILayout.Button("생성 / 갱신 실행", GUILayout.Height(36)))
                 {
@@ -170,7 +177,7 @@ namespace GGemCo2DTcgEditor
 
         private void GenerateAll()
         {
-            if (_tsvAsset == null) throw new InvalidOperationException("tcg_ability 데이터 테이블이 null 입니다.");
+            if (_spellTsv == null && _equipmentTsv == null && _permanentTsv == null && _eventTsv == null) throw new InvalidOperationException("tcg_ability 데이터 테이블이 null 입니다.");
             if (_outputFolder == null) throw new InvalidOperationException("출력 폴더가 null 입니다.");
 
             var outputPath = AssetDatabase.GetAssetPath(_outputFolder);
@@ -204,7 +211,11 @@ namespace GGemCo2DTcgEditor
             }
 
             // 4) TSV 파싱
-            var rows = ParseTsv(_tsvAsset.text);
+            var rows = new List<TcgAbilityTsvRow>(256);
+            if (_spellTsv != null) rows.AddRange(ParseTsv(_spellTsv.text));
+            if (_equipmentTsv != null) rows.AddRange(ParseTsv(_equipmentTsv.text));
+            if (_permanentTsv != null) rows.AddRange(ParseTsv(_permanentTsv.text));
+            if (_eventTsv != null) rows.AddRange(ParseTsv(_eventTsv.text));
 
             // 5) 사용된 Trigger/Target 수집
             var usedTriggers = new HashSet<AbilityTriggerType>();
@@ -514,52 +525,77 @@ namespace GGemCo2DTcgEditor
         #endregion
 
         #region TSV Parse
-        private static List<TcgAbilityTsvRow> ParseTsv(string text)
+                private static List<TcgAbilityTsvRow> ParseTsv(string text)
         {
-            const int defaultCapacity = 512;
+            const int defaultCapacity = 256;
             var result = new List<TcgAbilityTsvRow>(defaultCapacity);
 
-            using var reader = new StringReader(text);
-            bool headerSkipped = false;
+            if (string.IsNullOrWhiteSpace(text))
+                return result;
 
+            using var reader = new StringReader(text);
+
+            // 1) header
+            var headerLine = reader.ReadLine();
+            if (string.IsNullOrWhiteSpace(headerLine))
+                return result;
+
+            var headers = headerLine.Split('\t');
+            int idxUid = Array.IndexOf(headers, "Uid");
+            int idxName = Array.IndexOf(headers, "Name"); // optional
+            int idxAbilityType = Array.IndexOf(headers, "AbilityType");
+            int idxTriggerType = Array.IndexOf(headers, "TriggerType");
+            int idxTargetType = Array.IndexOf(headers, "TargetType");
+            int idxParamA = Array.IndexOf(headers, "ParamA");
+            int idxParamB = Array.IndexOf(headers, "ParamB");
+            int idxParamC = Array.IndexOf(headers, "ParamC");
+            int idxDesc = Array.IndexOf(headers, "Description"); // optional
+
+            // 최소 요구 컬럼 체크
+            if (idxUid < 0 || idxAbilityType < 0 || idxTriggerType < 0 || idxTargetType < 0 || idxParamA < 0 || idxParamB < 0 || idxParamC < 0)
+            {
+                GcLogger.LogWarning("[AbilityLocalizationGenerator] TSV header mismatch. Required: Uid, AbilityType, TriggerType, TargetType, ParamA, ParamB, ParamC");
+                return result;
+            }
+
+            // 2) rows
             while (reader.ReadLine() is { } line)
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
                 if (line.StartsWith("#", StringComparison.Ordinal)) continue;
 
-                if (!headerSkipped && line.StartsWith("Uid\t", StringComparison.OrdinalIgnoreCase))
-                {
-                    headerSkipped = true;
-                    continue;
-                }
-
                 var cols = line.Split('\t');
-                if (cols.Length < 9) continue;
+                if (cols.Length <= idxUid) continue;
 
-                if (!int.TryParse(cols[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
+                if (!int.TryParse(cols[idxUid], NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid) || uid <= 0)
                     continue;
+
+                var name = (idxName >= 0 && idxName < cols.Length) ? cols[idxName] : string.Empty;
+                var desc = (idxDesc >= 0 && idxDesc < cols.Length) ? cols[idxDesc] : string.Empty;
+
+                var abilityType = (idxAbilityType < cols.Length) ? EnumHelper.ConvertEnum<AbilityType>(cols[idxAbilityType]) : AbilityType.None;
+                var triggerType = (idxTriggerType < cols.Length) ? EnumHelper.ConvertEnum<AbilityTriggerType>(cols[idxTriggerType]) : AbilityTriggerType.None;
+                var targetType = (idxTargetType < cols.Length) ? EnumHelper.ConvertEnum<AbilityTargetType>(cols[idxTargetType]) : AbilityTargetType.None;
+
+                var paramA = (idxParamA < cols.Length) ? MathHelper.ParseInt(cols[idxParamA]) : 0;
+                var paramB = (idxParamB < cols.Length) ? MathHelper.ParseInt(cols[idxParamB]) : 0;
+                var paramC = (idxParamC < cols.Length) ? MathHelper.ParseInt(cols[idxParamC]) : 0;
 
                 result.Add(new TcgAbilityTsvRow(
                     uid: uid,
-                    name: cols[1],
-                    abilityType: EnumHelper.ConvertEnum<AbilityType>(cols[2]),
-                    tcgAbilityTriggerType: EnumHelper.ConvertEnum<AbilityTriggerType>(cols[3]),
-                    tcgAbilityTargetType: EnumHelper.ConvertEnum<AbilityTargetType>(cols[4]),
-                    paramA: ParseInt(cols[5]),
-                    paramB: ParseInt(cols[6]),
-                    paramC: ParseInt(cols[7])
-                ));
+                    name: name,
+                    abilityType: abilityType,
+                    tcgAbilityTriggerType: triggerType,
+                    tcgAbilityTargetType: targetType,
+                    paramA: paramA,
+                    paramB: paramB,
+                    paramC: paramC));
             }
 
             return result;
-
-            static int ParseInt(string s)
-            {
-                if (int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) return v;
-                return 0;
-            }
         }
-        #endregion
+
+#endregion
         
         #region Prefs
         private static class PrefKeys
@@ -567,8 +603,11 @@ namespace GGemCo2DTcgEditor
             // 프로젝트별로 분리되도록 Application.productName을 포함 (원하면 더 강하게: CompanyName + ProductName)
             private static readonly string Prefix = $"GGemCo.TcgAbilityLocalizationGeneratorWindow.";
 
-            public static readonly string TsvGuid = Prefix + "TsvGuid";
-            public static readonly string OutputFolderGuid = Prefix + "OutputFolderGuid";
+            public static readonly string SpellTsvGuid = Prefix + "spell_tsv_guid";
+            public static readonly string EquipmentTsvGuid = Prefix + "equipment_tsv_guid";
+            public static readonly string PermanentTsvGuid = Prefix + "permanent_tsv_guid";
+            public static readonly string EventTsvGuid = Prefix + "event_tsv_guid";
+public static readonly string OutputFolderGuid = Prefix + "OutputFolderGuid";
 
             public static readonly string OverwriteExisting = Prefix + "OverwriteExisting";
             public static readonly string GenerateTermTables = Prefix + "GenerateTermTables";
@@ -588,8 +627,11 @@ namespace GGemCo2DTcgEditor
             EditorPrefs.SetBool(PrefKeys.LogVerbose, _logVerbose);
 
             // Unity Object → GUID
-            EditorPrefs.SetString(PrefKeys.TsvGuid, GetGuid(_tsvAsset));
-            EditorPrefs.SetString(PrefKeys.OutputFolderGuid, GetGuid(_outputFolder));
+            EditorPrefs.SetString(PrefKeys.SpellTsvGuid, GetGuid(_spellTsv));
+            EditorPrefs.SetString(PrefKeys.EquipmentTsvGuid, GetGuid(_equipmentTsv));
+            EditorPrefs.SetString(PrefKeys.PermanentTsvGuid, GetGuid(_permanentTsv));
+            EditorPrefs.SetString(PrefKeys.EventTsvGuid, GetGuid(_eventTsv));
+EditorPrefs.SetString(PrefKeys.OutputFolderGuid, GetGuid(_outputFolder));
         }
 
         private void LoadPrefs()
@@ -603,11 +645,17 @@ namespace GGemCo2DTcgEditor
             _logVerbose = EditorPrefs.GetBool(PrefKeys.LogVerbose, false);
 
             // Unity Object는 GUID로 저장/복원
-            var tsvGuid = EditorPrefs.GetString(PrefKeys.TsvGuid, string.Empty);
-            var folderGuid = EditorPrefs.GetString(PrefKeys.OutputFolderGuid, string.Empty);
+            var spellGuid = EditorPrefs.GetString(PrefKeys.SpellTsvGuid, string.Empty);
+            var equipGuid = EditorPrefs.GetString(PrefKeys.EquipmentTsvGuid, string.Empty);
+            var permGuid = EditorPrefs.GetString(PrefKeys.PermanentTsvGuid, string.Empty);
+            var eventGuid = EditorPrefs.GetString(PrefKeys.EventTsvGuid, string.Empty);
+var folderGuid = EditorPrefs.GetString(PrefKeys.OutputFolderGuid, string.Empty);
 
-            _tsvAsset = LoadAssetByGuid<TextAsset>(tsvGuid);
-            _outputFolder = LoadAssetByGuid<DefaultAsset>(folderGuid);
+            _spellTsv = LoadAssetByGuid<TextAsset>(spellGuid);
+            _equipmentTsv = LoadAssetByGuid<TextAsset>(equipGuid);
+            _permanentTsv = LoadAssetByGuid<TextAsset>(permGuid);
+            _eventTsv = LoadAssetByGuid<TextAsset>(eventGuid);
+_outputFolder = LoadAssetByGuid<DefaultAsset>(folderGuid);
         }
         
         private static string GetGuid(UnityEngine.Object obj)

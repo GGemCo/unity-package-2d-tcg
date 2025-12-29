@@ -66,7 +66,7 @@ namespace GGemCo2DTcg
                     continue;
                 }
 
-                result.Add(new TcgAbilityData { abilityUid = abilityId });
+                result.Add(new TcgAbilityData { ability = new TcgAbilityDefinition(abilityId, TcgAbilityConstants.TcgAbilityType.None, TcgAbilityConstants.TcgAbilityTriggerType.None, TcgAbilityConstants.TcgAbilityTargetType.None, 0, 0, 0) });
             }
 
             return result;

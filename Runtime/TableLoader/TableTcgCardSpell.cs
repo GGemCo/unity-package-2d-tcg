@@ -3,17 +3,15 @@ using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
-    public sealed class StruckTableTcgCardSpell
+    public sealed class StruckTableTcgCardSpell : ITcgCardAbilityRow
     {
-        // DefaultTable 규약(uid) 유지
-        public int uid;
-        public int abilityUid;
-        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType;
-
-        public float castingTime;
-        public float duration;
-        public string areaShape;
-        public int areaSize;
+        public int uid { get; set; }
+        public TcgAbilityConstants.TcgAbilityType abilityType { get; set; }
+        public TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType { get; set; }
+        public TcgAbilityConstants.TcgAbilityTargetType tcgAbilityTargetType { get; set; }
+        public int paramA { get; set; }
+        public int paramB { get; set; }
+        public int paramC { get; set; }
     }
 
     public sealed class TableTcgCardSpell : DefaultTable<StruckTableTcgCardSpell>
@@ -25,13 +23,12 @@ namespace GGemCo2DTcg
             return new StruckTableTcgCardSpell
             {
                 uid = MathHelper.ParseInt(data["Uid"]),
-                abilityUid = MathHelper.ParseInt(data["AbilityUid"]),
+                abilityType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityType>(data["AbilityType"]),
                 tcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
-
-                castingTime = data.TryGetValue("CastingTime", out var ct) ? MathHelper.ParseFloat(ct) : 0f,
-                duration = data.TryGetValue("Duration", out var du) ? MathHelper.ParseFloat(du) : 0f,
-                areaShape = data.TryGetValue("AreaShape", out var shape) ? shape : string.Empty,
-                areaSize = data.TryGetValue("AreaSize", out var size) ? MathHelper.ParseInt(size) : 0,
+                tcgAbilityTargetType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTargetType>(data["TargetType"]),
+                paramA = MathHelper.ParseInt(data["ParamA"]),
+                paramB = MathHelper.ParseInt(data["ParamB"]),
+                paramC = MathHelper.ParseInt(data["ParamC"]),
             };
         }
     }

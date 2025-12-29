@@ -57,8 +57,6 @@ namespace GGemCo2DTcg
         private TableTcgCardEquipment _tableTcgCardEquipment;
         private TableTcgCardPermanent _tableTcgCardPermanent;
         private TableTcgCardEvent _tableTcgCardEvent;
-
-        private TableTcgAbility _tableTcgAbility;
         private TcgAbilityDescriptionProvider _abilityDescriptionProvider;
 
         protected override void OnLoadedData(StruckTableTcgCard row)
@@ -76,22 +74,22 @@ namespace GGemCo2DTcg
 
                 case CardConstants.Type.Spell:
                     AttachSpell(row);
-                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardSpell?.abilityUid ?? 0);
+                    ApplyAbilityDescriptionIfNeeded(row, TcgAbilityBuilder.BuildAbility(row.struckTableTcgCardSpell));
                     break;
 
                 case CardConstants.Type.Equipment:
                     AttachEquipment(row);
-                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardEquipment?.abilityUid ?? 0);
+                    ApplyAbilityDescriptionIfNeeded(row, TcgAbilityBuilder.BuildAbility(row.struckTableTcgCardEquipment));
                     break;
 
                 case CardConstants.Type.Permanent:
                     AttachPermanent(row);
-                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardPermanent?.abilityUid ?? 0);
+                    ApplyAbilityDescriptionIfNeeded(row, TcgAbilityBuilder.BuildAbility(row.struckTableTcgCardPermanent));
                     break;
 
                 case CardConstants.Type.Event:
                     AttachEvent(row);
-                    ApplyAbilityDescriptionIfNeeded(row, row.struckTableTcgCardEvent?.abilityUid ?? 0);
+                    ApplyAbilityDescriptionIfNeeded(row, TcgAbilityBuilder.BuildAbility(row.struckTableTcgCardEvent));
                     break;
 
                 case CardConstants.Type.Hero:
@@ -110,11 +108,7 @@ namespace GGemCo2DTcg
             _tableTcgCardHero ??= TableLoaderManagerTcg.Instance.TableTcgCardHero;
             _tableTcgCardEquipment ??= TableLoaderManagerTcg.Instance.TableTcgCardEquipment;
             _tableTcgCardPermanent ??= TableLoaderManagerTcg.Instance.TableTcgCardPermanent;
-            _tableTcgCardEvent ??= TableLoaderManagerTcg.Instance.TableTcgCardEvent;
-
-            // Ability 테이블 (Spell/Equipment/Permanent/Event에서 사용)
-            _tableTcgAbility ??= TableLoaderManagerTcg.Instance.TableTcgAbility;
-            
+            _tableTcgCardEvent ??= TableLoaderManagerTcg.Instance.TableTcgCardEvent;            
             _abilityDescriptionProvider ??= new TcgAbilityDescriptionProvider();
 
             return true;
@@ -161,14 +155,9 @@ namespace GGemCo2DTcg
         /// - 카드 테이블의 Description을 기본값으로 두고,
         /// - Ability.description이 비어있지 않으면 우선 적용합니다.
         /// </summary>
-        private void ApplyAbilityDescriptionIfNeeded(StruckTableTcgCard row, int abilityUid)
+        private void ApplyAbilityDescriptionIfNeeded(StruckTableTcgCard row, in TcgAbilityDefinition ability)
         {
             if (row == null) return;
-            if (abilityUid <= 0) return;
-            if (_tableTcgAbility == null) return;
-
-            var ability = _tableTcgAbility.GetDataByUid(abilityUid);
-            if (ability == null) return;
             var description = _abilityDescriptionProvider.GetDescription(ability);
             if (!string.IsNullOrEmpty(description))
             {

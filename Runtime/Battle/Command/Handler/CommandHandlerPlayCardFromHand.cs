@@ -59,7 +59,7 @@ namespace GGemCo2DTcg
                 case CardConstants.Type.Spell:
                 {
                     // 스펠은 즉시 능력 실행 후 소모
-                    TryRunOnPlayAbility(context, actor, opponent, card, card.SpellDetail?.abilityUid, steps);
+                    TryRunOnPlayAbility(context, actor, opponent, card, TcgAbilityBuilder.BuildAbility(card.SpellDetail), steps);
 
                     steps.Add(new TcgPresentationStep(
                         TcgPresentationStepType.PlaySpellCast,
@@ -85,7 +85,7 @@ namespace GGemCo2DTcg
                     // 1) OnPlay 능력 실행(버프/디버프/효과)
                     // 2) 카드 소모(Grave) 처리
                     // 로 최소 기능을 제공합니다.
-                    TryRunOnPlayAbility(context, actor, opponent, card, card.EquipmentDetail?.abilityUid, steps);
+                    TryRunOnPlayAbility(context, actor, opponent, card, TcgAbilityBuilder.BuildAbility(card.EquipmentDetail), steps);
 
                     steps.Add(new TcgPresentationStep(
                         TcgPresentationStepType.PlayEffectOnTarget,
@@ -115,7 +115,7 @@ namespace GGemCo2DTcg
 
                         if (card.PermanentDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
                         {
-                            TryRunOnPlayAbility(context, actor, opponent, card, card.PermanentDetail.abilityUid, steps);
+                            TryRunOnPlayAbility(context, actor, opponent, card, TcgAbilityBuilder.BuildAbility(card.PermanentDetail), steps);
                         }
                     }
 
@@ -139,7 +139,7 @@ namespace GGemCo2DTcg
 
                         if (card.EventDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
                         {
-                            TryRunOnPlayAbility(context, actor, opponent, card, card.EventDetail.abilityUid, steps);
+                            TryRunOnPlayAbility(context, actor, opponent, card, TcgAbilityBuilder.BuildAbility(card.EventDetail), steps);
 
                             if (card.EventDetail.consumeOnTrigger)
                             {
@@ -183,16 +183,16 @@ namespace GGemCo2DTcg
             TcgBattleDataSide caster,
             TcgBattleDataSide opponent,
             TcgBattleDataCard sourceCard,
-            int? abilityUid,
+            in TcgAbilityDefinition ability,
             List<TcgPresentationStep> steps)
         {
-            if (!abilityUid.HasValue || abilityUid.Value <= 0)
+            if (!ability.IsValid)
                 return;
 
-            // 도메인: 능력 실행 (타겟 규칙은 tcg_ability 정의 기반)
+            // 도메인: 능력 실행 (타겟 규칙은 상세 테이블의 Ability 정의 기반)
             var list = new List<TcgAbilityData>(1)
             {
-                new TcgAbilityData { abilityUid = abilityUid.Value }
+                new TcgAbilityData { ability = ability }
             };
             var session = battleDataMain.Owner as TcgBattleSession;
             TcgAbilityRunner.RunAbility(

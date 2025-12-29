@@ -241,7 +241,7 @@ namespace GGemCo2DTcg
                         p.Stacks = p.Definition.maxStacks;
 
                     RunAbilityById(
-                        abilityUid: p.Definition.abilityUid,
+                        ability: TcgAbilityBuilder.BuildAbility(p.Definition),
                         ownerSide: ownerSide,
                         opponentSide: opponentSide,
                         tcgAbilityTriggerType: tcgAbilityTriggerType,
@@ -271,7 +271,7 @@ namespace GGemCo2DTcg
                         continue;
 
                     RunAbilityById(
-                        abilityUid: e.Definition.abilityUid,
+                        ability: TcgAbilityBuilder.BuildAbility(e.Definition),
                         ownerSide: ownerSide,
                         opponentSide: opponentSide,
                         tcgAbilityTriggerType: tcgAbilityTriggerType,
@@ -287,28 +287,33 @@ namespace GGemCo2DTcg
                 }
             }
         }
-
+        
         private void RunAbilityById(
-            int abilityUid,
+            in TcgAbilityDefinition ability,
             TcgBattleDataSide ownerSide,
             TcgBattleDataSide opponentSide,
             TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
             TcgBattleDataCard sourceCard,
             object sourceInstance)
         {
-            if (abilityUid <= 0) return;
+            if (!ability.IsValid) return;
+            if (ownerSide == null || opponentSide == null || sourceCard == null) return;
 
-            // 프로젝트의 AbilityRunner API에 맞게 호출
+            var list = new List<TcgAbilityData>(1)
+            {
+                new TcgAbilityData { ability = ability }
+            };
+
             TcgAbilityRunner.RunAbility(
                 Context,
                 ownerSide,
                 opponentSide,
                 sourceCard,
-                new List<TcgAbilityData>(1) { new TcgAbilityData { abilityUid = abilityUid } },
+                list,
                 explicitTargetBattleData: null,
                 tcgAbilityTriggerType: tcgAbilityTriggerType,
                 presentationEvent: PublishAbilityPresentation);
-
+            
             // 실행 후 전투 종료 조건 체크(안전)
             TryCheckBattleEnd();
         }
@@ -320,7 +325,6 @@ namespace GGemCo2DTcg
         {
             AbilityPresentation?.Invoke(ev);
         }
-
         #endregion
 
         #region Battle End
