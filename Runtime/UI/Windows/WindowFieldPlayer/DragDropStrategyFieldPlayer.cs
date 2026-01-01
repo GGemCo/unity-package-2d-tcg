@@ -6,9 +6,8 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 필드 플레이어 윈도우 - 아이콘 드래그 앤 드랍 관리
     /// </summary>
-    public class DragDropStrategyFieldPlayer : IDragDropStrategy
+    public class DragDropStrategyFieldPlayer : DragDropStrategyBase, IDragDropStrategy
     {
-        private TcgBattleManager _battleManager;
         
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
         {
@@ -27,7 +26,7 @@ namespace GGemCo2DTcg
             switch (droppedWindowUid)
             {
                 case UIWindowConstants.WindowUid.TcgHandPlayer:
-                    UseCard(droppedUIIcon);
+                    UseCard(droppedWindowUid, droppedUIIcon, window.uid);
                     break;
             }
         }
@@ -63,7 +62,7 @@ namespace GGemCo2DTcg
                 switch (droppedWindowUid)
                 {
                     case UIWindowConstants.WindowUid.TcgHandPlayer:
-                        UseCard(droppedUIIcon);
+                        UseCard(droppedWindowUid, droppedUIIcon, targetWindowUid, targetUIIcon);
                         break;
                 }
             }
@@ -78,14 +77,6 @@ namespace GGemCo2DTcg
         public void HandleDragOut(UIWindow window, Vector3 worldPosition, GameObject droppedIcon, GameObject targetIcon,
             Vector3 originalPosition)
         {
-        }
-
-        private void UseCard(UIIcon droppedUIIcon)
-        {
-            // 0은 영웅으로 사용하고 있기 때문에 -1 해준다
-            var newIndex = droppedUIIcon.index - 1;
-            _battleManager ??= TcgPackageManager.Instance.battleManager;
-            _battleManager?.OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide.Player, newIndex);
         }
     }
 }

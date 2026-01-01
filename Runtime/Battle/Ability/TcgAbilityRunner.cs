@@ -67,37 +67,18 @@ namespace GGemCo2DTcg
             Handlers[type] = handler;
         }
 
-        /// <summary>
-        /// 카드가 보유한 Ability 리스트를 순서대로 실행합니다.
-        /// </summary>
-        /// <param name="battleDataMain">전투 전체를 대표하는 메인 데이터입니다.</param>
-        /// <param name="caster">Ability를 시전하는 주체(시전자)입니다.</param>
-        /// <param name="opponent">시전자 기준 상대편입니다.</param>
-        /// <param name="sourceCard">Ability를 발생시킨 원본 카드 데이터입니다.</param>
-        /// <param name="abilityDataList">실행할 Ability 데이터 목록(순서대로 실행)입니다.</param>
-        /// <param name="explicitTargetBattleData">
-        /// 외부에서 강제로 지정하는 타겟입니다.
-        /// 각 Ability 항목에 <c>data.explicitTarget</c>이 존재하면 그것이 우선합니다.
-        /// </param>
-        /// <param name="tcgAbilityTriggerType">
-        /// 트리거 기반 실행(예: OnDraw/OnTurnStart)일 때 트리거 타입을 전달합니다.
-        /// 기본값은 <see cref="TcgAbilityConstants.TcgAbilityTriggerType.None"/>입니다.
-        /// </param>
-        /// <param name="presentationEvent">
-        /// UI 연출 훅입니다. null이면 연출 이벤트를 발행하지 않습니다.
-        /// Begin/End 두 번 호출됩니다.
-        /// </param>
         public static void RunAbility(
             TcgBattleDataMain battleDataMain,
-            TcgBattleDataSide caster,
-            TcgBattleDataSide opponent,
-            TcgBattleDataCard sourceCard,
+            ConfigCommonTcg.TcgPlayerSide casterSide,
+            ConfigCommonTcg.TcgZone casterZone,
+            int casterIndex,
+            ConfigCommonTcg.TcgZone targetZone,
+            int targetIndex,
             IReadOnlyList<TcgAbilityData> abilityDataList,
-            TcgBattleDataFieldCard explicitTargetBattleData = null,
             TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType = TcgAbilityConstants.TcgAbilityTriggerType.None,
             System.Action<TcgAbilityPresentationEvent> presentationEvent = null)
         {
-            if (battleDataMain == null || caster == null || opponent == null || sourceCard == null)
+            if (battleDataMain == null || casterSide == ConfigCommonTcg.TcgPlayerSide.None)
                 return;
 
             if (abilityDataList == null || abilityDataList.Count == 0)
@@ -116,33 +97,34 @@ namespace GGemCo2DTcg
                     continue;
                 }
 
-                var ctx = new TcgAbilityContext(battleDataMain, caster, opponent, sourceCard, ability)
-                {
-                    // 개별 Ability의 explicitTarget이 있으면 그것이 우선, 없으면 외부 explicitTarget을 사용합니다.
-                    TargetBattleData = data.explicitTarget ?? explicitTargetBattleData
-                };
+                var ctx = new TcgAbilityContext(battleDataMain, casterSide, casterZone, casterIndex,
+                    targetZone, targetIndex, ability);
 
                 // UI 연출 훅: 실행 직전
                 presentationEvent?.Invoke(new TcgAbilityPresentationEvent(
                     TcgAbilityPresentationEvent.Phase.Begin,
-                    abilityUid: ability.uid,
-                    abilityType: ability.abilityType,
-                    casterSide: caster.Side,
-                    sourceCard: sourceCard,
-                    targetCard: ctx.TargetBattleData,
-                    tcgAbilityTriggerType: tcgAbilityTriggerType));
+                    ability: ability,
+                    casterSide: casterSide,
+                    casterZone: casterZone,
+                    casterIndex: casterIndex,
+                    targetZone: targetZone,
+                    targetIndex: targetIndex,
+                    abilityTriggerType: tcgAbilityTriggerType));
 
+                // Ability 시스템 처리. UI 연출이 아님.
                 handler.Execute(ctx);
 
-                // UI 연출 훅: 실행 직후
+                // UI 연출 처리
                 presentationEvent?.Invoke(new TcgAbilityPresentationEvent(
                     TcgAbilityPresentationEvent.Phase.End,
-                    abilityUid: ability.uid,
-                    abilityType: ability.abilityType,
-                    casterSide: caster.Side,
-                    sourceCard: sourceCard,
-                    targetCard: ctx.TargetBattleData,
-                    tcgAbilityTriggerType: tcgAbilityTriggerType));
+                    ability: ability,
+                    abilityTriggerType: tcgAbilityTriggerType,
+                    casterSide: casterSide,
+                    casterZone: casterZone,
+                    casterIndex: casterIndex,
+                    targetZone: targetZone,
+                    targetIndex: targetIndex,
+                    userData: null));
             }
         }
     }

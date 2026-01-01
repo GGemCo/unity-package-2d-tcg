@@ -13,8 +13,6 @@ namespace GGemCo2DTcg
     /// </summary>
     public class UIWindowTcgHandPlayer : UIWindowTcgHandBase
     {
-        [Tooltip("턴 종료 버튼")]
-        public Button buttonTurnOff;
 
         [Tooltip("마나 토글 컴포넌트를 넣을 Transform")]
         public Transform containerToggleMana;
@@ -23,7 +21,6 @@ namespace GGemCo2DTcg
         public GameObject prefabToggleMana;
 
         private readonly List<Toggle> _toggleManaList = new List<Toggle>();
-        private TcgBattleManager _battleManager;
 
         /// <summary>
         /// 플레이어 핸드 윈도우의 고정 UID를 반환합니다.
@@ -45,14 +42,6 @@ namespace GGemCo2DTcg
         protected override IDragDropStrategy CreateDragDropStrategy() =>
             new DragDropStrategyHandPlayer();
 
-        /// <summary>
-        /// 플레이어 영웅 아이콘을 플레이어 전용 타입으로 캐스팅해 반환합니다.
-        /// </summary>
-        /// <returns>플레이어 영웅 아이콘(<see cref="UIIconHandPlayerHero"/>) 또는 null.</returns>
-        protected override UIIconCard GetHeroIcon()
-        {
-            return iconHero as UIIconHandPlayerHero;
-        }
 
         /// <summary>
         /// 플레이어 전용 초기화(턴 종료 버튼/마나 토글 생성)를 수행합니다.
@@ -61,8 +50,6 @@ namespace GGemCo2DTcg
         {
             base.Awake();
 
-            // Player 전용 처리
-            buttonTurnOff?.onClick.AddListener(OnClickTurnOff);
             CreateToggleMana();
         }
 
@@ -97,23 +84,6 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 턴 종료 요청 등 전투 관련 UI 이벤트를 전달할 대상 매니저를 설정합니다.
-        /// </summary>
-        /// <param name="battleManager">현재 전투를 관리하는 매니저.</param>
-        public void SetBattleManager(TcgBattleManager battleManager)
-        {
-            _battleManager = battleManager;
-        }
-
-        /// <summary>
-        /// 오브젝트 파괴 시 등록한 UI 이벤트를 해제합니다.
-        /// </summary>
-        protected void OnDestroy()
-        {
-            buttonTurnOff?.onClick.RemoveAllListeners();
-        }
-
-        /// <summary>
         /// 현재/최대 마나를 표시합니다.
         /// 기본 텍스트 표시 후, 플레이어 전용 마나 토글의 활성/체크 상태를 갱신합니다.
         /// </summary>
@@ -137,14 +107,6 @@ namespace GGemCo2DTcg
                 // 현재 마나 수만큼 점등(ON)
                 toggle.isOn = i < currentMana;
             }
-        }
-
-        /// <summary>
-        /// 턴 종료 버튼 클릭 시 전투 매니저에 턴 종료를 요청합니다.
-        /// </summary>
-        private void OnClickTurnOff()
-        {
-            _battleManager?.OnUiRequestEndTurn();
         }
     }
 }

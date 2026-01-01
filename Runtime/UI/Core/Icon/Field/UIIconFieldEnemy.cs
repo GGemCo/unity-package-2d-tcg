@@ -7,9 +7,14 @@ namespace GGemCo2DTcg
     public class UIIconFieldEnemy : UIIconCard, IPointerEnterHandler, IPointerExitHandler
     {
         private UIWindowTcgCardInfo _windowTcgCardInfo;
-        private TcgBattleDataFieldCard _tcgBattleDataFieldCard;
+        private TcgBattleDataCardInField _tcgBattleDataCardInField;
         // private readonly CompositeDisposable _bindDisposables = new();
 
+        protected override void Awake()
+        {
+            base.Awake();
+            borderKeyPrefix = $"{ConfigAddressableKeyTcg.Card.ImageBorderField}_";
+        }
         protected override void Start()
         {
             base.Start();
@@ -18,11 +23,11 @@ namespace GGemCo2DTcg
         
         private void OnDisable()
         {
-            if (IsSelected())
-            {
-                SceneGame.Instance.uIWindowManager.ShowSelectIconImage(false);
-            }
-            SceneGame.Instance.uIWindowManager.ShowOverIconImage(false);
+            // if (IsSelected())
+            // {
+            //     SceneGame.Instance.uIWindowManager.ShowSelectIconImage(false);
+            // }
+            // SceneGame.Instance.uIWindowManager.ShowOverIconImage(false);
             _windowTcgCardInfo?.Show(false);
         }
         
@@ -52,9 +57,9 @@ namespace GGemCo2DTcg
         /// <param name="eventData"></param>
         public override void OnPointerClick(PointerEventData eventData)
         {
-            if (_tcgBattleDataFieldCard == null)
+            if (_tcgBattleDataCardInField == null)
             {
-                GcLogger.LogError($"{nameof(TcgBattleDataFieldCard)} 정보가 없습니다.");
+                GcLogger.LogError($"{nameof(TcgBattleDataCardInField)} 정보가 없습니다.");
                 return;
             }
         }

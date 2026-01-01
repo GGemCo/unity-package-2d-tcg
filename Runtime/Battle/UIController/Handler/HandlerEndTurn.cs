@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using GGemCo2DCore;
 using UnityEngine;
 
 namespace GGemCo2DTcg
@@ -12,7 +11,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 이 핸들러가 처리하는 프레젠테이션 스텝 타입.
         /// </summary>
-        public TcgPresentationStepType Type => TcgPresentationStepType.EndTurn;
+        public TcgPresentationConstants.TcgPresentationStepType Type => TcgPresentationConstants.TcgPresentationStepType.EndTurn;
 
         /// <summary>
         /// 플레이어 턴일 때, 메시지를 보여주는 연출을 실행합니다.
@@ -25,7 +24,7 @@ namespace GGemCo2DTcg
             var uiWindowTcgBattleHud = ctx.BattleHud;
             if (uiWindowTcgBattleHud == null) yield break;
             
-            yield return uiWindowTcgBattleHud.ShowEndTurnText();   
+            yield return uiWindowTcgBattleHud.ShowEndTurnText();
             yield return new WaitForSeconds(0.05f);
         }
     }

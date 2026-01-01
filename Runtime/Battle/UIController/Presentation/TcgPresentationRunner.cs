@@ -12,7 +12,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 스텝 타입 → 핸들러 매핑 테이블.
         /// </summary>
-        private readonly Dictionary<TcgPresentationStepType, ITcgPresentationHandler> _handlers;
+        private readonly Dictionary<TcgPresentationConstants.TcgPresentationStepType, ITcgPresentationHandler> _handlers;
 
         /// <summary>
         /// 주어진 핸들러들을 스텝 타입 기준으로 등록합니다.
@@ -20,7 +20,7 @@ namespace GGemCo2DTcg
         /// <param name="handlers">등록할 핸들러 목록.</param>
         public TcgPresentationRunner(IEnumerable<ITcgPresentationHandler> handlers)
         {
-            _handlers = new Dictionary<TcgPresentationStepType, ITcgPresentationHandler>(16);
+            _handlers = new Dictionary<TcgPresentationConstants.TcgPresentationStepType, ITcgPresentationHandler>(16);
             foreach (var h in handlers)
             {
                 if (h == null) continue;
@@ -66,11 +66,12 @@ namespace GGemCo2DTcg
                         // 알 수 없는 StepType은 무시(안전)
                         yield return null;
                     }
-                    // 다음 공격 까지 조금 텀을 준다.
-                    yield return new WaitForSeconds(ctx.Settings.timeAfterUICutscene);
 
                     perStepEnded?.Invoke();
                 }
+                
+                if (trace.Command.CommandType != ConfigCommonTcg.TcgBattleCommandType.EndTurn)
+                    yield return new WaitForSeconds(ctx.Settings.timeWaitAfterCommand);
             }
         }
     }

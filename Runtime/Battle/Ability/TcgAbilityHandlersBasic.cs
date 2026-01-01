@@ -14,63 +14,6 @@ namespace GGemCo2DTcg
     public static class TcgAbilityHandlersBasic
     {
         /// <summary>
-        /// Ability 컨텍스트를 기준으로 실제 적용 대상을 결정합니다.
-        /// </summary>
-        /// <param name="ctx">Ability 실행 컨텍스트입니다.</param>
-        /// <returns>
-        /// 결정된 전투 필드 카드 데이터이며,
-        /// 타겟을 결정할 수 없는 경우 null을 반환합니다.
-        /// </returns>
-        private static TcgBattleDataFieldCard ResolveTarget(
-            TcgAbilityContext ctx)
-        {
-            // UI/AI에서 이미 타겟이 지정된 경우 이를 우선 사용합니다.
-            if (ctx.TargetBattleData != null)
-                return ctx.TargetBattleData;
-
-            var tt = ctx.Ability.tcgAbilityTargetType;
-            switch (tt)
-            {
-                case TcgAbilityConstants.TcgAbilityTargetType.Self:
-                {
-                    // SourceCard가 Creature/Hero가 아닐 수 있으므로
-                    // Self 타겟은 외부에서 명시적으로 주입되는 것이 안전합니다.
-                    return null;
-                }
-
-                case TcgAbilityConstants.TcgAbilityTargetType.EnemyHero:
-                    return ctx.Opponent?.Hero?.HeroField;
-
-                case TcgAbilityConstants.TcgAbilityTargetType.AllyHero:
-                    return ctx.Caster?.Hero?.HeroField;
-
-                case TcgAbilityConstants.TcgAbilityTargetType.EnemyCreature:
-                {
-                    var board = ctx.Opponent?.Board;
-                    return board is { Count: > 0 } ? board.GetByIndex(0) : null;
-                }
-
-                case TcgAbilityConstants.TcgAbilityTargetType.AllyCreature:
-                {
-                    var board = ctx.Caster?.Board;
-                    return board is { Count: > 0 } ? board.GetByIndex(0) : null;
-                }
-
-                case TcgAbilityConstants.TcgAbilityTargetType.AnyCreature:
-                {
-                    var enemyBoard = ctx.Opponent?.Board;
-                    if (enemyBoard is { Count: > 0 }) return enemyBoard.GetByIndex(0);
-
-                    var allyBoard = ctx.Caster?.Board;
-                    return allyBoard is { Count: > 0 } ? allyBoard.GetByIndex(0) : null;
-                }
-
-                default:
-                    return null;
-            }
-        }
-
-        /// <summary>
         /// Damage Ability 실행 핸들러입니다.
         /// </summary>
         public sealed class Damage : ITcgAbilityHandler
@@ -81,17 +24,13 @@ namespace GGemCo2DTcg
             /// <param name="context">Ability 실행 컨텍스트입니다.</param>
             public void Execute(TcgAbilityContext context)
             {
-                if (context == null) return;
+                if (GcLogger.IsNull(context, $"[Ability] Damage: {nameof(TcgAbilityContext)} is null.")) return;
 
                 var value = context.ParamA;
                 if (value <= 0) return;
 
-                var target = ResolveTarget(context);
-                if (target == null)
-                {
-                    GcLogger.LogWarning("[Ability] Damage: Target is null.");
-                    return;
-                }
+                var target = context.TargetBattleDataCardInField;
+                if (GcLogger.IsNull(target, "[Ability] Damage: Target is null.")) return;
 
                 target.ApplyDamage(value);
             }
@@ -113,7 +52,7 @@ namespace GGemCo2DTcg
                 var value = context.ParamA;
                 if (value <= 0) return;
 
-                var target = ResolveTarget(context);
+                var target = context.TargetBattleDataCardInField;
                 if (target == null)
                 {
                     GcLogger.LogWarning("[Ability] Heal: Target is null.");
@@ -141,7 +80,7 @@ namespace GGemCo2DTcg
                 if (drawCount <= 0) return;
 
                 for (int i = 0; i < drawCount; i++)
-                    context.Caster?.DrawOneCard();
+                    context.CasterBattleDataSide?.DrawOneCard();
             }
         }
 
@@ -161,7 +100,7 @@ namespace GGemCo2DTcg
                 var value = context.ParamA;
                 if (value == 0) return;
 
-                var target = ResolveTarget(context);
+                var target = context.TargetBattleDataCardInField;
                 if (target == null)
                 {
                     GcLogger.LogWarning("[Ability] BuffAttack: Target is null.");
@@ -188,7 +127,7 @@ namespace GGemCo2DTcg
                 var value = context.ParamA;
                 if (value == 0) return;
 
-                var target = ResolveTarget(context);
+                var target = context.TargetBattleDataCardInField;
                 if (target == null)
                 {
                     GcLogger.LogWarning("[Ability] BuffHealth: Target is null.");
@@ -215,7 +154,7 @@ namespace GGemCo2DTcg
                 var value = context.ParamA;
                 if (value <= 0) return;
 
-                context.Caster?.Mana?.Add(value);
+                context.CasterBattleDataSide?.Mana?.Add(value);
             }
         }
 

@@ -15,10 +15,5 @@ namespace GGemCo2DTcg
 
         protected override IDragDropStrategy CreateDragDropStrategy() =>
             new DragDropStrategyHandEnemy();
-
-        protected override UIIconCard GetHeroIcon()
-        {
-            return iconHero as UIIconHandEnemyHero;
-        }
     }
 }

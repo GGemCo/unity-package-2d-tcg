@@ -30,7 +30,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 플레이어 덱 런타임을 생성합니다.
         /// </summary>
-        public TcgBattleDataDeck<TcgBattleDataCard> BuildPlayerDeckRuntime(int playerDeckIndex, int seed)
+        public TcgBattleDataDeck<TcgBattleDataCardInHand> BuildPlayerDeckRuntime(int playerDeckIndex, int seed)
         {
             var myDeckData = _saveDataManagerTcg.MyDeck;
             if (myDeckData == null)
@@ -47,10 +47,10 @@ namespace GGemCo2DTcg
             }
 
             // 런타임 덱 생성 및 셔플
-            List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(deckInfo.cardList);
+            List<TcgBattleDataCardInHand> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(deckInfo.cardList);
             
             var shuffleContext = BuildShuffleContext(ConfigCommonTcg.TcgPlayerSide.Player, seed, runtimeCardList.Count);
-            var deckRuntime    = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
+            var deckRuntime    = new TcgBattleDataDeck<TcgBattleDataCardInHand>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
             LogShuffledDeckForDebug(deckRuntime, "Player", seed);
@@ -64,7 +64,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// Enemy 덱 런타임을 생성합니다.
         /// </summary>
-        public TcgBattleDataDeck<TcgBattleDataCard> BuildEnemyDeckRuntime(int enemyDeckPresetId, int seed)
+        public TcgBattleDataDeck<TcgBattleDataCardInHand> BuildEnemyDeckRuntime(int enemyDeckPresetId, int seed)
         {
             // TableTcgCard에서 전체 카드 리스트 가져오기
             var tableTcgCards = _tableTcgCard.GetAll();
@@ -81,10 +81,10 @@ namespace GGemCo2DTcg
                 cardList.TryAdd(uid, 1);
             }
 
-            List<TcgBattleDataCard> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(cardList);
+            List<TcgBattleDataCardInHand> runtimeCardList = TcgBattleDataDeckBuilder.BuildRuntimeDeckCardList(cardList);
 
             var shuffleContext = BuildShuffleContext(ConfigCommonTcg.TcgPlayerSide.Enemy, seed, runtimeCardList.Count);
-            var deckRuntime = new TcgBattleDataDeck<TcgBattleDataCard>(shuffleContext);
+            var deckRuntime = new TcgBattleDataDeck<TcgBattleDataCardInHand>(shuffleContext);
             deckRuntime.SetCards(runtimeCardList);
             deckRuntime.Shuffle();
             LogShuffledDeckForDebug(deckRuntime, "Enemy", seed);
@@ -147,7 +147,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 디버그용으로 셔플된 덱 정보를 로그로 남깁니다.
         /// </summary>
-        private void LogShuffledDeckForDebug(TcgBattleDataDeck<TcgBattleDataCard> deckRuntime, string label, int seed)
+        private void LogShuffledDeckForDebug(TcgBattleDataDeck<TcgBattleDataCardInHand> deckRuntime, string label, int seed)
         {
 #if UNITY_EDITOR
             if (_tcgSettings.showShuffleInfo)

@@ -18,10 +18,8 @@ namespace GGemCo2DTcg
         {
             // 일러스트 이미지
             public static string ImageArt => ConfigAddressablePath.Combine(RootImageTcg, "CardArt");
-            public static string ImageBorder => ConfigAddressablePath.Combine(RootImageTcg, "CardBorder");
-            // 타입별 UI Element
-            public static string UIElement => ConfigAddressablePath.Combine(RootPrefabTcg, "UIElementCard");
+            public static string ImageBorderHand => ConfigAddressablePath.Combine(RootImageTcg, "CardBorderHand");
+            public static string ImageBorderField => ConfigAddressablePath.Combine(RootImageTcg, "CardBorderField");
         }
-
     }
 }

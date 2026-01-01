@@ -34,7 +34,7 @@ namespace GGemCo2DTcg
                 paramA = MathHelper.ParseInt(data["ParamA"]),
                 paramB = MathHelper.ParseInt(data["ParamB"]),
                 paramC = MathHelper.ParseInt(data["ParamC"]),
-                consumeOnTrigger = data.TryGetValue("ConsumeOnTrigger", out var v) && MathHelper.ParseInt(v) != 0
+                consumeOnTrigger = ConvertBoolean(data["ConsumeOnTrigger"])
             };
         }
     }

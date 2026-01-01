@@ -36,7 +36,7 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgBattlePermanentInstance
     {
-        public TcgBattleDataCard Card { get; }
+        public TcgBattleDataCardInHand CardInHand { get; }
         public StruckTableTcgCardPermanent Definition { get; }
 
         /// <summary>현재 스택 수.</summary>
@@ -45,9 +45,9 @@ namespace GGemCo2DTcg
         /// <summary>마지막으로 발동된 턴 카운트.</summary>
         public int LastResolvedTurn { get; set; }
 
-        public TcgBattlePermanentInstance(TcgBattleDataCard card, StruckTableTcgCardPermanent definition)
+        public TcgBattlePermanentInstance(TcgBattleDataCardInHand cardInHand, StruckTableTcgCardPermanent definition)
         {
-            Card = card ?? throw new ArgumentNullException(nameof(card));
+            CardInHand = cardInHand ?? throw new ArgumentNullException(nameof(cardInHand));
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             Stacks = 1;
             LastResolvedTurn = -999;

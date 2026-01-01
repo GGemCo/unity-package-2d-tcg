@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
@@ -19,64 +20,112 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 카드 사용 시: 손에서 사용할 카드 런타임 참조.
         /// </summary>
-        public TcgBattleDataCard tcgBattleDataCard;
+        public TcgBattleDataCardInHand attackerBattleDataCardInHand;
 
         /// <summary>
         /// 공격 시: 공격자 유닛.
         /// </summary>
-        public TcgBattleDataFieldCard Attacker;
+        public ConfigCommonTcg.TcgZone attackerZone;
+        public TcgBattleDataCardInField attackerBattleDataCardInField;
 
         /// <summary>
         /// 공격 시: 대상 유닛 (영웅 공격이면 null 로 사용).
         /// </summary>
-        public TcgBattleDataFieldCard targetBattleData;
-        // 영웅 공격시
-        public TcgBattleDataFieldCard targetBattleDataHero;
+        public ConfigCommonTcg.TcgZone targetZone;
+        public TcgBattleDataCardInField targetBattleDataCardInField;
 
         /// <summary>
         /// 확장용 추가 데이터 (예: 스펠 턴수, 선택된 옵션 등).
         /// </summary>
-        public Dictionary<string, object> ExtraData;
+        public Dictionary<string, object> extraData;
 
         private TcgBattleCommand() { }
 
-        public static TcgBattleCommand PlayCard(
+        public static TcgBattleCommand DrawCardToField(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataCard tcgBattleDataCard)
+            ConfigCommonTcg.TcgZone attackerZone,
+            ConfigCommonTcg.TcgZone targetZone,
+            TcgBattleDataCardInHand attackerBattleDataCardInHand)
         {
             return new TcgBattleCommand
             {
-                CommandType = ConfigCommonTcg.TcgBattleCommandType.PlayCardFromHand,
+                CommandType = ConfigCommonTcg.TcgBattleCommandType.DrawCardToField,
                 Side = side,
-                tcgBattleDataCard = tcgBattleDataCard
+                attackerZone = attackerZone,
+                attackerBattleDataCardInHand = attackerBattleDataCardInHand,
+                targetZone = targetZone
             };
         }
-
+        
         public static TcgBattleCommand AttackUnit(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataFieldCard attacker,
-            TcgBattleDataFieldCard target)
+            ConfigCommonTcg.TcgZone attackerZone,
+            TcgBattleDataCardInField attackerBattleDataCardInField,
+            ConfigCommonTcg.TcgZone targetZone,
+            TcgBattleDataCardInField targetBattleDataCardInField)
         {
             return new TcgBattleCommand
             {
                 CommandType = ConfigCommonTcg.TcgBattleCommandType.AttackUnit,
                 Side = side,
-                Attacker = attacker,
-                targetBattleData = target
+                attackerZone = attackerZone,
+                attackerBattleDataCardInField = attackerBattleDataCardInField,
+                targetZone = targetZone,
+                targetBattleDataCardInField = targetBattleDataCardInField,
+            };
+        }
+        
+        public static TcgBattleCommand UseCardSpell(
+            ConfigCommonTcg.TcgPlayerSide side,
+            ConfigCommonTcg.TcgZone attackerZone,
+            TcgBattleDataCardInHand attackerBattleDataCardInHand,
+            ConfigCommonTcg.TcgZone targetZone,
+            TcgBattleDataCardInField targetBattleDataCardInField)
+        {
+            return new TcgBattleCommand
+            {
+                CommandType = ConfigCommonTcg.TcgBattleCommandType.UseCardSpell,
+                Side = side,
+                attackerZone = attackerZone,
+                attackerBattleDataCardInHand = attackerBattleDataCardInHand,
+                targetZone = targetZone,
+                targetBattleDataCardInField = targetBattleDataCardInField,
+            };
+        }
+        
+        public static TcgBattleCommand UseCardEquipment(
+            ConfigCommonTcg.TcgPlayerSide side,
+            ConfigCommonTcg.TcgZone attackerZone,
+            TcgBattleDataCardInHand attackerBattleDataCardInHand,
+            ConfigCommonTcg.TcgZone targetZone,
+            TcgBattleDataCardInField targetBattleDataCardInField)
+        {
+            return new TcgBattleCommand
+            {
+                CommandType = ConfigCommonTcg.TcgBattleCommandType.UseCardEquipment,
+                Side = side,
+                attackerZone = attackerZone,
+                attackerBattleDataCardInHand = attackerBattleDataCardInHand,
+                targetZone = targetZone,
+                targetBattleDataCardInField = targetBattleDataCardInField,
             };
         }
 
         public static TcgBattleCommand AttackHero(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataFieldCard attacker,
-            TcgBattleDataFieldCard target)
+            ConfigCommonTcg.TcgZone attackerZone,
+            TcgBattleDataCardInField attackerBattleDataCardInField,
+            ConfigCommonTcg.TcgZone targetZone,
+            TcgBattleDataCardInField targetBattleDataCardInField)
         {
             return new TcgBattleCommand
             {
                 CommandType = ConfigCommonTcg.TcgBattleCommandType.AttackHero,
                 Side = side,
-                Attacker = attacker,
-                targetBattleDataHero = target
+                attackerZone = attackerZone,
+                attackerBattleDataCardInField = attackerBattleDataCardInField,
+                targetZone = targetZone,
+                targetBattleDataCardInField = targetBattleDataCardInField,
             };
         }
 

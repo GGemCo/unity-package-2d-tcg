@@ -8,7 +8,7 @@ namespace GGemCo2DTcg
     /// 이 클래스는 다음 하위 영역(Zone/Slot/Pool)을 조합하여 구성됩니다.
     /// - 덱 (Deck)
     /// - 손패 (Hand)
-    /// - 필드 (Board)
+    /// - 필드 (Field)
     /// - 영웅 (Hero)
     /// - 마나 (Mana)
     /// 
@@ -27,7 +27,7 @@ namespace GGemCo2DTcg
         /// 해당 플레이어의 전투용 덱 데이터입니다.
         /// 카드 드로우, 덱 고갈 여부 확인 등에 사용됩니다.
         /// </summary>
-        public TcgBattleDataDeck<TcgBattleDataCard> TcgBattleDataDeck { get; }
+        public TcgBattleDataDeck<TcgBattleDataCardInHand> TcgBattleDataDeck { get; }
 
         /// <summary>
         /// 손패 영역을 관리하는 객체입니다.
@@ -39,12 +39,12 @@ namespace GGemCo2DTcg
         /// 필드(보드)에 배치된 카드들을 관리하는 객체입니다.
         /// 유닛 추가/제거, 공격 가능 여부 일괄 처리 등을 담당합니다.
         /// </summary>
-        public TcgBattleDataSideBoard Board { get; }
+        public TcgBattleDataSideField Field { get; }
 
-        /// <summary>
-        /// 영웅 카드 및 영웅 필드 데이터를 관리하는 객체입니다.
-        /// </summary>
-        public TcgBattleDataSideHero Hero { get; }
+        // /// <summary>
+        // /// 영웅 카드 및 영웅 필드 데이터를 관리하는 객체입니다.
+        // /// </summary>
+        // public TcgBattleDataSideHero Hero { get; }
 
         /// <summary>
         /// 현재 마나 / 최대 마나를 관리하는 객체입니다.
@@ -65,7 +65,7 @@ namespace GGemCo2DTcg
         /// 카드가 손패로 드로우되었을 때 발생하는 이벤트입니다.
         /// Start-of-Turn 드로우, 효과 드로우 등 모든 드로우 경로에서 호출됩니다.
         /// </summary>
-        public event Action<TcgBattleDataCard> CardDrawn;
+        public event Action<TcgBattleDataCardInHand> CardDrawn;
 
         /// <summary>
         /// 게임 도중 이 플레이어가 가질 수 있는 최대 마나 한계값입니다.
@@ -95,7 +95,7 @@ namespace GGemCo2DTcg
         /// <param name="maxMana"> 전투 중 도달할 수 있는 최대 마나 한계값 </param>
         public TcgBattleDataSide(
             ConfigCommonTcg.TcgPlayerSide side,
-            TcgBattleDataDeck<TcgBattleDataCard> deckRuntime,
+            TcgBattleDataDeck<TcgBattleDataCardInHand> deckRuntime,
             int currentMana,
             int currentManaMax,
             int maxMana)
@@ -104,8 +104,9 @@ namespace GGemCo2DTcg
             TcgBattleDataDeck = deckRuntime;
 
             Hand = new TcgBattleDataSideHand(initialCapacity: MaxHandSize, maxSize: MaxHandSize);
-            Board = new TcgBattleDataSideBoard(initialCapacity: MaxHandSize);
-            Hero = new TcgBattleDataSideHero(side);
+            Field = new TcgBattleDataSideField(initialCapacity: MaxHandSize);
+            
+            InitializeHeroCard(TcgBattleDataDeck.HeroCard);
 
             // 마나는 현재 값과 최대값으로 초기화되며,
             // 전투 중 IncreaseMaxMana 를 통해 단계적으로 증가합니다.
@@ -117,16 +118,31 @@ namespace GGemCo2DTcg
             _maxMana = maxMana;
         }
 
-        #region Board
+        #region Hand
+        public TcgBattleDataCardInHand GetBattleDataCardInHandByIndex(int index)
+        {
+            return Hand.GetByIndex(index);
+        }
+        #endregion
+        
+        #region Field
 
         /// <summary>
         /// 필드에 배치된 모든 카드의 공격 가능 여부를 일괄 설정합니다.
         /// 주로 턴 시작/종료 시점에 사용됩니다.
         /// </summary>
         /// <param name="value"> true: 공격 가능 / false: 공격 불가 </param>
-        public void SetBoardCardCanAttack(bool value)
-            => Board.SetAllCanAttack(value);
+        public void SetFieldCardCanAttack(bool value)
+            => Field.SetAllCanAttack(value);
 
+        public TcgBattleDataCardInField GetBattleDataCardInFieldByIndex(int index, bool includeHero = false)
+        {
+            return Field.GetByIndex(index, includeHero);
+        }
+        public bool ContainsInField(TcgBattleDataCardInField battleDataCardInField)
+        {
+            return Field.Contains(battleDataCardInField);
+        }
         #endregion
 
         #region Hero
@@ -135,18 +151,27 @@ namespace GGemCo2DTcg
         /// 이 플레이어의 영웅 카드를 설정합니다.
         /// 전투 시작 시 한 번 호출되는 것이 일반적입니다.
         /// </summary>
-        /// <param name="cardHero"> 영웅으로 사용할 카드 데이터 </param>
-        public void AddCardToHandHero(TcgBattleDataCard cardHero)
-            => Hero.SetHero(cardHero);
+        /// <param name="cardInHandHero"> 영웅으로 사용할 카드 데이터 </param>
+        private void InitializeHeroCard(TcgBattleDataCardInHand cardInHandHero)
+        {
+            if (cardInHandHero == null) return;
 
-        /// <summary>
-        /// 전달된 필드 카드가 이 플레이어의 영웅인지 여부를 반환합니다.
-        /// </summary>
-        /// <param name="target"> 비교할 필드 카드 </param>
-        /// <returns> 영웅이면 true, 아니면 false </returns>
-        public bool ContainsInHero(TcgBattleDataFieldCard target)
-            => Hero.Contains(target);
+            Hand.AddHero(cardInHandHero);
+            var battleDataFieldCard = TcgBattleDataCardFactory.CreateBattleDataFieldCard(Side, cardInHandHero);
+            battleDataFieldCard.SetIndex(ConfigCommonTcg.IndexHeroSlot);
+            Field.AddHero(battleDataFieldCard);
+        }
 
+        public TcgBattleDataCardInField GetHeroBattleDataCardInFieldByIndex(int index)
+        {
+            if (index != ConfigCommonTcg.IndexHeroSlot) return null;
+            return Field.Hero;
+        }
+
+        public bool ContainsInFieldHero(TcgBattleDataCardInField target)
+        {
+            return Field.Hero == target;
+        }
         #endregion
 
         #region Mana
@@ -221,19 +246,12 @@ namespace GGemCo2DTcg
         /// 손패가 가득 찬 상태에서 카드를 드로우했을 때 호출됩니다.
         /// 오버드로우된 카드는 일반적으로 소멸 처리됩니다.
         /// </summary>
-        /// <param name="card">
+        /// <param name="cardInHand">
         /// 오버드로우로 인해 손패에 추가되지 못한 카드
         /// </param>
-        private void HandleOverdraw(TcgBattleDataCard card)
+        private void HandleOverdraw(TcgBattleDataCardInHand cardInHand)
         {
             // 룰에 따라 묘지로 이동하거나 완전히 소멸
         }
-
-        /// <summary>
-        /// 카드 드로우 시 발동되는 효과(키워드, 지속 효과 등)를 처리합니다.
-        /// </summary>
-        /// <param name="card">
-        /// 드로우된 카드
-        /// </param>
     }
 }

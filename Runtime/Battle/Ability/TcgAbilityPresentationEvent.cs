@@ -28,46 +28,25 @@ namespace GGemCo2DTcg
         /// </summary>
         public Phase EventPhase { get; }
 
-        /// <summary>
-        /// Ability 설명/연출 식별에 사용되는 Ability UID입니다.
-        /// (일반적으로 Localization StringTable 키와 동일)
-        /// </summary>
-        public int AbilityUid { get; }
-
-        /// <summary>
-        /// 실행된 Ability의 타입입니다.
-        /// UI 연출 분기 기준으로 사용됩니다.
-        /// </summary>
-        public TcgAbilityConstants.TcgAbilityType AbilityType { get; }
-
-        /// <summary>
-        /// Ability를 시전한 플레이어의 진영 정보입니다.
-        /// </summary>
-        public ConfigCommonTcg.TcgPlayerSide CasterSide { get; }
-
-        /// <summary>
-        /// Ability를 발생시킨 원본 카드 데이터입니다.
-        /// 
-        /// - 손패 / 덱 / 영구 카드 등일 수 있습니다.
-        /// - 트리거 기반 실행 등 카드가 명확하지 않은 경우 null일 수 있습니다.
-        /// </summary>
-        public TcgBattleDataCard SourceCard { get; }
-
-        /// <summary>
-        /// Ability의 명시적 타겟 필드 카드입니다.
-        /// 
-        /// - 단일 타겟 Ability의 경우 설정됩니다.
-        /// - 광역 / 비타겟 Ability의 경우 null일 수 있습니다.
-        /// </summary>
-        public TcgBattleDataFieldCard TargetCard { get; }
-
+        public TcgAbilityDefinition Ability { get; }
+        
         /// <summary>
         /// Ability가 어떤 트리거에 의해 실행되었는지를 나타냅니다.
         /// 
         /// - OnDraw, OnTurnStart 등 트리거 기반 실행 시 설정됩니다.
         /// - 명시되지 않은 경우 <see cref="TcgAbilityConstants.TcgAbilityTriggerType.None"/>입니다.
         /// </summary>
-        public TcgAbilityConstants.TcgAbilityTriggerType TcgAbilityTriggerType { get; }
+        public TcgAbilityConstants.TcgAbilityTriggerType AbilityTriggerType { get; }
+
+        /// <summary>
+        /// Ability를 시전한 플레이어의 진영 정보입니다.
+        /// </summary>
+        public ConfigCommonTcg.TcgPlayerSide CasterSide { get; }
+
+        public ConfigCommonTcg.TcgZone CasterZone { get; }
+        public int CasterIndex { get; }
+        public ConfigCommonTcg.TcgZone TargetZone { get; }
+        public int TargetIndex { get; }
 
         /// <summary>
         /// UI 전용 추가 데이터입니다.
@@ -78,34 +57,25 @@ namespace GGemCo2DTcg
         /// </summary>
         public object UserData { get; }
 
-        /// <summary>
-        /// Ability 연출 이벤트를 생성합니다.
-        /// </summary>
-        /// <param name="eventPhase">Ability 실행 단계(Begin/End)입니다.</param>
-        /// <param name="abilityUid">Ability 식별 UID입니다.</param>
-        /// <param name="abilityType">Ability 타입입니다.</param>
-        /// <param name="casterSide">Ability 시전자 진영입니다.</param>
-        /// <param name="sourceCard">Ability를 발생시킨 원본 카드입니다. null 가능.</param>
-        /// <param name="targetCard">명시적 타겟 필드 카드입니다. null 가능.</param>
-        /// <param name="tcgAbilityTriggerType">Ability 실행 트리거 타입입니다.</param>
-        /// <param name="userData">UI 전용 추가 데이터입니다. null 가능.</param>
         public TcgAbilityPresentationEvent(
             Phase eventPhase,
-            int abilityUid,
-            TcgAbilityConstants.TcgAbilityType abilityType,
+            TcgAbilityDefinition ability,
             ConfigCommonTcg.TcgPlayerSide casterSide,
-            TcgBattleDataCard sourceCard,
-            TcgBattleDataFieldCard targetCard,
-            TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
+            ConfigCommonTcg.TcgZone casterZone,
+            int casterIndex,
+            ConfigCommonTcg.TcgZone targetZone,
+            int targetIndex,
+            TcgAbilityConstants.TcgAbilityTriggerType abilityTriggerType,
             object userData = null)
         {
             EventPhase = eventPhase;
-            AbilityUid = abilityUid;
-            AbilityType = abilityType;
+            Ability = ability;
+            AbilityTriggerType = abilityTriggerType;
             CasterSide = casterSide;
-            SourceCard = sourceCard;
-            TargetCard = targetCard;
-            TcgAbilityTriggerType = tcgAbilityTriggerType;
+            CasterZone = casterZone;
+            CasterIndex = casterIndex;
+            TargetZone = targetZone;
+            TargetIndex = targetIndex;
             UserData = userData;
         }
     }

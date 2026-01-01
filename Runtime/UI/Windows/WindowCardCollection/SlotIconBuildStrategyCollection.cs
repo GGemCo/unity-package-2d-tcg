@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// 플레이어 스킬 윈도우 - 아이콘 생성
+    /// 카드 콜랙션 윈도우 - 아이콘 생성
     /// </summary>
     public class SlotIconBuildStrategyCollection : ISlotIconBuildStrategy
     {

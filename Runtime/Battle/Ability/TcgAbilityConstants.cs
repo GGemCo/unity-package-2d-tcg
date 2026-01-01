@@ -77,7 +77,7 @@
             AllEnemies,
 
             /// <summary>보드 위의 모든 대상에 적용됩니다.</summary>
-            BoardAll
+            FieldAll
         }
 
         /// <summary>

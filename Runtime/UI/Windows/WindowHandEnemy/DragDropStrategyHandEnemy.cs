@@ -6,7 +6,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 핸드 적 윈도우 - 아이콘 드래그 앤 드랍 관리
     /// </summary>
-    public class DragDropStrategyHandEnemy : IDragDropStrategy
+    public class DragDropStrategyHandEnemy : DragDropStrategyBase, IDragDropStrategy
     {
         private TcgBattleManager _battleManager;
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
@@ -22,6 +22,13 @@ namespace GGemCo2DTcg
             if (dropIconUid <= 0)
             {
                 return;
+            }
+            switch (droppedWindowUid)
+            {
+                // 핸드에서 바로 사용하는 카드
+                case UIWindowConstants.WindowUid.TcgHandPlayer:
+                    UseCard(droppedWindowUid, droppedUIIcon, window.uid);
+                    break;
             }
         }
         public void HandleDragInIcon(UIWindow window, UIIcon droppedUIIcon, UIIcon targetUIIcon)
@@ -55,11 +62,13 @@ namespace GGemCo2DTcg
             {
                 switch (droppedWindowUid)
                 {
+                    // 핸드에서 바로 사용하는 카드
+                    // spell, equipment, permanent, event 타입
+                    case UIWindowConstants.WindowUid.TcgHandPlayer:
                     case UIWindowConstants.WindowUid.TcgFieldPlayer:
-                        // 영웅을 공격 했을 때
-                        _battleManager ??= TcgPackageManager.Instance.battleManager;
-                        _battleManager.OnUiRequestAttackHero(ConfigCommonTcg.TcgPlayerSide.Player, dropIconSlotIndex,
-                            targetIconSlotIndex);
+                        // 영웅만 공격 가능
+                        if (targetIconSlotIndex != ConfigCommonTcg.IndexHeroSlot) return;
+                        UseCard(droppedWindowUid, droppedUIIcon, targetWindowUid, targetUIIcon);
                         break;
                 }
             }

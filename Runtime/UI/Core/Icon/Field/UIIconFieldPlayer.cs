@@ -7,6 +7,11 @@ namespace GGemCo2DTcg
     {
         private UIWindowTcgCardInfo _windowTcgCardInfo;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            borderKeyPrefix = $"{ConfigAddressableKeyTcg.Card.ImageBorderField}_";
+        }
         protected override void Start()
         {
             base.Start();
@@ -15,11 +20,11 @@ namespace GGemCo2DTcg
         
         private void OnDisable()
         {
-            if (IsSelected())
-            {
-                SceneGame.Instance.uIWindowManager.ShowSelectIconImage(false);
-            }
-            SceneGame.Instance.uIWindowManager.ShowOverIconImage(false);
+            // if (IsSelected())
+            // {
+            //     SceneGame.Instance.uIWindowManager.ShowSelectIconImage(false);
+            // }
+            // SceneGame.Instance.uIWindowManager.ShowOverIconImage(false);
             _windowTcgCardInfo?.Show(false);
         }
         

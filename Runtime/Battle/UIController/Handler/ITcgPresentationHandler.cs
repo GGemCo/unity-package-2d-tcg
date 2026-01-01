@@ -10,7 +10,7 @@ namespace GGemCo2DTcg
         /// <summary>
         /// 이 핸들러가 처리할 스텝 타입.
         /// </summary>
-        TcgPresentationStepType Type { get; }
+        TcgPresentationConstants.TcgPresentationStepType Type { get; }
 
         /// <summary>
         /// 주어진 스텝에 대한 연출 코루틴을 실행합니다.

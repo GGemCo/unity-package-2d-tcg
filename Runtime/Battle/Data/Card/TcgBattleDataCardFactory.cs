@@ -72,11 +72,11 @@ namespace GGemCo2DTcg
             return result;
         }
 
-        public static TcgBattleDataCard CreateBattleDataCard(StruckTableTcgCard row)
+        public static TcgBattleDataCardInHand CreateBattleDataCard(StruckTableTcgCard row)
         {
             var keywords         = ParseKeywords(row.keywordRaw);
 
-            return new TcgBattleDataCard(
+            return new TcgBattleDataCardInHand(
             
                 row,
                 keywords);
@@ -86,11 +86,11 @@ namespace GGemCo2DTcg
         /// Creature 타입 카드를 기반으로 필드에 소환할 유닛 런타임을 생성합니다.
         /// - 실제 스탯/키워드는 카드 테이블/런타임에서 가져와야 합니다.
         /// </summary>
-        public static TcgBattleDataFieldCard CreateBattleDataFieldCard(
+        public static TcgBattleDataCardInField CreateBattleDataFieldCard(
             ConfigCommonTcg.TcgPlayerSide ownerSide,
-            TcgBattleDataCard tcgBattleDataCard)
+            TcgBattleDataCardInHand tcgBattleDataCardInHand)
         {
-            if (tcgBattleDataCard == null)
+            if (tcgBattleDataCardInHand == null)
             {
                 GcLogger.LogError("[Battle] CreateUnitFromCard: cardRuntime is null.");
                 return null;
@@ -98,21 +98,21 @@ namespace GGemCo2DTcg
 
             // 1) CardRuntime 에서 스탯/키워드 정보 가져오기
             //    (아래는 예시. 실제 필드 이름에 맞게 수정 필요)
-            int attack = tcgBattleDataCard.attack.Value; // 예: CardRuntime.Attack
-            int hp     = tcgBattleDataCard.health.Value; // 예: CardRuntime.Health
+            int attack = tcgBattleDataCardInHand.attack.Value; // 예: CardRuntime.Attack
+            int hp     = tcgBattleDataCardInHand.health.Value; // 예: CardRuntime.Health
 
             // 키워드 예시: CardRuntime.Keywords 또는 테이블에서 변환
             List<ConfigCommonTcg.TcgKeyword> keywords = new List<ConfigCommonTcg.TcgKeyword>(4);
-            foreach (var kw in tcgBattleDataCard.Keywords) // 예: IEnumerable<TcgKeyword>
+            foreach (var kw in tcgBattleDataCardInHand.Keywords) // 예: IEnumerable<TcgKeyword>
             {
                 keywords.Add(kw);
             }
 
             // 2) 유닛 런타임 생성
-            var unit = new TcgBattleDataFieldCard(
-                tcgBattleDataCard.Uid,
+            var unit = new TcgBattleDataCardInField(
+                tcgBattleDataCardInHand.Uid,
                 ownerSide,
-                tcgBattleDataCard,
+                tcgBattleDataCardInHand,
                 attack,
                 hp,
                 keywords);

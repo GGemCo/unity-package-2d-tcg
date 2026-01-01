@@ -57,22 +57,22 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 진영에 맞는 손패 윈도우를 반환합니다.
-        /// </summary>
-        /// <param name="side">플레이어/적 진영.</param>
-        public UIWindowTcgHandBase GetHandWindow(ConfigCommonTcg.TcgPlayerSide side)
-            => side == ConfigCommonTcg.TcgPlayerSide.Player ? HandPlayer : HandEnemy;
-
-        /// <summary>
-        /// 진영에 맞는 필드 윈도우를 반환합니다.
-        /// </summary>
-        /// <param name="side">플레이어/적 진영.</param>
-        public UIWindowTcgFieldBase GetFieldWindow(ConfigCommonTcg.TcgPlayerSide side)
-            => side == ConfigCommonTcg.TcgPlayerSide.Player ? FieldPlayer : FieldEnemy;
-
-        /// <summary>
         /// 연출 중 아이콘을 최상단에 올리기 위해 사용하는 UI 루트 트랜스폼.
         /// </summary>
         public Transform UIRoot => SceneGame.Instance.canvasUI.transform;
+
+        public UIWindow GetUIWindow(ConfigCommonTcg.TcgZone zone)
+        {
+            if (zone == ConfigCommonTcg.TcgZone.HandPlayer)
+                return HandPlayer;
+            if (zone == ConfigCommonTcg.TcgZone.FieldPlayer)
+                return FieldPlayer;
+            if (zone == ConfigCommonTcg.TcgZone.HandEnemy)
+                return HandEnemy;
+            if (zone == ConfigCommonTcg.TcgZone.FieldEnemy)
+                return FieldEnemy;
+            GcLogger.LogError($"{nameof(UIWindow)}가 없습니다. zone: {zone}");
+            return null;
+        }
     }
 }

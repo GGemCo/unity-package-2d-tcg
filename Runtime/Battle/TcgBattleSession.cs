@@ -35,8 +35,8 @@ namespace GGemCo2DTcg
         private readonly SystemMessageManager _systemMessageManager;
 
         // CardDrawn 이벤트 구독 해제용
-        private Action<TcgBattleDataCard> _onPlayerCardDrawn;
-        private Action<TcgBattleDataCard> _onEnemyCardDrawn;
+        private Action<TcgBattleDataCardInHand> _onPlayerCardDrawn;
+        private Action<TcgBattleDataCardInHand> _onEnemyCardDrawn;
 
         // (note) AbilityPresentation 이벤트 발행은 아래 PublishAbilityPresentation()을 통해 일괄 처리합니다.
 
@@ -125,8 +125,8 @@ namespace GGemCo2DTcg
             // 4) (선택) 공격 가능 상태 초기화
             if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
             {
-                Context.Player.SetBoardCardCanAttack(true);
-                Context.Enemy.SetBoardCardCanAttack(true);
+                Context.Player.SetFieldCardCanAttack(true);
+                Context.Enemy.SetFieldCardCanAttack(true);
             }
 
             // 5) 마나 증가/회복 + 턴 시작 드로우
@@ -144,7 +144,7 @@ namespace GGemCo2DTcg
             var activeSide = Context.GetSideState(Context.ActiveSide);
 
             // Permanent/Event 등 턴 종료 트리거 처리
-            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnEnd, sourceCard: null);
+            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnEnd, sourceCardInHand: null);
         }
 
         private void ResolveStartOfTurnEffects()
@@ -154,7 +154,7 @@ namespace GGemCo2DTcg
             var activeSide = Context.GetSideState(Context.ActiveSide);
 
             // Permanent/Event 등 턴 시작 트리거 처리
-            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnStart, sourceCard: null);
+            ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnStart, sourceCardInHand: null);
         }
 
         private void DrawStartOfTurnCard()
@@ -187,13 +187,13 @@ namespace GGemCo2DTcg
         /// 특정 Side가 카드를 드로우했을 때(손패에 들어갔을 때) 호출됩니다.
         /// - Permanent/Event 의 OnDraw 트리거를 처리합니다.
         /// </summary>
-        private void OnSideCardDrawn(TcgBattleDataSide side, TcgBattleDataCard drawnCard)
+        private void OnSideCardDrawn(TcgBattleDataSide side, TcgBattleDataCardInHand drawnCardInHand)
         {
             if (IsBattleEnded) return;
             if (side == null) return;
-            if (drawnCard == null) return;
+            if (drawnCardInHand == null) return;
 
-            ResolveTriggersForSide(side, TcgAbilityConstants.TcgAbilityTriggerType.OnDraw, drawnCard);
+            ResolveTriggersForSide(side, TcgAbilityConstants.TcgAbilityTriggerType.OnDraw, drawnCardInHand);
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace GGemCo2DTcg
         private void ResolveTriggersForSide(
             TcgBattleDataSide ownerSide,
             TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
-            TcgBattleDataCard sourceCard)
+            TcgBattleDataCardInHand sourceCardInHand)
         {
             if (IsBattleEnded) return;
             if (ownerSide == null) return;
@@ -240,13 +240,13 @@ namespace GGemCo2DTcg
                     if (p.Definition.maxStacks > 0 && p.Stacks > p.Definition.maxStacks)
                         p.Stacks = p.Definition.maxStacks;
 
-                    RunAbilityById(
-                        ability: TcgAbilityBuilder.BuildAbility(p.Definition),
-                        ownerSide: ownerSide,
-                        opponentSide: opponentSide,
-                        tcgAbilityTriggerType: tcgAbilityTriggerType,
-                        sourceCard: sourceCard,
-                        sourceInstance: p);
+                    // RunAbilityById(
+                    //     ability: TcgAbilityBuilder.BuildAbility(p.Definition),
+                    //     ownerSide: ownerSide,
+                    //     opponentSide: opponentSide,
+                    //     tcgAbilityTriggerType: tcgAbilityTriggerType,
+                    //     sourceCard: sourceCard,
+                    //     sourceInstance: p);
 
                     p.LastResolvedTurn = Context.TurnCount;
 
@@ -272,10 +272,11 @@ namespace GGemCo2DTcg
 
                     RunAbilityById(
                         ability: TcgAbilityBuilder.BuildAbility(e.Definition),
-                        ownerSide: ownerSide,
-                        opponentSide: opponentSide,
-                        tcgAbilityTriggerType: tcgAbilityTriggerType,
-                        sourceCard: sourceCard,
+                        side: ownerSide.Side,
+                        casterZone: ConfigCommonTcg.TcgZone.None,
+                        casterIndex: -1,
+                        targetZone: ConfigCommonTcg.TcgZone.None,
+                        targetIndex: -1,
                         sourceInstance: e);
 
                     if (e.Definition.consumeOnTrigger)
@@ -290,14 +291,16 @@ namespace GGemCo2DTcg
         
         private void RunAbilityById(
             in TcgAbilityDefinition ability,
-            TcgBattleDataSide ownerSide,
-            TcgBattleDataSide opponentSide,
-            TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
-            TcgBattleDataCard sourceCard,
+            ConfigCommonTcg.TcgPlayerSide side,
+            ConfigCommonTcg.TcgZone casterZone,
+            int casterIndex,
+            ConfigCommonTcg.TcgZone targetZone,
+            int targetIndex,
             object sourceInstance)
         {
             if (!ability.IsValid) return;
-            if (ownerSide == null || opponentSide == null || sourceCard == null) return;
+            if (side == ConfigCommonTcg.TcgPlayerSide.None || casterZone == ConfigCommonTcg.TcgZone.None || casterIndex < 0 ||
+                targetZone == ConfigCommonTcg.TcgZone.None || targetIndex < 0) return;
 
             var list = new List<TcgAbilityData>(1)
             {
@@ -306,12 +309,13 @@ namespace GGemCo2DTcg
 
             TcgAbilityRunner.RunAbility(
                 Context,
-                ownerSide,
-                opponentSide,
-                sourceCard,
+                side,
+                casterZone,
+                casterIndex,
+                targetZone,
+                targetIndex,
                 list,
-                explicitTargetBattleData: null,
-                tcgAbilityTriggerType: tcgAbilityTriggerType,
+                tcgAbilityTriggerType: ability.tcgAbilityTriggerType,
                 presentationEvent: PublishAbilityPresentation);
             
             // 실행 후 전투 종료 조건 체크(안전)
@@ -339,8 +343,8 @@ namespace GGemCo2DTcg
         {
             if (IsBattleEnded) return;
 
-            var playerHp = Context.Player.Hero.Hp;
-            var enemyHp = Context.Enemy.Hero.Hp;
+            var playerHp = Context.Player.Field.Hero.Health;
+            var enemyHp = Context.Enemy.Field.Hero.Health;
 
             // 1) HP 기반 종료
             if (playerHp <= 0 && enemyHp <= 0)
@@ -366,15 +370,15 @@ namespace GGemCo2DTcg
             }
 
             // 2) 카드 고갈 기반 종료 (HP 종료가 아닐 때만)
-            int playerHandCount = Context.Player.Hand.GetCount();
-            int enemyHandCount = Context.Enemy.Hand.GetCount();
-            int playerBoardCount = Context.Player.Board.GetCount();
-            int enemyBoardCount = Context.Enemy.Board.GetCount();
+            int playerHandCount = Context.Player.Hand.Count;
+            int enemyHandCount = Context.Enemy.Hand.Count;
+            int playerFieldCount = Context.Player.Field.Count;
+            int enemyFieldCount = Context.Enemy.Field.Count;
             int playerDeckCount = Context.Player.TcgBattleDataDeck.Count;
             int enemyDeckCount = Context.Enemy.TcgBattleDataDeck.Count;
 
-            bool playerEmpty = (playerHandCount <= 0 && playerBoardCount <= 0 && playerDeckCount <= 0);
-            bool enemyEmpty = (enemyHandCount <= 0 && enemyBoardCount <= 0 && enemyDeckCount <= 0);
+            bool playerEmpty = (playerHandCount <= 0 && playerFieldCount <= 0 && playerDeckCount <= 0);
+            bool enemyEmpty = (enemyHandCount <= 0 && enemyFieldCount <= 0 && enemyDeckCount <= 0);
 
             if (!playerEmpty && !enemyEmpty) return;
 
@@ -470,6 +474,18 @@ namespace GGemCo2DTcg
             _enemyController?.Dispose();
 
             Context.ClearOwner();
+        }
+
+        /// <summary>
+        /// 특정 Side 에 해당하는 상태를 반환합니다.
+        /// </summary>
+        public TcgBattleDataSide GetSideState(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            return Context.GetSideState(side);
+        }
+        public TcgBattleDataSide GetOpponentState(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            return Context.GetOpponentState(side);
         }
     }
 }

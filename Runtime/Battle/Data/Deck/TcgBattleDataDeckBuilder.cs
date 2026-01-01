@@ -5,10 +5,10 @@ namespace GGemCo2DTcg
 {
     public static class TcgBattleDataDeckBuilder
     {
-        public static List<TcgBattleDataCard> BuildRuntimeDeckCardList(Dictionary<int,int> cardList)
+        public static List<TcgBattleDataCardInHand> BuildRuntimeDeckCardList(Dictionary<int,int> cardList)
         {
             var table = TableLoaderManagerTcg.Instance.TableTcgCard;
-            var list = new List<TcgBattleDataCard>();
+            var list = new List<TcgBattleDataCardInHand>();
 
             foreach (var info in cardList)
             {
@@ -18,15 +18,15 @@ namespace GGemCo2DTcg
                     GcLogger.LogError($"Card UID {uid} not found in table.");
                     continue;
                 }
-                TcgBattleDataCard tcgBattleDataCard = TcgBattleDataCardFactory.CreateBattleDataCard(row);
+                TcgBattleDataCardInHand tcgBattleDataCardInHand = TcgBattleDataCardFactory.CreateBattleDataCard(row);
 
-                list.Add(tcgBattleDataCard);
+                list.Add(tcgBattleDataCardInHand);
             }
 
             return list;
         }
 
-        public static TcgBattleDataCard BuildRuntimeHeroCard(int uid)
+        public static TcgBattleDataCardInHand BuildRuntimeHeroCard(int uid)
         {
             var table = TableLoaderManagerTcg.Instance.TableTcgCard;
             if (table.TryGetDataByUid(uid, out var row)) return TcgBattleDataCardFactory.CreateBattleDataCard(row);

@@ -24,14 +24,15 @@ namespace GGemCo2DTcg
             }
             var actor = context.GetSideState(cmd.Side);
             session.EndTurn();
+            
             return CommandResult.OkPresentation(new[]
             {
                 new TcgPresentationStep(
-                    TcgPresentationStepType.EndTurn,
+                    TcgPresentationConstants.TcgPresentationStepType.EndTurn,
                     cmd.Side,
-                    attacker: actor,
-                    target: null,
+                    fromZone: ConfigCommonTcg.TcgZone.None,
                     fromIndex: 0,
+                    toZone: ConfigCommonTcg.TcgZone.None,
                     toIndex: 0
                 )
             });

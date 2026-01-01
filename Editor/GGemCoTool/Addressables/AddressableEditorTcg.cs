@@ -12,7 +12,6 @@ namespace GGemCo2DTcgEditor
         
         private SettingScriptableObjectTcg _settingScriptableObjectTcg;
         private SettingTableTcg _settingTableTcg;
-        private SettingUIElementCard _settingUIElementCard;
         private SettingTcgCard _settingTcgCard;
         
         public TableTcgCard tableTcgCard;
@@ -32,7 +31,6 @@ namespace GGemCo2DTcgEditor
             buttonHeight = 40f;
             _settingScriptableObjectTcg = new SettingScriptableObjectTcg(this);
             _settingTableTcg = new SettingTableTcg(this);
-            _settingUIElementCard = new SettingUIElementCard(this);
             _settingTcgCard = new SettingTcgCard(this);
         }
 

@@ -35,12 +35,12 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgBattleEventInstance
     {
-        public TcgBattleDataCard Card { get; }
+        public TcgBattleDataCardInHand CardInHand { get; }
         public StruckTableTcgCardEvent Definition { get; }
 
-        public TcgBattleEventInstance(TcgBattleDataCard card, StruckTableTcgCardEvent definition)
+        public TcgBattleEventInstance(TcgBattleDataCardInHand cardInHand, StruckTableTcgCardEvent definition)
         {
-            Card = card ?? throw new ArgumentNullException(nameof(card));
+            CardInHand = cardInHand ?? throw new ArgumentNullException(nameof(cardInHand));
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         }
     }

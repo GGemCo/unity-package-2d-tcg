@@ -42,10 +42,10 @@ namespace GGemCo2DTcg
             outCommands.Clear();
 
             // 1) 필드에 유닛이 있으면, 적 유닛/영웅 공격 명령 추가 (아주 단순한 예시)
-            Dictionary<int, TcgBattleDataFieldCard> deadCardEnemy = new Dictionary<int, TcgBattleDataFieldCard>();
-            Dictionary<int, TcgBattleDataFieldCard> deadCardPlayer = new Dictionary<int, TcgBattleDataFieldCard>();
-            Dictionary<int, TcgBattleDataFieldCard> alreadyAttack = new Dictionary<int, TcgBattleDataFieldCard>();
-            foreach (var battleDataFieldCard in _me.Board.Cards)
+            Dictionary<int, TcgBattleDataCardInField> deadCardEnemy = new Dictionary<int, TcgBattleDataCardInField>();
+            Dictionary<int, TcgBattleDataCardInField> deadCardPlayer = new Dictionary<int, TcgBattleDataCardInField>();
+            Dictionary<int, TcgBattleDataCardInField> alreadyAttack = new Dictionary<int, TcgBattleDataCardInField>();
+            foreach (var battleDataFieldCard in _me.Field.Cards)
             {
                 if (!battleDataFieldCard.CanAttack)
                     continue;
@@ -57,12 +57,21 @@ namespace GGemCo2DTcg
                 // 이미 공격한 카드는 넘어가기ㅕ
                 if (alreadyAttack.ContainsKey(battleDataFieldCard.Index)) continue;
 
-                if (_opponent.Board.Count > 0)
+                // 영웅 공격
+                if (_opponent.Field.Hero.Health > 0)
+                {
+                    outCommands.Add(
+                        TcgBattleCommand.AttackHero(Side, ConfigCommonTcg.TcgZone.FieldEnemy, battleDataFieldCard, ConfigCommonTcg.TcgZone.FieldPlayer, _opponent.Field.Hero));
+                        
+                    // 공격한 카드 수집
+                    alreadyAttack.TryAdd(battleDataFieldCard.Index, battleDataFieldCard);
+                }
+                else if (_opponent.Field.Count > 0)
                 {
                     // 가장 체력이 낮은 유닛을 대상으로 공격
-                    TcgBattleDataFieldCard lowHpTarget = null;
+                    TcgBattleDataCardInField lowHpTarget = null;
                     int minHp = int.MaxValue;
-                    foreach (var player in _opponent.Board.Cards)
+                    foreach (var player in _opponent.Field.Cards)
                     {
                         // 사망한 타겟이면 넘어가기
                         if (deadCardPlayer.ContainsKey(player.Index)) continue;
@@ -76,7 +85,7 @@ namespace GGemCo2DTcg
                     if (lowHpTarget != null)
                     {
                         outCommands.Add(
-                            TcgBattleCommand.AttackUnit(Side, battleDataFieldCard, lowHpTarget));
+                            TcgBattleCommand.AttackUnit(Side, ConfigCommonTcg.TcgZone.FieldEnemy, battleDataFieldCard, ConfigCommonTcg.TcgZone.FieldPlayer, lowHpTarget));
                         
                         // 공격한 카드 수집
                         alreadyAttack.TryAdd(battleDataFieldCard.Index, battleDataFieldCard);
@@ -102,7 +111,7 @@ namespace GGemCo2DTcg
             {
                 if (card.Cost <= _me.Mana.Current)
                 {
-                    outCommands.Add(TcgBattleCommand.PlayCard(Side, card));
+                    outCommands.Add(TcgBattleCommand.DrawCardToField(Side, ConfigCommonTcg.TcgZone.HandEnemy, ConfigCommonTcg.TcgZone.FieldEnemy, card));
                     break;
                 }
             }

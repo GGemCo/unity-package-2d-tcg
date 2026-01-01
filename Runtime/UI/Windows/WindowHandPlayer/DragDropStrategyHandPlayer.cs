@@ -6,7 +6,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 핸드 플레이어 윈도우 - 아이콘 드래그 앤 드랍 관리
     /// </summary>
-    public class DragDropStrategyHandPlayer : IDragDropStrategy
+    public class DragDropStrategyHandPlayer : DragDropStrategyBase, IDragDropStrategy
     {
         public void HandleDragInWindow(UIWindow window, UIIcon droppedUIIcon)
         {
@@ -54,15 +54,16 @@ namespace GGemCo2DTcg
             {
                 switch (droppedWindowUid)
                 {
-                    case UIWindowConstants.WindowUid.TcgCardCollection:
+                    case UIWindowConstants.WindowUid.TcgHandPlayer:
+                        UseCard(droppedWindowUid, droppedUIIcon, targetWindowUid);
                         break;
                 }
             }
             else
             {
-                if (targetIconSlotIndex < window.maxCountIcon)
-                {
-                }
+                // 영웅만 공격 가능
+                if (targetIconSlotIndex != ConfigCommonTcg.IndexHeroSlot) return;
+                UseCard(droppedWindowUid, droppedUIIcon, targetWindowUid, targetUIIcon);
             }
         }
 

@@ -1,10 +1,13 @@
-﻿namespace GGemCo2DTcg
+﻿using System.Collections.Generic;
+using GGemCo2DCore;
+
+namespace GGemCo2DTcg
 {
-    public class ConfigCommonTcg
+    public static class ConfigCommonTcg
     {
         // 영웅 슬롯 index
         public const int IndexHeroSlot = 99999;
-        
+
         /// <summary>
         /// 덱 셔플 동작 모드.
         /// </summary>
@@ -14,6 +17,7 @@
             /// 고정된 순서를 위해 추가
             /// </summary>
             None = 0,
+
             /// <summary>
             /// 완전 랜덤 셔플 (Fisher–Yates).
             /// </summary>
@@ -32,17 +36,49 @@
             SeededReplay,
             PhaseWeighted
         }
-        
+
         /// <summary>
         /// 전투 내에서 플레이어를 구분하는 열거형.
         /// </summary>
         public enum TcgPlayerSide
         {
             None = -1,
-            Player = 0,  // 실제 유저
-            Enemy  = 1,   // AI 또는 네트워크 상대 등
+            Player = 0, // 실제 유저
+            Enemy = 1, // AI 또는 네트워크 상대 등
             Draw = 2
         }
+
+        public enum TcgZone
+        {
+            None,
+            HandPlayer,
+            HandEnemy,
+            FieldPlayer,
+            FieldEnemy,
+            Deck,
+            Graveyard,
+        }
+
+        private static readonly Dictionary<UIWindowConstants.WindowUid, TcgZone> WindowToZone = new Dictionary<UIWindowConstants.WindowUid, TcgZone>
+        {
+            { UIWindowConstants.WindowUid.TcgHandPlayer, TcgZone.HandPlayer },
+            { UIWindowConstants.WindowUid.TcgHandEnemy, TcgZone.HandEnemy },
+            { UIWindowConstants.WindowUid.TcgFieldPlayer, TcgZone.FieldPlayer },
+            { UIWindowConstants.WindowUid.TcgFieldEnemy, TcgZone.FieldEnemy },
+        };
+
+        public static TcgZone GetZoneFromWindowUid(UIWindowConstants.WindowUid windowUid) =>
+            WindowToZone.GetValueOrDefault(windowUid, TcgZone.None);
+
+        private static readonly Dictionary<TcgZone, UIWindowConstants.WindowUid> ZoneToWindow = new Dictionary<TcgZone, UIWindowConstants.WindowUid>
+        {
+            { TcgZone.HandPlayer, UIWindowConstants.WindowUid.TcgHandPlayer },
+            { TcgZone.HandEnemy, UIWindowConstants.WindowUid.TcgHandEnemy },
+            { TcgZone.FieldPlayer, UIWindowConstants.WindowUid.TcgFieldPlayer },
+            { TcgZone.FieldEnemy, UIWindowConstants.WindowUid.TcgFieldEnemy },
+        };
+        public static UIWindowConstants.WindowUid GetWindowUidFromZone(TcgZone zone) => 
+            ZoneToWindow.GetValueOrDefault(zone, UIWindowConstants.WindowUid.None);
 
         /// <summary>
         /// 플레이어 타입(사람/AI 난이도 등)을 나타내는 열거형.
@@ -63,10 +99,14 @@
         public enum TcgBattleCommandType
         {
             None = 0,
-            PlayCardFromHand,  // 손에서 카드 사용
+            DrawCardToField,
             AttackUnit,        // 유닛 -> 유닛 공격
             AttackHero,        // 유닛 -> 영웅 공격
-            EndTurn            // 턴 종료
+            EndTurn,           // 턴 종료
+            UseCardSpell,
+            UseCardEquipment,
+            UseCardPermanent,
+            UseCardEvent,
         }
         /// <summary>
         /// 유닛/카드 키워드 종류.

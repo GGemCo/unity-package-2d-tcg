@@ -13,8 +13,6 @@ namespace GGemCo2DTcg
             public const string ImageArt = RootCard + "_ArtWork";
             // 테두리 이미지
             public const string ImageBorder = RootCard + "_Border";
-            // 타입별 UI Element 프리팹
-            public const string UIElement = RootCard + "_UIElement";
         }
     }
 }

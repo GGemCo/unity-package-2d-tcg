@@ -118,9 +118,9 @@ namespace GGemCo2DTcg
         // UI 연출
         // ──────────────────────────────────────────────────────────────────────────────
         [Header("UI 연출")]
-        [Tooltip("연출 종료 후 대기 시간")]
+        [Tooltip("한개의 Command 종료 후 대기 시간")]
         [Min(0)]
-        public float timeAfterUICutscene = 1.0f;
+        public float timeWaitAfterCommand = 1.0f;
 
         // ──────────────────────────────────────────────────────────────────────────────
         // Shuffle
@@ -152,7 +152,41 @@ namespace GGemCo2DTcg
                 _ => (ConfigCommonTcg.ShuffleMode.PureRandom, null)
             };
         }
+        // ──────────────────────────────────────────────────────────────────────────────
+        // 연출용. todo 분리 해야 함
+        // ──────────────────────────────────────────────────────────────────────────────
+        [Header("Move To Target")]
+        [Tooltip("Player 영역이 하단일 경우, - 값으로 입력해야 합니다.")]
+        public Vector3 moveToTargetLeftDownOffset;
+        
+        [Header("Hand To Grave")]
+        public float handToGraveFadeOutDelayTime;
+        public Easing.EaseType handToGraveFadeOutEasing;
+        public float handToGraveFadeOutDuration;
+        public readonly bool handToGraveUseBurnDissolve = false;
+        
+        [Header("Hand To Field")]
+        public Easing.EaseType handToFieldFadeInEasing;
+        public float handToFieldFadeInDuration;
 
+        [Header("Attack Unit")] 
+        [Tooltip("Player 영역이 하단일 경우, - 값으로 입력해야 합니다.")]
+        public float attackUnitBackDistance;
+        public Easing.EaseType attackUnitBackEasing;
+        public float attackUnitBackDuration;
+        public Easing.EaseType attackUnitHitEasing;
+        public float attackUnitHitDuration;
+        [Tooltip("공격자가 받는 데미지, 타겟이 받는 데미지 연출 사이의 간격 시간")]
+        public float attackUnitShowDamageDiffDuration;
+        
+        public float GetAttackUnitBackDistance(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            return side == ConfigCommonTcg.TcgPlayerSide.Player ? attackUnitBackDistance : attackUnitBackDistance * -1;
+        }
+        public Vector3 GetMoveToTargetLeftDownOffset(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            return side == ConfigCommonTcg.TcgPlayerSide.Player ? moveToTargetLeftDownOffset : moveToTargetLeftDownOffset * -1;
+        }
 #if UNITY_EDITOR
         // ──────────────────────────────────────────────────────────────────────────────
         // 테스트용

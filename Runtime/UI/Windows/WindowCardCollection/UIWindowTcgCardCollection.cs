@@ -38,7 +38,8 @@ namespace GGemCo2DTcg
         {
             uid = UIWindowConstants.WindowUid.TcgCardCollection;
             if (TableLoaderManager.Instance == null) return;
-            _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;            maxCountIcon = _tableTcgCard.GetCount();
+            _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
+            maxCountIcon = _tableTcgCard.GetCount();
             
             // 순서 중요. IconPoolManager 에서 사용한다.
             SlotIconBuildStrategyRegistry.Register(

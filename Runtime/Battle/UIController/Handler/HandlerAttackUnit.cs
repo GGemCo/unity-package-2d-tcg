@@ -13,33 +13,44 @@ namespace GGemCo2DTcg
     /// 3) 빠르게 대상 위치로 타격 이동
     /// HP/데미지 UI 갱신 및 사망 시 페이드아웃을 수행합니다.
     /// </remarks>
-    public sealed class HandlerAttackUnit : ITcgPresentationHandler
+    public sealed class HandlerAttackUnit : HandlerBase, ITcgPresentationHandler
     {
-        public TcgPresentationStepType Type => TcgPresentationStepType.AttackUnit;
+        public TcgPresentationConstants.TcgPresentationStepType Type => TcgPresentationConstants.TcgPresentationStepType.AttackUnit;
 
         public IEnumerator Play(TcgPresentationContext ctx, TcgPresentationStep step)
         {
             var attackerSide  = step.Side;
+            var attackerZone = step.FromZone;
             var attackerIndex = step.FromIndex;
+            
+            var defenderZone = step.ToZone;
             var defenderIndex = step.ToIndex;
 
-            int attackerHp     = step.ValueA;
-            int targetHp       = step.ValueB;
-            int attackerDamage = step.ValueC;
-            int targetDamage   = step.ValueD;
+            var attackerDataSide = ctx.Session.GetSideState(attackerSide);
+            var defenderDataSide = ctx.Session.GetOpponentState(attackerSide);
+            var payloadAttackUnit = step.Payload as TcgBattleUIControllerPayloadAttackUnit;
+            if (payloadAttackUnit == null)
+            {
+                GcLogger.LogError($"{nameof(step.Payload)} 에 {nameof(TcgBattleUIControllerPayloadAttackUnit)} 값이 없습니다.");
+                yield break;
+            }
 
-            var attackerFieldWindow = ctx.GetFieldWindow(attackerSide);
-            var defenderField = ctx.GetFieldWindow(attackerSide == ConfigCommonTcg.TcgPlayerSide.Player
-                ? ConfigCommonTcg.TcgPlayerSide.Enemy
-                : ConfigCommonTcg.TcgPlayerSide.Player);
-
-            if (attackerFieldWindow == null || defenderField == null) yield break;
-
-            var attackerSlot = attackerFieldWindow.GetSlotByIndex(attackerIndex);
-            var attackerIcon = attackerFieldWindow.GetIconByIndex(attackerIndex);
+            int attackerHp = payloadAttackUnit.AttackerHealth;
+            int damageToAttacker = payloadAttackUnit.DamageToAttacker;
             
-            var defenderSlot = defenderField.GetSlotByIndex(defenderIndex);
-            var defenderIcon = defenderField.GetIconByIndex(defenderIndex);
+            int targetHp = payloadAttackUnit.TargetHealth;
+            int damageToTarget = payloadAttackUnit.DamageToTarget;
+
+            var attackerWindow = ctx.GetUIWindow(attackerZone);
+            var defenderWindow = ctx.GetUIWindow(defenderZone);
+
+            if (attackerWindow == null || defenderWindow == null) yield break;
+
+            var attackerSlot = attackerWindow.GetSlotByIndex(attackerIndex);
+            var attackerIcon = attackerWindow.GetIconByIndex(attackerIndex);
+            
+            var defenderSlot = defenderWindow.GetSlotByIndex(defenderIndex);
+            var defenderIcon = defenderWindow.GetIconByIndex(defenderIndex);
 
             if (attackerIcon == null || defenderIcon == null || attackerSlot == null)
             {
@@ -55,68 +66,46 @@ namespace GGemCo2DTcg
             iconTr.SetParent(ctx.UIRoot, worldPositionStays: true);
             
             // 슬롯은 안보이게 
-            yield return UiFadeUtility.FadeOutImmediately(attackerFieldWindow, attackerSlot.gameObject);
+            yield return UiFadeUtility.FadeOutImmediately(attackerWindow, attackerSlot.gameObject);
             
             // ---- 1) 대상보다 조금 왼쪽 아래로 "바로" 이동 ----
-            var snapPos = targetPos + attackerFieldWindow.leftDownOffset;
+            var snapPos = targetPos + ctx.Settings.GetMoveToTargetLeftDownOffset(attackerSide);
             iconTr.position = snapPos;
 
             // ---- 2) 뒤로 천천히 이동했다가 ----
-            var backPos = snapPos + new Vector3(0, attackerFieldWindow.backDistance, 0);
+            var backPos = snapPos + new Vector3(0, ctx.Settings.GetAttackUnitBackDistance(attackerSide), 0);
 
             var defaultMoveOption = MoveOptions.Default;
-            defaultMoveOption.easeType = attackerFieldWindow.backEasing;
-            yield return UiMoveTransform.MoveTo(attackerFieldWindow, iconTr, backPos,
-                attackerFieldWindow.backDuration, defaultMoveOption);
+            defaultMoveOption.easeType = ctx.Settings.attackUnitBackEasing;
+            yield return UiMoveTransform.MoveTo(attackerWindow, iconTr, backPos,
+                ctx.Settings.attackUnitBackDuration, defaultMoveOption);
 
             // ---- 3) 빠른 속도로 상대 카드를 치는 듯한 느낌 ----
             defaultMoveOption = MoveOptions.Default;
-            defaultMoveOption.easeType = attackerFieldWindow.hitEasing;
-            yield return UiMoveTransform.MoveTo(attackerFieldWindow, iconTr, snapPos,
-                attackerFieldWindow.hitDuration, defaultMoveOption);
+            defaultMoveOption.easeType = ctx.Settings.attackUnitHitEasing;
+            yield return UiMoveTransform.MoveTo(attackerWindow, iconTr, snapPos,
+                ctx.Settings.attackUnitHitDuration, defaultMoveOption);
 
-            yield return new WaitForSeconds(0.1f);
-            // 원복
-            yield return UiFadeUtility.FadeInImmediately(attackerFieldWindow, attackerSlot.gameObject);
-            
-            iconTr.SetParent(attackerSlot.transform, worldPositionStays: false);
-            iconTr.localPosition = Vector3.zero;
-
-            // 체력/데미지 표시
+            // 체력 업데이트
             if (attackerIcon is UIIconCard attackerCardIcon)
-                attackerCardIcon.UpdateHealth(attackerHp, attackerDamage);
-
-            bool isFadeOut = false;
-            if (attackerHp <= 0)
-            {
-                yield return new WaitForSeconds(attackerFieldWindow.fadeOutDelayTime);
-                
-                var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
-                defaultFadeOption.easeType = attackerFieldWindow.fadeOutEasing;
-                defaultFadeOption.startAlpha = 1f;
-                yield return UiFadeUtility.FadeOut(attackerFieldWindow, attackerSlot.gameObject, attackerFieldWindow.fadeOutDuration, defaultFadeOption);
-                
-                isFadeOut = true;
-            }
+                attackerCardIcon.UpdateHealth(attackerHp);
 
             if (defenderIcon is UIIconCard defenderCardIcon)
-                defenderCardIcon.UpdateHealth(targetHp, targetDamage);
-
-            if (targetHp <= 0)
+                defenderCardIcon.UpdateHealth(targetHp);
+            
+            // 데미지 표시
+            if (damageToTarget > 0)
             {
-                yield return new WaitForSeconds(defenderField.fadeOutDelayTime);
-                
-                var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
-                defaultFadeOption.easeType = defenderField.fadeOutEasing;
-                defaultFadeOption.startAlpha = 1f;
-                yield return UiFadeUtility.FadeOut(defenderField, defenderSlot.gameObject, defenderField.fadeOutDuration, defaultFadeOption);
-
-                isFadeOut = true;
+                ShowDamageText(defenderIcon, damageToTarget * -1);
+                ShowEffect(defenderIcon, EffectUidHit);
             }
-            // 사망한 카드가 없으면, 조금 텀을 주기 위해서 fade out 시간만큼 대기한다.
-            if (!isFadeOut)
+            
+            yield return new WaitForSeconds(ctx.Settings.attackUnitShowDamageDiffDuration);
+
+            if (damageToAttacker > 0)
             {
-                yield return new WaitForSeconds(attackerFieldWindow.fadeOutDuration);
+                ShowDamageText(attackerIcon, damageToAttacker * -1);
+                ShowEffect(attackerIcon, EffectUidHit);
             }
         }
     }

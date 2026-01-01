@@ -6,7 +6,7 @@ namespace GGemCo2DTcg
     /// <summary>
     /// 필드 적 윈도우 - 아이콘 드래그 앤 드랍 관리
     /// </summary>
-    public class DragDropStrategyFieldEnemy : IDragDropStrategy
+    public class DragDropStrategyFieldEnemy : DragDropStrategyBase, IDragDropStrategy
     {
         private TcgBattleManager _battleManager;
         
@@ -23,6 +23,14 @@ namespace GGemCo2DTcg
             if (dropIconUid <= 0)
             {
                 return;
+            }
+
+            switch (droppedWindowUid)
+            {
+                // 핸드에서 바로 사용하는 카드
+                case UIWindowConstants.WindowUid.TcgHandPlayer:
+                    UseCard(droppedWindowUid, droppedUIIcon, window.uid);
+                    break;
             }
         }
         public void HandleDragInIcon(UIWindow window, UIIcon droppedUIIcon, UIIcon targetUIIcon)
@@ -56,9 +64,11 @@ namespace GGemCo2DTcg
             {
                 switch (droppedWindowUid)
                 {
+                    // 핸드에서 바로 사용하는 카드
+                    // spell, equipment, permanent, event 타입
+                    case UIWindowConstants.WindowUid.TcgHandPlayer:
                     case UIWindowConstants.WindowUid.TcgFieldPlayer:
-                        _battleManager ??= TcgPackageManager.Instance.battleManager;
-                        _battleManager?.OnUiRequestAttackUnit(ConfigCommonTcg.TcgPlayerSide.Player, dropIconSlotIndex, targetIconSlotIndex);
+                        UseCard(droppedWindowUid, droppedUIIcon, targetWindowUid, targetUIIcon);
                         break;
                 }
             }
@@ -74,5 +84,6 @@ namespace GGemCo2DTcg
             Vector3 originalPosition)
         {
         }
+        
     }
 }

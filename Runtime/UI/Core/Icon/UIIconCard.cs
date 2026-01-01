@@ -39,22 +39,25 @@ namespace GGemCo2DTcg
         protected TableTcgCard tableTcgCard;
 
         protected StruckTableTcgCard CurrentCard => _cardData;
+        protected string borderKeyPrefix;
 
         private StruckTableTcgCard _cardData;
         private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
-        private CanvasGroup _canvasGroup;
 
         private static readonly string ArtKeyPrefix    = $"{ConfigAddressableKeyTcg.Card.ImageArt}_";
-        private static readonly string BorderKeyPrefix = $"{ConfigAddressableKeyTcg.Card.ImageBorder}_";
+
+        public bool IsSpell => _cardData is { type: CardConstants.Type.Spell };
+        public bool IsEquipment => _cardData is { type: CardConstants.Type.Equipment };
+        public bool IsPermanent => _cardData is { type: CardConstants.Type.Permanent };
+        public bool IsHero => _cardData is { type: CardConstants.Type.Hero };
+        public bool IsCreature => _cardData is { type: CardConstants.Type.Creature };
 
         protected override void Awake()
         {
             base.Awake();
-
+            borderKeyPrefix = $"{ConfigAddressableKeyTcg.Card.ImageBorderHand}_";
             IconType = IconConstants.Type.TcgCard;
             _cardData = null;
-
-            _canvasGroup = GetComponent<CanvasGroup>();
 
             // TableLoader가 준비되지 않았을 수 있으므로 안전하게 접근
             if (TableLoaderManager.Instance != null && TableLoaderManagerTcg.Instance != null)
@@ -128,14 +131,12 @@ namespace GGemCo2DTcg
 
         private void SetVisible(bool visible)
         {
-            if (_canvasGroup != null)
-            {
-                _canvasGroup.alpha = visible ? 1f : 0f;
-            }
+            if (CanvasGroup == null) return;
+            SetAlpha(visible ? 1f : 0f);
         }
 
         private static string BuildArtKey(int uid) => ArtKeyPrefix + uid;
-        private static string BuildBorderKey(CardConstants.Grade grade) => BorderKeyPrefix + grade;
+        private string BuildBorderKey(CardConstants.Grade grade) => borderKeyPrefix + grade;
 
         /// <summary>
         /// 아이콘 이미지 업데이트(상위 시스템에서 호출될 수 있음).
@@ -233,13 +234,8 @@ namespace GGemCo2DTcg
             textAttack.text = attackValue.ToString();
         }
 
-        public void UpdateHealth(int healthValue, int damageValue = 0)
+        public void UpdateHealth(int healthValue)
         {
-            if (damageValue > 0)
-            {
-                ShowDamageText(damageValue);
-            }
-
             if (textHealth == null) return;
 
             if (imageHealth != null)
@@ -250,23 +246,6 @@ namespace GGemCo2DTcg
             }
 
             textHealth.text = healthValue.ToString();
-        }
-
-        private void ShowDamageText(int damageValue)
-        {
-            // 텍스트가 없거나 매니저가 없으면 스킵
-            if (textHealth == null) return;
-            if (SceneGame.Instance == null) return;
-            if (SceneGame.Instance.damageTextManager == null) return;
-
-            var metadata = new MetadataDamageText
-            {
-                Damage = damageValue,
-                Color = Color.red,
-                WorldPosition = textHealth.transform.position
-            };
-
-            SceneGame.Instance.damageTextManager.ShowDamageText(metadata);
         }
 
         private static int GetCount<T>(T values)

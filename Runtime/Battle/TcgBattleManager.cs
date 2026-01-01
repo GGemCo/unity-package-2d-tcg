@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Codice.CM.Common.Tree.Partial;
 using GGemCo2DCore;
 using UnityEngine;
 
@@ -88,7 +89,7 @@ namespace GGemCo2DTcg
                 return;
             }
 
-            // 각 사이드 상태 생성
+            // 각 사이드 상태 생성. 영웅 생성
             var playerSide = new TcgBattleDataSide(ConfigCommonTcg.TcgPlayerSide.Player, playerDeck,
                 _tcgSettings.countManaBattleStart, _tcgSettings.countManaBattleStart, _tcgSettings.countMaxManaInBattle);
 
@@ -108,10 +109,6 @@ namespace GGemCo2DTcg
                 enemyController,
                 _tcgSettings,
                 _systemMessageManager);
-
-            // 영웅 카드 셋팅
-            SetHeroCard(playerSide);
-            SetHeroCard(enemySide);
             
             // 첫 드로우/턴 시작 로직
             DrawCards(playerSide, _tcgSettings.startingHandCardCount);
@@ -121,12 +118,6 @@ namespace GGemCo2DTcg
             _uiController.BindBattleManager(this, _session, _tcgSettings);
             _uiController.ShowAll(true);
             _uiController.RefreshAll(_session.Context);
-        }
-
-        private void SetHeroCard(TcgBattleDataSide battleDataSide)
-        {
-            var cardHero = battleDataSide.TcgBattleDataDeck.HeroCard;
-            battleDataSide.AddCardToHandHero(cardHero);
         }
 
         /// <summary>
@@ -153,58 +144,170 @@ namespace GGemCo2DTcg
         /// <summary>
         /// UI에서 "카드 사용" 요청을 보냈을 때 호출됩니다.
         /// </summary>
-        public void OnUiRequestPlayCard(ConfigCommonTcg.TcgPlayerSide side, int indexInHand)
+        public void DrawCardToField(int indexInHand)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
             if (_uiController != null && _uiController.IsInteractionLocked) return;
+            if (indexInHand < 0)
+            {
+                GcLogger.LogError($"indexInHand: {indexInHand}");
+                return;
+            }
 
-            var actor = _session.Context.GetSideState(side);
-            var battleCard = actor.Hand.GetDataByIndex(indexInHand);
-            var command = TcgBattleCommand.PlayCard(side, battleCard);
+            var actor = _session.Context.GetSideState(ConfigCommonTcg.TcgPlayerSide.Player);
+            var battleCard = actor.GetBattleDataCardInHandByIndex(indexInHand);
+            if (battleCard == null) return;
+            
+            var command = TcgBattleCommand.DrawCardToField(ConfigCommonTcg.TcgPlayerSide.Player, ConfigCommonTcg.TcgZone.HandPlayer, ConfigCommonTcg.TcgZone.FieldPlayer, battleCard);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
-
         /// <summary>
         /// UI에서 "크리처로 유닛 공격" 요청을 보냈을 때 호출됩니다.
+        /// Field 에서 Field 로 공격
         /// </summary>
-        public void OnUiRequestAttackUnit(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex, int targetIndex)
+        public void AttackUnit(ConfigCommonTcg.TcgPlayerSide side, ConfigCommonTcg.TcgZone attackerZone, int attackerIndex, ConfigCommonTcg.TcgZone targetZone, int targetIndex)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
             if (_uiController != null && _uiController.IsInteractionLocked) return;
+            if (attackerIndex < 0)
+            {
+                GcLogger.LogError($"attackerIndex: {attackerIndex}");
+                return;
+            }
+            if (targetIndex < 0)
+            {
+                GcLogger.LogError($"targetIndex: {targetIndex}");
+                return;
+            }
 
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
             
-            var battleCardAttacker = actor.Board.GetByIndex(attackerIndex);
-            var battleCardTarget = opponent.Board.GetByIndex(targetIndex);
-            var command = TcgBattleCommand.AttackUnit(side, battleCardAttacker, battleCardTarget);
+            var attackerBattleDataCardInField = actor.GetBattleDataCardInFieldByIndex(attackerIndex);
+            if (attackerBattleDataCardInField == null) return;
+            var targetBattleDataCardInField = opponent.GetBattleDataCardInFieldByIndex(targetIndex);
+            if (targetBattleDataCardInField == null) return;
+
+            var command = TcgBattleCommand.AttackUnit(side, attackerZone, attackerBattleDataCardInField, targetZone, targetBattleDataCardInField);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
-
         /// <summary>
         /// UI에서 "크리처로 적 영웅 공격" 요청을 보냈을 때 호출됩니다.
         /// 크리처는 피해를 받지 않습니다.
         /// </summary>
-        public void OnUiRequestAttackHero(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex, int targetIndex)
+        public void AttackHero(ConfigCommonTcg.TcgPlayerSide side, ConfigCommonTcg.TcgZone attackerZone, int attackerIndex, ConfigCommonTcg.TcgZone targetZone, int targetIndex)
         {
             if (!IsBattleRunning) return;
             if (!_session.IsPlayerTurn) return;
             if (_uiController != null && _uiController.IsInteractionLocked) return;
+            if (attackerIndex < 0)
+            {
+                GcLogger.LogError($"attackerIndex: {attackerIndex}");
+                return;
+            }
+            if (targetZone == ConfigCommonTcg.TcgZone.None)
+            {
+                GcLogger.LogError($"{nameof(targetZone)}이 없습니다.");
+                return;
+            }
 
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
             
-            var battleCardAttacker = actor.Board.GetByIndex(attackerIndex);
-            var battleCardTarget = opponent.Hero.GetFieldDataByIndex(targetIndex);
-            var command = TcgBattleCommand.AttackHero(side, battleCardAttacker, battleCardTarget);
+            var attackerBattleDataCardInField = actor.GetBattleDataCardInFieldByIndex(attackerIndex);
+            if (attackerBattleDataCardInField == null) return;
+            var targetBattleDataCardInField = opponent.GetHeroBattleDataCardInFieldByIndex(targetIndex);
+            if (targetBattleDataCardInField == null) return;
+            var command = TcgBattleCommand.AttackHero(side, attackerZone, attackerBattleDataCardInField, targetZone, targetBattleDataCardInField);
+            _session.ExecuteCommandWithTrace(command, _traceBuffer);
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+        }
+        /// <summary>
+        /// UI에서 "Spell 카드 사용" 요청을 보냈을 때 호출됩니다.
+        /// </summary>
+        public void UseCardSpell(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex, ConfigCommonTcg.TcgZone targetZone, int targetIndex)
+        {
+            if (!IsBattleRunning) return;
+            if (!_session.IsPlayerTurn) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
+            if (attackerIndex < 0)
+            {
+                GcLogger.LogError($"attackerIndex: {attackerIndex}");
+                return;
+            }
+            if (targetZone == ConfigCommonTcg.TcgZone.None)
+            {
+                GcLogger.LogError($"{nameof(targetZone)}이 없습니다.");
+                return;
+            }
+            if (targetIndex < 0)
+            {
+                GcLogger.LogError($"targetIndex: {targetIndex}");
+                return;
+            }
+
+            var actor = _session.Context.GetSideState(side);
+            var opponent = _session.Context.GetOpponentState(side);
+            
+            var attackerBattleDataCardInHand = actor.GetBattleDataCardInHandByIndex(attackerIndex);
+            if (attackerBattleDataCardInHand == null) return;
+            TcgBattleDataCardInField targetBattleDataCardInField = null;
+            if (targetZone == ConfigCommonTcg.TcgZone.FieldPlayer)
+                targetBattleDataCardInField = actor.GetBattleDataCardInFieldByIndex(targetIndex, true);
+            else if (targetZone == ConfigCommonTcg.TcgZone.FieldEnemy)
+                targetBattleDataCardInField = opponent.GetBattleDataCardInFieldByIndex(targetIndex, true);
+            
+            if (targetBattleDataCardInField == null) return;
+            
+            var command = TcgBattleCommand.UseCardSpell(side, ConfigCommonTcg.TcgZone.HandPlayer,
+                attackerBattleDataCardInHand, targetZone, targetBattleDataCardInField);
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
 
+        public void UseCardEquipment(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex, ConfigCommonTcg.TcgZone targetZone, int targetIndex)
+        {
+            if (!IsBattleRunning) return;
+            if (!_session.IsPlayerTurn) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
+            if (attackerIndex < 0)
+            {
+                GcLogger.LogError($"attackerIndex: {attackerIndex}");
+                return;
+            }
+            if (targetZone == ConfigCommonTcg.TcgZone.None)
+            {
+                GcLogger.LogError($"{nameof(targetZone)}이 없습니다.");
+                return;
+            }
+            if (targetIndex < 0)
+            {
+                GcLogger.LogError($"targetIndex: {targetIndex}");
+                return;
+            }
+
+            var actor = _session.Context.GetSideState(side);
+            var opponent = _session.Context.GetOpponentState(side);
+            
+            var attackerBattleDataCardInHand = actor.GetBattleDataCardInHandByIndex(attackerIndex);
+            if (attackerBattleDataCardInHand == null) return;
+            TcgBattleDataCardInField targetBattleDataCardInField = null;
+            if (targetZone == ConfigCommonTcg.TcgZone.FieldPlayer)
+                targetBattleDataCardInField = actor.GetBattleDataCardInFieldByIndex(targetIndex, true);
+            else if (targetZone == ConfigCommonTcg.TcgZone.FieldEnemy)
+                targetBattleDataCardInField = opponent.GetBattleDataCardInFieldByIndex(targetIndex, true);
+            
+            if (targetBattleDataCardInField == null) return;
+            
+            var command = TcgBattleCommand.UseCardEquipment(side, ConfigCommonTcg.TcgZone.HandPlayer,
+                attackerBattleDataCardInHand, targetZone, targetBattleDataCardInField);
+            _session.ExecuteCommandWithTrace(command, _traceBuffer);
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+        }
         /// <summary>
         /// UI에서 "턴 종료" 버튼을 눌렀을 때 호출됩니다.
         /// </summary>
@@ -266,7 +369,11 @@ namespace GGemCo2DTcg
             _commandHandlers.Clear();
 
             // 핸들러 구현체들
-            RegisterCommandHandler(new CommandHandlerPlayCardFromHand());
+            RegisterCommandHandler(new CommandHandlerDrawCardToField());
+            RegisterCommandHandler(new CommandHandlerUseCardSpell());
+            RegisterCommandHandler(new CommandHandlerUseCardPermanent());
+            RegisterCommandHandler(new CommandHandlerUseCardEquipment());
+            RegisterCommandHandler(new CommandHandlerUseCardEvent());
             RegisterCommandHandler(new CommandHandlerAttackUnit());
             RegisterCommandHandler(new CommandHandlerAttackHero());
             RegisterCommandHandler(new CommandHandlerEndTurn());
@@ -286,7 +393,7 @@ namespace GGemCo2DTcg
 
         #endregion
         
-        private TcgBattleDataCard DrawOneCard(TcgBattleDataSide battleDataSide)
+        private TcgBattleDataCardInHand DrawOneCard(TcgBattleDataSide battleDataSide)
         {
             var deck = battleDataSide.TcgBattleDataDeck;
             if (deck == null || deck.Count == 0)

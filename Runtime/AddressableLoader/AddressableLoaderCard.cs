@@ -83,9 +83,10 @@ namespace GGemCo2DCore
                 }
                 _activeHandles.Add(locationHandle);
                 
-                // 테두리 이미지
+                // 핸드, 필드 카드 테두리 이미지
                 {
                     _dicImageBorder.Clear();
+                    // 핸드 카드 테두리 이미지
                     label = ConfigAddressableLabelTcg.Card.ImageBorder;
                     locationHandle = Addressables.LoadResourceLocationsAsync(label);
                     await locationHandle.Task;

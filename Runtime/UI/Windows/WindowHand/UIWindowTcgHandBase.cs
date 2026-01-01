@@ -15,12 +15,6 @@ namespace GGemCo2DTcg
         [Header(UIWindowConstants.TitleHeaderIndividual)]
         public TMP_Text textCurrentMana;
 
-        [Tooltip("영웅 슬롯")]
-        public UISlot slotHero;
-
-        [Tooltip("영웅 아이콘")]
-        public UIIconCard iconHero;
-
         /// <summary>
         /// 각 Side 별 윈도우 UID를 반환합니다. (Player/Enemy가 다름)
         /// </summary>
@@ -37,12 +31,6 @@ namespace GGemCo2DTcg
         /// </summary>
         /// <returns>드래그/드랍 전략 인스턴스.</returns>
         protected abstract IDragDropStrategy CreateDragDropStrategy();
-
-        /// <summary>
-        /// 파생 클래스에서 실제로 사용할 영웅 아이콘 타입을 캐싱해 반환합니다.
-        /// </summary>
-        /// <returns>영웅으로 사용할 <see cref="UIIconCard"/>.</returns>
-        protected abstract UIIconCard GetHeroIcon();
 
         /// <summary>
         /// Enemy는 드래그 불가, Player는 드래그 가능하도록 여부를 계산합니다.
@@ -76,59 +64,6 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 시작 시점에 영웅 슬롯/아이콘의 기본 바인딩을 완료합니다.
-        /// </summary>
-        protected override void Start()
-        {
-            base.Start();
-            // 슬롯, 아이콘의 Awake함수에서 초기화 하기 때문에, 프로퍼티 값을 변경하기 위해서 Start에서 처리
-            InitializeHeroObject();
-        }
-
-        /// <summary>
-        /// 영웅 슬롯과 영웅 아이콘을 현재 윈도우/UID/인덱스에 맞게 초기화합니다.
-        /// </summary>
-        private void InitializeHeroObject()
-        {
-            if (GcLogger.HasAnyUnassigned(this,
-                    (slotHero, nameof(slotHero)),
-                    (iconHero, nameof(iconHero))))
-                return;
-
-            // Hero Slot 설정
-            slotHero.window = this;
-            slotHero.windowUid = uid;
-            slotHero.index = ConfigCommonTcg.IndexHeroSlot;
-
-            // Hero Icon 설정
-            iconHero.window = this;
-            iconHero.index = ConfigCommonTcg.IndexHeroSlot;
-            iconHero.slotIndex = ConfigCommonTcg.IndexHeroSlot;
-        }
-
-        /// <summary>
-        /// 인덱스에 해당하는 슬롯을 반환합니다. 영웅 슬롯 인덱스는 별도 처리합니다.
-        /// </summary>
-        /// <param name="index">슬롯 인덱스.</param>
-        /// <returns>요청한 인덱스의 <see cref="UISlot"/>.</returns>
-        public override UISlot GetSlotByIndex(int index)
-        {
-            if (index == ConfigCommonTcg.IndexHeroSlot) return slotHero;
-            return base.GetSlotByIndex(index);
-        }
-
-        /// <summary>
-        /// 인덱스에 해당하는 아이콘을 반환합니다. 영웅 아이콘 인덱스는 별도 처리합니다.
-        /// </summary>
-        /// <param name="index">아이콘 인덱스.</param>
-        /// <returns>요청한 인덱스의 <see cref="UIIcon"/>.</returns>
-        public override UIIcon GetIconByIndex(int index)
-        {
-            if (index == ConfigCommonTcg.IndexHeroSlot) return iconHero;
-            return base.GetIconByIndex(index);
-        }
-
-        /// <summary>
         /// 윈도우 해제 시 필요한 정리 작업을 수행합니다.
         /// (현재는 비어 있으며, 파생/호출부 정책에 따라 풀 반환/이벤트 해제 등을 추가할 수 있습니다.)
         /// </summary>
@@ -151,9 +86,6 @@ namespace GGemCo2DTcg
                 return;
             }
 
-            // 영웅 카드 표시(공통 처리)
-            SetHeroCard(battleDataSide.Hero);
-
             // 핸드 카드 표시
             for (int i = 0; i < maxCountIcon; i++)
             {
@@ -167,9 +99,11 @@ namespace GGemCo2DTcg
                     var card = battleDataSide.Hand.Cards[i];
                     var uiIcon = SetIconCount(i, card.Uid, 1);
                     if (!uiIcon) continue;
-
+                    slot.SetAlpha(1);
                     // Enemy(AI) 쪽은 드래그 불가 처리
                     uiIcon.SetDrag(PossibleDrag);
+                    uiIcon.gameObject.transform.SetParent(slot.transform, false);
+                    uiIcon.gameObject.transform.localPosition = Vector3.zero;
 
                     // 공격/체력 표시 갱신
                     UpdateCardInfo(uiIcon, card.Attack, card.Health);
@@ -180,39 +114,6 @@ namespace GGemCo2DTcg
                     slot.gameObject.SetActive(false);
                 }
             }
-        }
-
-        /// <summary>
-        /// 영웅 카드(아이콘)를 갱신합니다.
-        /// 영웅이 없거나 사망한 경우 아이콘을 비활성화합니다.
-        /// </summary>
-        /// <param name="heroData">영웅 전투 데이터.</param>
-        private void SetHeroCard(TcgBattleDataSideHero heroData)
-        {
-            // 영웅 데이터가 없거나 사망한 경우: 아이콘 비활성화
-            if (heroData == null || heroData.Hp <= 0)
-            {
-                if (iconHero) iconHero.gameObject.SetActive(false);
-                return;
-            }
-
-            // 파생에서 결정한 영웅 아이콘을 사용
-            var heroIcon = GetHeroIcon();
-            if (GcLogger.IsNull(heroIcon, nameof(heroIcon)))
-            {
-                if (iconHero) iconHero.gameObject.SetActive(false);
-                return;
-            }
-
-            heroIcon.gameObject.SetActive(true);
-
-            // 공통 세팅
-            heroIcon.windowUid = uid;
-            heroIcon.ChangeInfoByUid(heroData.Uid, 1);
-            UpdateCardInfo(heroIcon, heroData.Attack, heroData.Hp);
-
-            // 파생에서 추가 작업이 필요하면 훅 제공 가능
-            // OnAfterSetHeroCard(heroIcon, heroData);
         }
 
         /// <summary>

@@ -76,7 +76,8 @@ namespace GGemCo2DTcgEditor
                 Debug.LogError($"'{targetGroupName}' 그룹을 설정할 수 없습니다.");
             }
             
-            // 테두리 이미지 추가
+            // 핸드 카드의 테두리 이미지 추가
+            // 필드 카드의 테두리 이미지 
             AddressableAssetGroup groupBorder = GetOrCreateGroup(settings, _targetGroupNameBorder);
             if (groupBorder != null)
             {
@@ -85,9 +86,17 @@ namespace GGemCo2DTcgEditor
                 foreach (var grade in EnumCache<CardConstants.Grade>.Values)
                 {
                     if (grade == CardConstants.Grade.None) continue;
-                    string key = $"{ConfigAddressableKeyTcg.Card.ImageBorder}_{grade}";
-                    string assetPath = $"{ConfigAddressablePathTcg.Card.ImageBorder}/{grade}.png";
+                    // 핸드 카드의 테두리 이미지 추가
+                    string key = $"{ConfigAddressableKeyTcg.Card.ImageBorderHand}_{grade}";
+                    string assetPath = $"{ConfigAddressablePathTcg.Card.ImageBorderHand}/{grade}.png";
                     string label = $"{ConfigAddressableLabelTcg.Card.ImageBorder}";
+                
+                    Add(settings, groupBorder, key, assetPath, label);
+                    
+                    // 필드 카드의 테두리 이미지 
+                    key = $"{ConfigAddressableKeyTcg.Card.ImageBorderField}_{grade}";
+                    assetPath = $"{ConfigAddressablePathTcg.Card.ImageBorderField}/{grade}.png";
+                    label = $"{ConfigAddressableLabelTcg.Card.ImageBorder}";
                 
                     Add(settings, groupBorder, key, assetPath, label);
                 }
