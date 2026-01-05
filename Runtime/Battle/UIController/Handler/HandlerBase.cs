@@ -66,5 +66,30 @@ namespace GGemCo2DTcg
 
             SceneGame.Instance.damageTextManager.ShowDamageText(metadata);
         }
+        
+        /// <summary>
+        /// UIIcon이 없는 지점(버튼/컨테이너 위치 등)에 숫자 팝업을 표시합니다.
+        /// +값은 초록, -값은 빨강으로 표시합니다.
+        /// </summary>
+        protected void ShowValueTextAt(Vector3 worldPosition, int value)
+        {
+            if (SceneGame.Instance == null) return;
+            if (SceneGame.Instance.damageTextManager == null) return;
+            if (value == 0) return;
+
+            var color = Color.red;
+            if (value > 0)
+                color = Color.green;
+
+            var metadata = new MetadataDamageText
+            {
+                Damage = value,
+                Color = color,
+                WorldPosition = worldPosition,
+                FontSize = 50
+            };
+
+            SceneGame.Instance.damageTextManager.ShowDamageText(metadata);
+        }
     }
 }

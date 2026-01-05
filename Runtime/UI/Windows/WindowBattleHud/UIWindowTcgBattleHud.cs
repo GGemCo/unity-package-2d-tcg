@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using GGemCo2DCore;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +18,7 @@ namespace GGemCo2DTcg
         [Header("Turn End Text")]
         [Tooltip("턴이 종료되고, 플레이어 턴이 되었을 때 보여주는 텍스트")]
         public GameObject gameObjectEndTurn;
+        public TMP_Text textTurnStartSide;
         public float fadeInDuration = 0.6f;
         public float holdDuration = 1.5f;
         public float fadeOutDuration = 0.6f;
@@ -51,7 +53,7 @@ namespace GGemCo2DTcg
         public void Release()
         {
         }
-        public IEnumerator ShowEndTurnText()
+        public IEnumerator ShowEndTurnText(ConfigCommonTcg.TcgPlayerSide side)
         {
             if (gameObjectEndTurn == null) yield break;
             
@@ -63,6 +65,10 @@ namespace GGemCo2DTcg
             fadeOption.fadeOut.disableInputWhenInvisible = true;
             fadeOption.fadeOut.updateInteractableOnComplete = true;
             fadeOption.fadeOut.updateBlocksRaycastsOnComplete = true;
+
+            // todo localization
+            if (textTurnStartSide != null)
+                textTurnStartSide.text = side == ConfigCommonTcg.TcgPlayerSide.Player ? "나의 턴" : "상대 턴";
 
             yield return UiFadeSequenceUtility.FadeInHoldFadeOut(this, gameObjectEndTurn,
                 fadeInDuration, holdDuration,

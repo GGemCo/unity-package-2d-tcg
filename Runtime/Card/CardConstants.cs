@@ -59,6 +59,7 @@
         /// Creature가 보유할 수 있는 고유 특성(패시브) 키워드 집합.
         /// - 모든 키워드는 공통 규칙으로 처리되며 카드 개별 능력과는 별도로 동작합니다.
         /// - 이펙트(Effect)와 달리 고정적인 성질을 나타냅니다.
+        /// todo 정리 필요. ConfigCommonTcg.cs 에도 있음
         /// </summary>
         public enum KeywordType
         {

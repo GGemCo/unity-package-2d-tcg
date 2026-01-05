@@ -10,12 +10,17 @@ namespace GGemCo2DTcg
     /// </summary>
     public static class TcgAbilityPresentationStepFactory
     {
-        public static bool TryCreateStep(
+        /// <summary>
+        /// Ability 연출은 단일 스텝으로 끝나지 않을 수 있으므로,
+        /// (예: 공격/체력 동시 버프) 다중 스텝 생성을 지원합니다.
+        /// </summary>
+        /// <returns>steps에 1개 이상 추가되었으면 true입니다.</returns>
+        public static bool TryCreateSteps(
             in TcgAbilityPresentationEvent ev,
-            out TcgPresentationStep step)
+            System.Collections.Generic.List<TcgPresentationStep> steps)
         {
-            // 기본값
-            step = default;
+            if (steps == null)
+                return false;
 
             // End 시점만 "효과" 스텝으로 변환합니다.
             if (ev.EventPhase != TcgAbilityPresentationEvent.Phase.End)
@@ -28,60 +33,156 @@ namespace GGemCo2DTcg
             var targetZone = ev.TargetZone;
             var targetIndex = ev.TargetIndex;
             var ability = ev.Ability;
-            
+
+            var added = 0;
+
             // AbilityType 기반으로 "효과" 스텝을 선택합니다.
             switch (ability.abilityType)
             {
                 case TcgAbilityConstants.TcgAbilityType.Damage:
-                    TcgAbilityPayloadDamage payloadDamage = new TcgAbilityPayloadDamage(ability.paramA);
-                    
-                    step = new TcgPresentationStep(
+                {
+                    var payload = new TcgAbilityPayloadDamage(ability.paramA);
+                    steps.Add(new TcgPresentationStep(
                         TcgPresentationConstants.TcgPresentationStepType.AbilityDamage,
                         side: casterSide,
                         fromZone: casterZone,
                         fromIndex: casterIndex,
                         toZone: targetZone,
                         toIndex: targetIndex,
-                        payload: payloadDamage
-                        );
-                    return true;
+                        payload: payload));
+                    added++;
+                    break;
+                }
 
                 case TcgAbilityConstants.TcgAbilityType.Heal:
-                    TcgAbilityPayloadHeal payloadHeal = new TcgAbilityPayloadHeal(ability.paramA);
-                    
-                    step = new TcgPresentationStep(
+                {
+                    var payload = new TcgAbilityPayloadHeal(ability.paramA);
+                    steps.Add(new TcgPresentationStep(
                         TcgPresentationConstants.TcgPresentationStepType.HealPopup,
                         side: casterSide,
                         fromZone: casterZone,
                         fromIndex: casterIndex,
                         toZone: targetZone,
                         toIndex: targetIndex,
-                        payload: payloadHeal
-                        );
-                    return true;
+                        payload: payload));
+                    added++;
+                    break;
+                }
 
                 case TcgAbilityConstants.TcgAbilityType.BuffAttack:
                 case TcgAbilityConstants.TcgAbilityType.BuffHealth:
-                    TcgAbilityPayloadBuff payloadBuff = new TcgAbilityPayloadBuff(ability.abilityType, ability.paramA);
-                    
-                    step = new TcgPresentationStep(
+                {
+                    var payload = new TcgAbilityPayloadBuff(ability.abilityType, ability.paramA);
+                    steps.Add(new TcgPresentationStep(
                         TcgPresentationConstants.TcgPresentationStepType.ApplyBuff,
                         side: casterSide,
                         fromZone: casterZone,
                         fromIndex: casterIndex,
                         toZone: targetZone,
                         toIndex: targetIndex,
-                        payload: payloadBuff
-                        );
-                    return true;
+                        payload: payload));
+                    added++;
+                    break;
+                }
+
+                case TcgAbilityConstants.TcgAbilityType.BuffAttackHealth:
+                {
+                    // 방식 1(권장): 기존 ApplyBuff 핸들러를 재사용하기 위해 2개의 스텝으로 분해합니다.
+                    if (ability.paramA != 0)
+                    {
+                        var payloadA = new TcgAbilityPayloadBuff(TcgAbilityConstants.TcgAbilityType.BuffAttack, ability.paramA);
+                        steps.Add(new TcgPresentationStep(
+                            TcgPresentationConstants.TcgPresentationStepType.ApplyBuff,
+                            side: casterSide,
+                            fromZone: casterZone,
+                            fromIndex: casterIndex,
+                            toZone: targetZone,
+                            toIndex: targetIndex,
+                            payload: payloadA));
+                        added++;
+                    }
+
+                    if (ability.paramB != 0)
+                    {
+                        var payloadB = new TcgAbilityPayloadBuff(TcgAbilityConstants.TcgAbilityType.BuffHealth, ability.paramB);
+                        steps.Add(new TcgPresentationStep(
+                            TcgPresentationConstants.TcgPresentationStepType.ApplyBuff,
+                            side: casterSide,
+                            fromZone: casterZone,
+                            fromIndex: casterIndex,
+                            toZone: targetZone,
+                            toIndex: targetIndex,
+                            payload: payloadB));
+                        added++;
+                    }
+                    break;
+                }
 
                 case TcgAbilityConstants.TcgAbilityType.Draw:
+                {
+                    var payload = new TcgAbilityPayloadDraw(ability.paramA);
+                    steps.Add(new TcgPresentationStep(
+                        TcgPresentationConstants.TcgPresentationStepType.AbilityDraw,
+                        side: casterSide,
+                        fromZone: casterZone,
+                        fromIndex: casterIndex,
+                        toZone: targetZone,
+                        toIndex: targetIndex,
+                        payload: payload));
+                    added++;
+                    break;
+                }
+
                 case TcgAbilityConstants.TcgAbilityType.GainMana:
+                {
+                    var payload = new TcgAbilityPayloadGainMana(ability.paramA);
+                    steps.Add(new TcgPresentationStep(
+                        TcgPresentationConstants.TcgPresentationStepType.AbilityGainMana,
+                        side: casterSide,
+                        fromZone: casterZone,
+                        fromIndex: casterIndex,
+                        toZone: targetZone,
+                        toIndex: targetIndex,
+                        payload: payload));
+                    added++;
+                    break;
+                }
+
                 case TcgAbilityConstants.TcgAbilityType.ExtraAction:
+                {
+                    var payload = new TcgAbilityPayloadExtraAction(ability.paramA);
+                    steps.Add(new TcgPresentationStep(
+                        TcgPresentationConstants.TcgPresentationStepType.AbilityExtraAction,
+                        side: casterSide,
+                        fromZone: casterZone,
+                        fromIndex: casterIndex,
+                        toZone: targetZone,
+                        toIndex: targetIndex,
+                        payload: payload));
+                    added++;
+                    break;
+                }
+
                 default:
-                    // 현재 UI 연출이 정의되지 않은 타입은 스텝을 만들지 않습니다.
-                    return false;
+                    break;
             }
+
+            return added > 0;
+        }
+
+        public static bool TryCreateStep(
+            in TcgAbilityPresentationEvent ev,
+            out TcgPresentationStep step)
+        {
+            step = default;
+
+            // (호환용) 다중 스텝 중 첫 번째만 반환합니다.
+            var tmp = new System.Collections.Generic.List<TcgPresentationStep>(2);
+            if (!TryCreateSteps(ev, tmp) || tmp.Count == 0)
+                return false;
+
+            step = tmp[0];
+            return true;
         }
     }
 }

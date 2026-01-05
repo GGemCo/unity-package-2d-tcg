@@ -308,6 +308,27 @@ namespace GGemCo2DTcg
             _session.ExecuteCommandWithTrace(command, _traceBuffer);
             _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
         }
+
+        public void UseCardPermanent(ConfigCommonTcg.TcgPlayerSide side, int attackerIndex)
+        {
+            if (!IsBattleRunning) return;
+            if (!_session.IsPlayerTurn) return;
+            if (_uiController != null && _uiController.IsInteractionLocked) return;
+            if (attackerIndex < 0)
+            {
+                GcLogger.LogError($"attackerIndex: {attackerIndex}");
+                return;
+            }
+
+            var actor = _session.Context.GetSideState(side);
+            
+            var attackerBattleDataCardInHand = actor.GetBattleDataCardInHandByIndex(attackerIndex);
+            if (attackerBattleDataCardInHand == null) return;
+            
+            var command = TcgBattleCommand.UseCardPermanent(side, ConfigCommonTcg.TcgZone.HandPlayer, attackerBattleDataCardInHand);
+            _session.ExecuteCommandWithTrace(command, _traceBuffer);
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+        }
         /// <summary>
         /// UI에서 "턴 종료" 버튼을 눌렀을 때 호출됩니다.
         /// </summary>
@@ -315,16 +336,26 @@ namespace GGemCo2DTcg
         {
             if (!IsBattleRunning) return;
             if (_uiController != null && _uiController.IsInteractionLocked) return;
-            
-            _session.EndTurn();
-            _uiController?.RefreshAll(_session.Context);
+            if (_session.IsBattleEnded) return;
 
-            if (!_session.IsBattleEnded)
+            // 1) Player EndTurn을 "커맨드"로 실행해서 trace/연출을 확보
+            _traceBuffer.Clear();
+
+            var cmd = TcgBattleCommand.EndTurn(ConfigCommonTcg.TcgPlayerSide.Player);
+            _session.ExecuteCommandWithTrace(cmd, _traceBuffer);
+
+            // 2) EndTurn 연출이 끝난 뒤 Enemy 턴을 실행하도록 체이닝
+            _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer, onCompleted: () =>
             {
-                // AI 턴 자동 실행
+                if (_session == null) return;
+                if (_session.IsBattleEnded) return;
+
+                // Enemy 턴 자동 실행
+                _traceBuffer.Clear();
                 _session.ExecuteEnemyTurnWithTrace(_traceBuffer);
+
                 _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
-            }
+            });
         }
 
         public void OnBattleEnded(ConfigCommonTcg.TcgPlayerSide winner)

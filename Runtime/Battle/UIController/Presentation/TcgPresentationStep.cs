@@ -8,6 +8,9 @@
     /// </summary>
     public readonly struct TcgPresentationStep
     {
+        //StepType은 “연출 단위”이며, Payload는 “연출 데이터 DTO”
+        //StepType은 UI 핸들러가 분기하는 키
+        //Payload는 UI가 필요한 최소 데이터를 담는 값 타입(이미 TcgAbilityPayload*로 구현 중)
         public TcgPresentationConstants.TcgPresentationStepType Type { get; }
         public ConfigCommonTcg.TcgPlayerSide Side { get; }
         public ConfigCommonTcg.TcgZone FromZone { get; }

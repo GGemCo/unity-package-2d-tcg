@@ -60,5 +60,34 @@
         {
             return TryBuildAbility(row, out var ability) ? ability : default;
         }
+        public static TcgAbilityDefinition BuildOnPlayAbilityDefinition(TcgBattleDataCardInHand cardInHand)
+        {
+            if (cardInHand == null) return default;
+
+            switch (cardInHand.Type)
+            {
+                // 크리처 카드일 때는 Damage Ability를 임시로 생성하여 사용한다.
+                case CardConstants.Type.Creature:
+                    StruckTableTcgCardSpell struckTableTcgCardSpell = new StruckTableTcgCardSpell
+                    {
+                        uid = 1,
+                        abilityType = TcgAbilityConstants.TcgAbilityType.Damage,
+                        tcgAbilityTargetType = TcgAbilityConstants.TcgAbilityTargetType.AllEnemies,
+                        tcgAbilityTriggerType = TcgAbilityConstants.TcgAbilityTriggerType.OnPlay,
+                        paramA = cardInHand.Attack
+                    };
+                    return BuildAbility(struckTableTcgCardSpell);
+                case CardConstants.Type.Spell:
+                    return BuildAbility(cardInHand.SpellDetail);
+                case CardConstants.Type.Equipment:
+                    return BuildAbility(cardInHand.EquipmentDetail);
+                case CardConstants.Type.Permanent:
+                    return BuildAbility(cardInHand.PermanentDetail);
+                case CardConstants.Type.Event:
+                    return BuildAbility(cardInHand.EventDetail);
+                default:
+                    return default;
+            }
+        }
     }
 }

@@ -31,13 +31,13 @@ namespace GGemCo2DTcg
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
             
-            var ability = BuildOnPlayAbilityDefinition(card);
+            var ability = TcgAbilityBuilder.BuildOnPlayAbilityDefinition(card);
             TcgBattleDataCardInField explicitTarget = null;
             if (ability.IsValid && ability.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
             {
-                if (RequiresExplicitTarget(ability.tcgAbilityTargetType))
+                if (TcgBattleCommand.RequiresExplicitTarget(ability.tcgAbilityTargetType))
                 {
-                    explicitTarget = ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone);
+                    explicitTarget = TcgBattleCommand.ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone);
                     if (explicitTarget == null)
                         return CommandResult.Fail("Error_Tcg_TargetRequired");
                 }
@@ -56,7 +56,7 @@ namespace GGemCo2DTcg
             // 스펠은 즉시 능력 실행 후 소모
             if (explicitTarget == null && ability.IsValid)
             {
-                explicitTarget = ResolveExplicitTarget(
+                explicitTarget = TcgBattleCommand.ResolveExplicitTarget(
                     ability.tcgAbilityTargetType,
                     actor,
                     opponent,
@@ -74,10 +74,8 @@ namespace GGemCo2DTcg
                 toIndex: explicitTarget != null ? target.Index : -1,
                 toZone: explicitTarget != null ? targetZone : ConfigCommonTcg.TcgZone.None));
             
-            // 2) Ability 임팩트(AbilityType별 연출 Step 자동 추가). HandlerAbilityDamage
-            TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
+            TcgAbilityRunner.TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
             
-            // 3) 후처리: 소모(Grave)
             steps.Add(new TcgPresentationStep(
                 TcgPresentationConstants.TcgPresentationStepType.MoveCardToGrave,
                 cmd.Side,

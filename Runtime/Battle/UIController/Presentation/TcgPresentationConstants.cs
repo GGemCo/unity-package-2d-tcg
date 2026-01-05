@@ -12,7 +12,6 @@
             /// <summary>손패의 카드가 필드(보드)로 이동/배치됨</summary>
             MoveCardToField,
             MoveCardToGrave,
-            MoveCardFieldToGrave,
             MoveCardToBack,
 
             /// <summary>유닛이 유닛을 공격함</summary>
@@ -25,9 +24,6 @@
             AbilityDamage,
             HealPopup,
 
-            /// <summary>사망 제거(페이드아웃 등)</summary>
-            DeathFadeOut,
-        
             // 효과
             MoveCardToTarget,
 
@@ -38,6 +34,12 @@
             // 종료
             EndBattle,
             EndTurn,
+            /// <summary>(드로우 팝업/손패 강조)</summary>
+            AbilityDraw ,
+            /// <summary> (마나 획득 팝업/마나 UI 펄스) </summary>
+            AbilityGainMana,
+            /// <summary> (추가 행동 부여 팝업/턴 UI 강조) </summary>
+            AbilityExtraAction
         }
     }
 }

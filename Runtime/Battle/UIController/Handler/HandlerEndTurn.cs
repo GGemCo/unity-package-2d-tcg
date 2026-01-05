@@ -24,7 +24,7 @@ namespace GGemCo2DTcg
             var uiWindowTcgBattleHud = ctx.BattleHud;
             if (uiWindowTcgBattleHud == null) yield break;
             
-            yield return uiWindowTcgBattleHud.ShowEndTurnText();
+            yield return uiWindowTcgBattleHud.ShowEndTurnText(ctx.Session.Context.ActiveSide);
             yield return new WaitForSeconds(0.05f);
         }
     }

@@ -40,13 +40,13 @@ namespace GGemCo2DTcg
             var opponent = context.GetOpponentState(cmd.Side);
 
             // OnPlay 능력 정의를 생성하고, 명시적 타겟이 필요한 경우 선검증합니다.
-            var ability = BuildOnPlayAbilityDefinition(card);
+            var ability = TcgAbilityBuilder.BuildOnPlayAbilityDefinition(card);
             TcgBattleDataCardInField explicitTarget = null;
             if (ability.IsValid && ability.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
             {
-                if (RequiresExplicitTarget(ability.tcgAbilityTargetType))
+                if (TcgBattleCommand.RequiresExplicitTarget(ability.tcgAbilityTargetType))
                 {
-                    explicitTarget = ResolveExplicitTarget(
+                    explicitTarget = TcgBattleCommand.ResolveExplicitTarget(
                         ability.tcgAbilityTargetType,
                         actor,
                         opponent,
@@ -72,7 +72,7 @@ namespace GGemCo2DTcg
             // (명시적 타겟이 필수가 아닌 Ability라도 자동 타겟이 필요한 케이스를 지원)
             if (explicitTarget == null && ability.IsValid)
             {
-                explicitTarget = ResolveExplicitTarget(
+                explicitTarget = TcgBattleCommand.ResolveExplicitTarget(
                     ability.tcgAbilityTargetType,
                     actor,
                     opponent,
@@ -91,7 +91,7 @@ namespace GGemCo2DTcg
                 toZone: explicitTarget != null ? targetZone : ConfigCommonTcg.TcgZone.None));
 
             // 2) Ability 임팩트(AbilityType별 연출 Step 자동 추가)
-            TryRunOnPlayAbility(
+            TcgAbilityRunner.TryRunOnPlayAbility(
                 context,
                 cmd.Side,
                 attackerZone,

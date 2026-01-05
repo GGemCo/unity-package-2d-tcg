@@ -38,10 +38,13 @@ namespace GGemCo2DTcg
             {
                 _battleManager?.UseCardSpell(ConfigCommonTcg.TcgPlayerSide.Player, attackerIndex, targetZone, targetIndex);
             }
-
-            if (iconCard.IsEquipment)
+            else if (iconCard.IsEquipment)
             {
                 _battleManager?.UseCardEquipment(ConfigCommonTcg.TcgPlayerSide.Player, attackerIndex, targetZone, targetIndex);
+            }
+            else if (iconCard.IsPermanent)
+            {
+                _battleManager?.UseCardPermanent(ConfigCommonTcg.TcgPlayerSide.Player, attackerIndex);
             }
             else if (iconCard.IsCreature)
             {

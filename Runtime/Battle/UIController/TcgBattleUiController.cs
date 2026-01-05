@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using GGemCo2DCore;
 using R3;
@@ -130,15 +131,15 @@ namespace GGemCo2DTcg
                 new HandlerAbilityDamage(),
                 new HandlerAbilityHeal(),
                 new HandlerAbilityBuff(),
+                new HandlerAbilityDraw(),
+                new HandlerAbilityGainMana(),
+                new HandlerAbilityExtraAction(),
             });
         }
-
-        /// <summary>
-        /// <paramref name="traces"/>의 커맨드 연출을 순차 재생한 뒤, 최종 상태로 모든 UI를 갱신합니다.
-        /// </summary>
-        /// <param name="context">최종 UI를 구성할 전투 데이터(플레이어/적 상태 포함).</param>
-        /// <param name="traces">커맨드 실행 결과(연출 스텝 포함) 목록.</param>
-        public void PlayPresentationAndRefresh(TcgBattleDataMain context, IReadOnlyList<TcgBattleCommandTrace> traces)
+        public void PlayPresentationAndRefresh(
+            TcgBattleDataMain context,
+            IReadOnlyList<TcgBattleCommandTrace> traces,
+            Action onCompleted = null)
         {
             if (!IsReady || context == null)
                 return;
@@ -147,6 +148,7 @@ namespace GGemCo2DTcg
             if (!HasAnyPresentation(traces))
             {
                 RefreshAll(context);
+                onCompleted?.Invoke();
                 return;
             }
             
@@ -154,6 +156,7 @@ namespace GGemCo2DTcg
             if (_battleHud == null || _runner == null || _ctx == null)
             {
                 RefreshAll(context);
+                onCompleted?.Invoke();
                 return;
             }
 
@@ -166,7 +169,19 @@ namespace GGemCo2DTcg
                 ResetInteractionLock();
             }
 
-            _presentationCoroutine = _battleHud.StartCoroutine(CoPlayPresentation(context, traces));
+            _presentationCoroutine = _battleHud.StartCoroutine(CoPlayPresentationWithCallback(context, traces, onCompleted));
+        }
+
+        private IEnumerator CoPlayPresentationWithCallback(
+            TcgBattleDataMain context,
+            IReadOnlyList<TcgBattleCommandTrace> traces,
+            Action onCompleted = null)
+        {
+            // 기존 CoPlayPresentation 로직을 그대로 재사용
+            yield return CoPlayPresentation(context, traces);
+
+            // CoPlayPresentation finally에서 RefreshAll/Unlock까지 끝난 뒤 호출됨
+            onCompleted?.Invoke();
         }
 
         /// <summary>

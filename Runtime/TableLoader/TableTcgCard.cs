@@ -58,6 +58,7 @@ namespace GGemCo2DTcg
         private TableTcgCardPermanent _tableTcgCardPermanent;
         private TableTcgCardEvent _tableTcgCardEvent;
         private TcgAbilityDescriptionProvider _abilityDescriptionProvider;
+        private TcgLifetimeLocalizationProvider _lifetimeLocalizationProvider;
 
         protected override void OnLoadedData(StruckTableTcgCard row)
         {
@@ -110,6 +111,7 @@ namespace GGemCo2DTcg
             _tableTcgCardPermanent ??= TableLoaderManagerTcg.Instance.TableTcgCardPermanent;
             _tableTcgCardEvent ??= TableLoaderManagerTcg.Instance.TableTcgCardEvent;            
             _abilityDescriptionProvider ??= new TcgAbilityDescriptionProvider();
+            _lifetimeLocalizationProvider ??= new TcgLifetimeLocalizationProvider();
 
             return true;
         }
@@ -162,6 +164,13 @@ namespace GGemCo2DTcg
             if (!string.IsNullOrEmpty(description))
             {
                 row.description = description;
+            }
+
+            if (row.struckTableTcgCardPermanent == null) return; 
+            var lifetime = _lifetimeLocalizationProvider.BuildLifetimeText(row.struckTableTcgCardPermanent);
+            if (!string.IsNullOrEmpty(lifetime))
+            {
+                row.description = $"{row.description}\n({lifetime})";
             }
         }
 

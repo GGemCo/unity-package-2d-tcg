@@ -109,7 +109,7 @@ namespace GGemCo2DTcg
             UseCardEvent,
         }
         /// <summary>
-        /// 유닛/카드 키워드 종류.
+        /// 유닛/카드 키워드 종류. todo 정리 필요.
         /// </summary>
         public enum TcgKeyword
         {
@@ -135,6 +135,21 @@ namespace GGemCo2DTcg
             /// 공격을 1회 무효화 등(예시).
             /// </summary>
             DivineShield
+        }
+        /// <summary>
+        /// Permanent 카드의 수명(Lifetime) 모델.
+        /// 
+        /// - Indefinite: 전투 종료/명시적 제거 전까지 유지
+        /// - Durability: 발동/사용 등 특정 이벤트마다 내구도가 감소
+        /// - DurationTurns: 특정 턴 트리거마다 남은 턴 수가 감소
+        /// - TriggerCount: 능력 발동 횟수 기반으로 만료
+        /// </summary>
+        public enum TcgPermanentLifetimeType
+        {
+            Indefinite = 0,
+            Durability = 1,
+            DurationTurns = 2,
+            TriggerCount = 3,
         }
     }
 }

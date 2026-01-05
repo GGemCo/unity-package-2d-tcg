@@ -22,10 +22,8 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"[{nameof(CommandHandlerEndTurn)}] TcgBattleDataMain.Owner 가 Session 이 아닙니다.");
                 return CommandResult.Fail("Error_Tcg_NoBattleSession");
             }
-            var actor = context.GetSideState(cmd.Side);
-            session.EndTurn();
-            
-            return CommandResult.OkPresentation(new[]
+
+            var steps = new System.Collections.Generic.List<TcgPresentationStep>(8)
             {
                 new TcgPresentationStep(
                     TcgPresentationConstants.TcgPresentationStepType.EndTurn,
@@ -35,7 +33,17 @@ namespace GGemCo2DTcg
                     toZone: ConfigCommonTcg.TcgZone.None,
                     toIndex: 0
                 )
-            });
+            };
+
+            // 턴 종료 중(EndTurn/Draw/StartTurn 등) 발생하는 트리거 Ability 연출도 동일 타임라인에 합류
+            using (session.BeginPresentationCapture(steps))
+            {
+                session.EndTurn();
+            }
+
+            return steps.Count > 0
+                ? CommandResult.OkPresentation(steps.ToArray())
+                : CommandResult.Ok();
         }
     }
 }

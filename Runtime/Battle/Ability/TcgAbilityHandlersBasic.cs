@@ -139,6 +139,39 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
+        /// 공격력/체력을 동시에 변경하는 복합 버프 Ability 실행 핸들러입니다.
+        /// </summary>
+        public sealed class BuffAttackHealth : ITcgAbilityHandler
+        {
+            /// <summary>
+            /// 대상의 공격력/체력을 동시에 변경합니다.
+            /// - ParamA: Attack delta
+            /// - ParamB: Health delta
+            /// </summary>
+            public void Execute(TcgAbilityContext context)
+            {
+                if (context == null) return;
+
+                var attackDelta = context.ParamA;
+                var healthDelta = context.ParamB;
+                if (attackDelta == 0 && healthDelta == 0)
+                    return;
+
+                var target = context.TargetBattleDataCardInField;
+                if (target == null)
+                {
+                    GcLogger.LogWarning("[Ability] BuffAttackHealth: Target is null.");
+                    return;
+                }
+
+                if (attackDelta != 0)
+                    target.ModifyAttack(attackDelta);
+                if (healthDelta != 0)
+                    target.ModifyHealth(healthDelta);
+            }
+        }
+
+        /// <summary>
         /// 마나 획득 Ability 실행 핸들러입니다.
         /// </summary>
         public sealed class GainMana : ITcgAbilityHandler

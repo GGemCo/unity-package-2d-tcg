@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using GGemCo2DCore;
 
 namespace GGemCo2DTcg
 {
@@ -18,70 +17,61 @@ namespace GGemCo2DTcg
         {
             if (context == null)
                 return CommandResult.Fail("Error_Tcg_InvalidContext");
-
-            var attackerZone = cmd.attackerZone;
-            var attacker = cmd.attackerBattleDataCardInField;
-            var targetZone = cmd.targetZone;
-            var target   = cmd.targetBattleDataCardInField;
             
-            var card = cmd.attackerBattleDataCardInHand;
-            if (card == null)
+            var attackerZone = cmd.attackerZone;
+            var attacker = cmd.attackerBattleDataCardInHand;
+            var targetZone = ConfigCommonTcg.TcgZone.None;
+            var target = -1;
+            
+            if (attacker == null)
                 return CommandResult.Fail("Error_Tcg_NoCard");
-
-            var targetCardIndex = 0;
-            var targetCardWindowUId = UIWindowConstants.WindowUid.None;
-
+            if (attacker.PermanentDetail == null)
+                return CommandResult.Fail("Error_Tcg_NoPermanentDetail");
+            
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
 
-            var ability = BuildOnPlayAbilityDefinition(card);
-            if (ability.IsValid && ability.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
+            // 1) 마나 차감
+            if (!actor.TryConsumeMana(attacker.Cost))
+                return CommandResult.Fail("Error_Tcg_NotEnoughMana");
+            
+            // 2) 손에서 제거
+            if (!actor.Hand.TryRemove(attacker, out int fromIndex))
+                return CommandResult.Fail("Error_Tcg_NoCardInHand");
+            
+            var steps = new List<TcgPresentationStep>(6);
+            
+            // Permanent는 지속 영역에 등록 (필드/보드와 별개로 관리)
+            var inst = new TcgBattlePermanentInstance(attacker, attacker.PermanentDetail, attackerZone);
+            actor.Permanents.Add(inst);
+
+            // Lifetime 초기화 훅
+            inst.Lifetime?.OnAdded(new TcgPermanentLifetimeContext(
+                context.TurnCount,
+                TcgAbilityConstants.TcgAbilityTriggerType.None,
+                inst));
+
+            if (attacker.PermanentDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
             {
-                if (RequiresExplicitTarget(ability.tcgAbilityTargetType))
+                var ability = TcgAbilityBuilder.BuildAbility(attacker.PermanentDetail);
+                TcgBattleDataCardInField explicitTarget = null; 
+                if (TcgBattleCommand.RequiresExplicitTarget(ability.tcgAbilityTargetType))
                 {
-                    var explicitTarget = ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone);
+                    explicitTarget = TcgBattleCommand.ResolveRandomTarget(ability.tcgAbilityTargetType, actor, opponent, includeHero: true);
                     if (explicitTarget == null)
                         return CommandResult.Fail("Error_Tcg_TargetRequired");
                 }
+                TcgAbilityRunner.TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, explicitTarget?.Index ?? -1, ability, steps);
             }
-
-            // 1) 마나 차감
-            if (!actor.TryConsumeMana(card.Cost))
-                return CommandResult.Fail("Error_Tcg_NotEnoughMana");
-
-            // 2) 손에서 제거
-            if (!actor.Hand.TryRemove(card, out int fromIndex))
-                return CommandResult.Fail("Error_Tcg_NoCardInHand");
-
-            var steps = new List<TcgPresentationStep>(6);
-
-            // Permanent는 지속 영역에 등록 (필드/보드와 별개로 관리)
-            if (card.PermanentDetail != null)
-            {
-                var inst = new TcgBattlePermanentInstance(card, card.PermanentDetail);
-                actor.Permanents.Add(inst);
-            }
-
-            // 1) 공통: 캐스팅/투사체 연출
-            // - 효과(피해/회복/버프 등)는 Ability 기반 Step에서 처리합니다.
+            
             steps.Add(new TcgPresentationStep(
-                TcgPresentationConstants.TcgPresentationStepType.MoveCardToTarget,
+                TcgPresentationConstants.TcgPresentationStepType.MoveCardToGrave,
                 cmd.Side,
                 fromZone: attackerZone,
-                fromIndex: attacker.Index,
-                toZone: targetZone,
-                toIndex: target.Index));
-
-            // 2) OnPlay Ability 임팩트 (등록 이후 실행되는 타임라인)
-            if (card.PermanentDetail != null &&
-                card.PermanentDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
-            {
-                var explicitTarget = ability.IsValid
-                    ? ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone)
-                    : null;
-                TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
-            }
-
+                fromIndex: fromIndex,
+                toIndex: -1,
+                toZone: ConfigCommonTcg.TcgZone.None));
+            
             return steps.Count > 0 ? CommandResult.OkPresentation(steps.ToArray()) : CommandResult.Ok();
         }
 

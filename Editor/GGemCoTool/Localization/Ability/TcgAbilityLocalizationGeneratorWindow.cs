@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using GGemCo2DCore;
+using GGemCo2DCoreEditor;
 using GGemCo2DTcg;
 using UnityEditor;
 using UnityEditor.Localization;
@@ -39,6 +40,7 @@ namespace GGemCo2DTcgEditor
     /// </summary>
     public sealed class TcgAbilityLocalizationGeneratorWindow : EditorWindow
     {
+        private const string Title = "Ability Localization 만들기";
         [Header("입력")]
         private TextAsset _spellTsv;
         private TextAsset _equipmentTsv;
@@ -65,13 +67,12 @@ namespace GGemCo2DTcgEditor
 
         private Vector2 _scroll;
         private string _lastReport = "";
-        private const string PrefsKey = "GGemCo_TcgAbilityLocalizationGeneratorWindow_";
 
         [MenuItem(ConfigEditorTcg.NameToolCreateAbilityLocalization, false, (int)ConfigEditorTcg.ToolOrdering.CreateAbilityLocalization)]
         public static void Open()
         {
             var window = GetWindow<TcgAbilityLocalizationGeneratorWindow>();
-            window.titleContent = new GUIContent("Ability 지역화 생성");
+            window.titleContent = new GUIContent(Title);
             window.minSize = new Vector2(680, 520);
             window.Show();
         }
@@ -190,9 +191,9 @@ namespace GGemCo2DTcgEditor
                 throw new InvalidOperationException("Localization Settings에 Locale이 없습니다. 먼저 Locale을 추가해주세요.");
 
             // 2) 컬렉션/테이블 준비
-            var abilityCollection = EnsureStringTableCollection(AbilityCollectionName, outputPath);
-            var triggerCollection = _generateTermTables ? EnsureStringTableCollection(TriggerCollectionName, outputPath) : null;
-            var targetCollection  = _generateTermTables ? EnsureStringTableCollection(TargetCollectionName, outputPath)  : null;
+            var abilityCollection = HelperLocalization.EnsureStringTableCollection(AbilityCollectionName, outputPath);
+            var triggerCollection = _generateTermTables ? HelperLocalization.EnsureStringTableCollection(TriggerCollectionName, outputPath) : null;
+            var targetCollection  = _generateTermTables ? HelperLocalization.EnsureStringTableCollection(TargetCollectionName, outputPath)  : null;
 
             // 3) 로케일별 테이블 준비
             var abilityTablesByLocale = new Dictionary<Locale, StringTable>(locales.Count);
@@ -201,12 +202,12 @@ namespace GGemCo2DTcgEditor
 
             foreach (var locale in locales)
             {
-                abilityTablesByLocale[locale] = EnsureLocaleTable(abilityCollection, locale);
+                abilityTablesByLocale[locale] = HelperLocalization.EnsureLocaleTable(abilityCollection, locale);
 
                 if (_generateTermTables)
                 {
-                    triggerTablesByLocale![locale] = EnsureLocaleTable(triggerCollection, locale);
-                    targetTablesByLocale![locale]  = EnsureLocaleTable(targetCollection, locale);
+                    triggerTablesByLocale![locale] = HelperLocalization.EnsureLocaleTable(triggerCollection, locale);
+                    targetTablesByLocale![locale]  = HelperLocalization.EnsureLocaleTable(targetCollection, locale);
                 }
             }
 
@@ -268,7 +269,7 @@ namespace GGemCo2DTcgEditor
             if (_logVerbose) Debug.Log(_lastReport);
 
             EditorUtility.DisplayDialog(
-                "Ability 지역화",
+                Title,
                 $"완료되었습니다.\n{report.SummaryLine}\n\n세부 내용은 '최근 리포트'에서 확인하세요.",
                 "확인");
         }
@@ -450,35 +451,6 @@ namespace GGemCo2DTcgEditor
         }
         #endregion
 
-        #region Localization Editor Helpers
-        private static StringTableCollection EnsureStringTableCollection(string name, string outputPath)
-        {
-            var collection = LocalizationEditorSettings.GetStringTableCollection(name);
-            if (collection != null) return collection;
-
-            // Editor 전용: StringTableCollection 생성
-            collection = LocalizationEditorSettings.CreateStringTableCollection(name, outputPath);
-            if (collection == null)
-                throw new InvalidOperationException($"StringTableCollection 생성 실패: {name}");
-
-            return collection;
-        }
-
-        private static StringTable EnsureLocaleTable(StringTableCollection collection, Locale locale)
-        {
-            var table = collection.GetTable(locale.Identifier) as StringTable;
-            if (table != null) return table;
-
-            // Editor 전용: 로케일별 테이블 추가
-            collection.AddNewTable(locale.Identifier);
-            table = collection.GetTable(locale.Identifier) as StringTable;
-            if (table == null)
-                throw new InvalidOperationException($"로케일 테이블 생성 실패: {locale.Identifier}");
-
-            EditorUtility.SetDirty(collection);
-            return table;
-        }
-
         private static void UpsertEntry(
             StringTable table,
             string key,
@@ -522,7 +494,6 @@ namespace GGemCo2DTcgEditor
 
             EditorUtility.SetDirty(table);
         }
-        #endregion
 
         #region TSV Parse
                 private static List<TcgAbilityTsvRow> ParseTsv(string text)

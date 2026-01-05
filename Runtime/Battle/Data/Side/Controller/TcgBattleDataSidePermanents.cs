@@ -11,6 +11,12 @@ namespace GGemCo2DTcg
     {
         private readonly List<TcgBattlePermanentInstance> _items = new List<TcgBattlePermanentInstance>(8);
 
+        /// <summary>
+        /// Permanent가 Lifetime 만료로 제거될 때 호출됩니다.
+        /// UI 또는 로그 시스템에서 구독하여 연출/메시지를 추가할 수 있습니다.
+        /// </summary>
+        public event Action<TcgBattlePermanentInstance> PermanentExpired;
+
         public IReadOnlyList<TcgBattlePermanentInstance> Items => _items;
 
         public int Count => _items.Count;
@@ -28,6 +34,11 @@ namespace GGemCo2DTcg
             if (inst == null) return false;
             return _items.Remove(inst);
         }
+
+        internal void NotifyExpired(TcgBattlePermanentInstance inst)
+        {
+            PermanentExpired?.Invoke(inst);
+        }
     }
 
     /// <summary>
@@ -36,6 +47,7 @@ namespace GGemCo2DTcg
     /// </summary>
     public sealed class TcgBattlePermanentInstance
     {
+        public ConfigCommonTcg.TcgZone AttackerZone { get; }
         public TcgBattleDataCardInHand CardInHand { get; }
         public StruckTableTcgCardPermanent Definition { get; }
 
@@ -45,12 +57,20 @@ namespace GGemCo2DTcg
         /// <summary>마지막으로 발동된 턴 카운트.</summary>
         public int LastResolvedTurn { get; set; }
 
-        public TcgBattlePermanentInstance(TcgBattleDataCardInHand cardInHand, StruckTableTcgCardPermanent definition)
+        /// <summary>Permanent Lifetime 전략(만료 정책).</summary>
+        public ITcgPermanentLifetimeStrategy Lifetime { get; }
+
+        public bool IsExpired => Lifetime != null && Lifetime.IsExpired;
+
+        public TcgBattlePermanentInstance(TcgBattleDataCardInHand cardInHand, StruckTableTcgCardPermanent definition, ConfigCommonTcg.TcgZone attackerZone)
         {
             CardInHand = cardInHand ?? throw new ArgumentNullException(nameof(cardInHand));
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             Stacks = 1;
             LastResolvedTurn = -999;
+            AttackerZone = attackerZone;
+
+            Lifetime = TcgPermanentLifetimeStrategyFactory.Build(definition);
         }
     }
 }

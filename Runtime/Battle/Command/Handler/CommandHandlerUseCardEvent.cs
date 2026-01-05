@@ -30,12 +30,12 @@ namespace GGemCo2DTcg
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
 
-            var ability = BuildOnPlayAbilityDefinition(card);
+            var ability = TcgAbilityBuilder.BuildOnPlayAbilityDefinition(card);
             if (ability.IsValid && ability.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
             {
-                if (RequiresExplicitTarget(ability.tcgAbilityTargetType))
+                if (TcgBattleCommand.RequiresExplicitTarget(ability.tcgAbilityTargetType))
                 {
-                    var explicitTarget = ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target,
+                    var explicitTarget = TcgBattleCommand.ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target,
                         targetZone);
                     if (explicitTarget == null)
                         return CommandResult.Fail("Error_Tcg_TargetRequired");
@@ -67,7 +67,7 @@ namespace GGemCo2DTcg
             {
                 // 캐스팅 연출(타겟이 없어도 허용)
                 var explicitTarget = ability.IsValid
-                    ? ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone)
+                    ? TcgBattleCommand.ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone)
                     : null;
 
                 steps.Add(new TcgPresentationStep(
@@ -78,7 +78,7 @@ namespace GGemCo2DTcg
                     toIndex: explicitTarget != null ? target.Index : -1,
                     toZone: explicitTarget != null ? targetZone : ConfigCommonTcg.TcgZone.None));
 
-                TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
+                TcgAbilityRunner.TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
 
                 actor.Events.Remove(inst);
                 steps.Add(new TcgPresentationStep(
@@ -103,10 +103,10 @@ namespace GGemCo2DTcg
                 if (card.EventDetail.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
                 {
                     var explicitTarget = ability.IsValid
-                        ? ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone)
+                        ? TcgBattleCommand.ResolveExplicitTarget(ability.tcgAbilityTargetType, actor, opponent, target, targetZone)
                         : null;
                     
-                    TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
+                    TcgAbilityRunner.TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
                 }
             }
 

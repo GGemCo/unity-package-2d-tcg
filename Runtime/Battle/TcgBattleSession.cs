@@ -12,7 +12,7 @@ namespace GGemCo2DTcg
     {
         /// <summary>
         /// Ability 실행 시점(Begin/End)을 UI 레이어에 알리기 위한 이벤트.
-        /// UI는 이 이벤트를 구독하여 <see cref="TcgAbilityType"/>별 연출을 재생할 수 있습니다.
+        /// UI는 이 이벤트를 구독하여 <see cref="TcgAbilityConstants.TcgAbilityType"/>별 연출을 재생할 수 있습니다.
         /// </summary>
         public event Action<TcgAbilityPresentationEvent> AbilityPresentation;
 
@@ -39,6 +39,45 @@ namespace GGemCo2DTcg
         private Action<TcgBattleDataCardInHand> _onEnemyCardDrawn;
 
         // (note) AbilityPresentation 이벤트 발행은 아래 PublishAbilityPresentation()을 통해 일괄 처리합니다.
+
+        /// <summary>
+        /// 현재 도메인 로직에서 생성된 <see cref="TcgPresentationStep"/>을 누적할 대상입니다.
+        ///
+        /// 목적:
+        /// - 커맨드 실행 중(OnPlay Ability 포함) 발생하는 추가 트리거(OnDraw/OnTurnStart/OnTurnEnd 등)까지
+        ///   동일한 타임라인에서 재생될 수 있도록, 세션 레벨에서 "현재 누적 대상"을 제공합니다.
+        /// </summary>
+        private List<TcgPresentationStep> _presentationStepsSink;
+
+        /// <summary>
+        /// 세션이 실행하는 Ability/Trigger에서 생성되는 연출 Step을 지정한 리스트로 누적하도록 설정합니다.
+        /// using 스코프에서 자동으로 원복됩니다.
+        /// </summary>
+        internal IDisposable BeginPresentationCapture(List<TcgPresentationStep> steps)
+        {
+            return new PresentationCaptureScope(this, steps);
+        }
+
+        private sealed class PresentationCaptureScope : IDisposable
+        {
+            private readonly TcgBattleSession _session;
+            private readonly List<TcgPresentationStep> _prev;
+            private bool _disposed;
+
+            public PresentationCaptureScope(TcgBattleSession session, List<TcgPresentationStep> next)
+            {
+                _session = session;
+                _prev = session._presentationStepsSink;
+                session._presentationStepsSink = next;
+            }
+
+            public void Dispose()
+            {
+                if (_disposed) return;
+                _disposed = true;
+                _session._presentationStepsSink = _prev;
+            }
+        }
 
         public TcgBattleSession(
             TcgBattleDataSide playerSide,
@@ -218,10 +257,20 @@ namespace GGemCo2DTcg
             if (ownerSide.Permanents != null)
             {
                 var permanents = ownerSide.Permanents.Items;
-                for (int i = 0; i < permanents.Count; i++)
+                // 만료 시 제거될 수 있으므로 뒤에서부터 순회합니다.
+                for (int i = permanents.Count - 1; i >= 0; i--)
                 {
                     var p = permanents[i];
                     if (p == null) continue;
+
+                    // 0) Lifetime tick (턴 트리거 시점)
+                    p.Lifetime?.OnTurnTrigger(new TcgPermanentLifetimeContext(Context.TurnCount, tcgAbilityTriggerType, p));
+                    if (p.IsExpired)
+                    {
+                        ownerSide.Permanents.Remove(p);
+                        ownerSide.Permanents.NotifyExpired(p);
+                        continue;
+                    }
 
                     if (p.Definition.tcgAbilityTriggerType != tcgAbilityTriggerType)
                         continue;
@@ -240,15 +289,29 @@ namespace GGemCo2DTcg
                     if (p.Definition.maxStacks > 0 && p.Stacks > p.Definition.maxStacks)
                         p.Stacks = p.Definition.maxStacks;
 
-                    // RunAbilityById(
-                    //     ability: TcgAbilityBuilder.BuildAbility(p.Definition),
-                    //     ownerSide: ownerSide,
-                    //     opponentSide: opponentSide,
-                    //     tcgAbilityTriggerType: tcgAbilityTriggerType,
-                    //     sourceCard: sourceCard,
-                    //     sourceInstance: p);
+                    var casterZone = p.AttackerZone;
+                    var (targetZone, targetIndex) = ResolveTriggerTarget(ownerSide, opponentSide, p.Definition.tcgAbilityTargetType);
+                    if (targetIndex < 0)
+                        (targetZone, targetIndex) = ResolveFallbackTarget(ownerSide);
+
+                    RunAbilityById(
+                        ability: TcgAbilityBuilder.BuildAbility(p.Definition),
+                        side: ownerSide.Side,
+                        casterZone: casterZone,
+                        casterIndex: -1,
+                        targetZone: targetZone,
+                        targetIndex: targetIndex,
+                        sourceInstance: p);
 
                     p.LastResolvedTurn = Context.TurnCount;
+
+                    // 1) Lifetime tick (발동 완료)
+                    p.Lifetime?.OnAbilityResolved(new TcgPermanentLifetimeContext(Context.TurnCount, tcgAbilityTriggerType, p));
+                    if (p.IsExpired)
+                    {
+                        ownerSide.Permanents.Remove(p);
+                        ownerSide.Permanents.NotifyExpired(p);
+                    }
 
                     if (IsBattleEnded) return;
                 }
@@ -270,25 +333,62 @@ namespace GGemCo2DTcg
                     if (e.Definition.tcgAbilityTriggerType != tcgAbilityTriggerType)
                         continue;
 
+                    var (targetZone, targetIndex) = ResolveTriggerTarget(ownerSide, opponentSide, e.Definition.tcgAbilityTargetType);
+                    if (targetIndex < 0)
+                        (targetZone, targetIndex) = ResolveFallbackTarget(ownerSide);
+
                     RunAbilityById(
                         ability: TcgAbilityBuilder.BuildAbility(e.Definition),
                         side: ownerSide.Side,
                         casterZone: ConfigCommonTcg.TcgZone.None,
                         casterIndex: -1,
-                        targetZone: ConfigCommonTcg.TcgZone.None,
-                        targetIndex: -1,
+                        targetZone: targetZone,
+                        targetIndex: targetIndex,
                         sourceInstance: e);
 
                     if (e.Definition.consumeOnTrigger)
-                    {
                         ownerSide.Events.Remove(e);
-                    }
 
                     if (IsBattleEnded) return;
                 }
             }
+
+            // -------------------------
+            // Local helpers
+            // -------------------------
+            (ConfigCommonTcg.TcgZone zone, int index) ResolveFallbackTarget(TcgBattleDataSide side)
+            {
+                var z = (side.Side == ConfigCommonTcg.TcgPlayerSide.Player)
+                    ? ConfigCommonTcg.TcgZone.FieldPlayer
+                    : ConfigCommonTcg.TcgZone.FieldEnemy;
+                return (z, ConfigCommonTcg.IndexHeroSlot);
+            }
+
+            (ConfigCommonTcg.TcgZone zone, int index) ResolveTriggerTarget(
+                TcgBattleDataSide owner,
+                TcgBattleDataSide opponent,
+                TcgAbilityConstants.TcgAbilityTargetType targetType)
+            {
+                var targetSide = owner;
+                var zone = (owner.Side == ConfigCommonTcg.TcgPlayerSide.Player)
+                    ? ConfigCommonTcg.TcgZone.FieldPlayer
+                    : ConfigCommonTcg.TcgZone.FieldEnemy;
+
+                if (targetType == TcgAbilityConstants.TcgAbilityTargetType.AllEnemies
+                    || targetType == TcgAbilityConstants.TcgAbilityTargetType.EnemyCreature
+                    || targetType == TcgAbilityConstants.TcgAbilityTargetType.EnemyHero)
+                {
+                    targetSide = opponent;
+                    zone = (opponent.Side == ConfigCommonTcg.TcgPlayerSide.Player)
+                        ? ConfigCommonTcg.TcgZone.FieldPlayer
+                        : ConfigCommonTcg.TcgZone.FieldEnemy;
+                }
+
+                var target = TcgBattleCommand.ResolveRandomTarget(targetType, owner, opponent, includeHero: true);
+                return target != null ? (zone, target.Index) : (zone, -1);
+            }
         }
-        
+
         private void RunAbilityById(
             in TcgAbilityDefinition ability,
             ConfigCommonTcg.TcgPlayerSide side,
@@ -299,14 +399,23 @@ namespace GGemCo2DTcg
             object sourceInstance)
         {
             if (!ability.IsValid) return;
-            if (side == ConfigCommonTcg.TcgPlayerSide.None || casterZone == ConfigCommonTcg.TcgZone.None || casterIndex < 0 ||
-                targetZone == ConfigCommonTcg.TcgZone.None || targetIndex < 0) return;
+            if (side == ConfigCommonTcg.TcgPlayerSide.None) return;
+
+            // caster/target 정보가 일부 없는 트리거(예: Event)도 존재할 수 있으므로,
+            // 여기서 과도하게 차단하지 않고 AbilityRunner/Handler의 규칙에 맡깁니다.
+            // (단, zone이 None이면 Context에서 타겟을 해석할 수 없으므로 최소한의 기본값을 보정합니다.)
+            if (targetZone == ConfigCommonTcg.TcgZone.None || targetIndex < 0)
+            {
+                targetZone = (side == ConfigCommonTcg.TcgPlayerSide.Player)
+                    ? ConfigCommonTcg.TcgZone.FieldPlayer
+                    : ConfigCommonTcg.TcgZone.FieldEnemy;
+                targetIndex = ConfigCommonTcg.IndexHeroSlot;
+            }
 
             var list = new List<TcgAbilityData>(1)
             {
                 new TcgAbilityData { ability = ability }
             };
-
             TcgAbilityRunner.RunAbility(
                 Context,
                 side,
@@ -317,18 +426,22 @@ namespace GGemCo2DTcg
                 list,
                 tcgAbilityTriggerType: ability.tcgAbilityTriggerType,
                 presentationEvent: PublishAbilityPresentation);
-            
-            // 실행 후 전투 종료 조건 체크(안전)
+
             TryCheckBattleEnd();
         }
 
-        /// <summary>
-        /// <see cref="AbilityPresentation"/> 이벤트를 안전하게 발행합니다.
-        /// </summary>
         internal void PublishAbilityPresentation(TcgAbilityPresentationEvent ev)
         {
+            // 1) 외부 구독자(디버그/로그/별도 UI)
             AbilityPresentation?.Invoke(ev);
+
+            // 2) 단일 타임라인 합류용 PresentationStep 누적
+            if (_presentationStepsSink == null)
+                return;
+
+            TcgAbilityPresentationStepFactory.TryCreateSteps(ev, _presentationStepsSink);
         }
+
         #endregion
 
         #region Battle End
