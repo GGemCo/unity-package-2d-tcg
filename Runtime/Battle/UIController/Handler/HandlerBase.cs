@@ -7,7 +7,10 @@ namespace GGemCo2DTcg
     {
         protected const int EffectUidHit = 1001;
         protected const int EffectUidHeal = 1002;
-        protected const int EffectUidBuff = 1003;
+        protected const int EffectUidBuffAttack = 1003;
+        protected const int EffectUidBuffHealth = 1004;
+        protected const int EffectUidDeBuffAttack = 1005;
+        protected const int EffectUidDeBuffHealth = 1006;
 
         protected void ShowEffect(UIIcon icon, int effectUid)
         {

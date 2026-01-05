@@ -57,13 +57,19 @@ namespace GGemCo2DTcg
 
             if (payload.Type == TcgAbilityConstants.TcgAbilityType.BuffAttack)
             {
-                ShowBuffText(attackerIcon, payload.BuffValue);
-                ShowEffect(attackerIcon, EffectUidBuff);
+                ShowBuffText(defenderIcon, payload.BuffValue);
+                if (payload.BuffValue > 0)
+                    ShowEffect(defenderIcon, EffectUidBuffAttack);
+                else if (payload.BuffValue < 0)
+                    ShowEffect(defenderIcon, EffectUidDeBuffAttack);
             } 
             else if (payload.Type == TcgAbilityConstants.TcgAbilityType.BuffHealth)
             {
                 ShowBuffText(defenderIcon, payload.BuffValue);
-                ShowEffect(defenderIcon, EffectUidBuff);
+                if (payload.BuffValue > 0)
+                    ShowEffect(defenderIcon, EffectUidBuffHealth);
+                else if (payload.BuffValue < 0)
+                    ShowEffect(defenderIcon, EffectUidDeBuffHealth);
             }
         }
     }

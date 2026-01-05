@@ -49,8 +49,8 @@ namespace GGemCo2DTcg
             if (step.Payload is not TcgAbilityPayloadHeal payload) yield break;
             if (payload.HealValue <= 0) yield break;
             
-            ShowDamageText(attackerIcon, payload.HealValue);
-            ShowEffect(attackerIcon, EffectUidHeal);
+            ShowDamageText(defenderIcon, payload.HealValue);
+            ShowEffect(defenderIcon, EffectUidHeal);
         }
     }
 }

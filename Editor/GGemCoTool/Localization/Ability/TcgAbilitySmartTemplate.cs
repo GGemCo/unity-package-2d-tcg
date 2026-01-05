@@ -23,9 +23,9 @@ namespace GGemCo2DTcgEditor
                 AbilityType.GainMana => "{Trigger}마나를 {Value} 증가시킵니다.",
                 AbilityType.ExtraAction => "{Trigger}이번 턴 추가 행동을 {Value}회 부여합니다.",
 
-                AbilityType.BuffAttack => "{Trigger}{Target} 공격력 +{Value}를 부여합니다.",
-                AbilityType.BuffHealth => "{Trigger}{Target} 체력 +{Value}를 부여합니다.",
-                AbilityType.BuffAttackHealth => "{Trigger}{Target} +{ValueA}/+{ValueB}를 부여합니다.",
+                AbilityType.BuffAttack => "{Trigger}{Target} 공격력 {Value}를 부여합니다.",
+                AbilityType.BuffHealth => "{Trigger}{Target} 체력 {Value}를 부여합니다.",
+                AbilityType.BuffAttackHealth => "{Trigger}{Target} {ValueA}/{ValueB}를 부여합니다.",
 
                 _ => "{Trigger}{Target} 값({ValueA},{ValueB},{ValueC})"
             };
@@ -72,9 +72,9 @@ namespace GGemCo2DTcgEditor
                 AbilityType.GainMana => "{Trigger}Gain {Value} mana.",
                 AbilityType.ExtraAction => "{Trigger}Gain {Value} extra action(s) this turn.",
 
-                AbilityType.BuffAttack => "{Trigger}Give {Target} +{Value} Attack.",
-                AbilityType.BuffHealth => "{Trigger}Give {Target} +{Value} Health.",
-                AbilityType.BuffAttackHealth => "{Trigger}Give {Target} +{ValueA}/+{ValueB}.",
+                AbilityType.BuffAttack => "{Trigger}Give {Target} {Value} Attack.",
+                AbilityType.BuffHealth => "{Trigger}Give {Target} {Value} Health.",
+                AbilityType.BuffAttackHealth => "{Trigger}Give {Target} {ValueA}/{ValueB}.",
 
                 _ => "{Trigger}{Target} values({ValueA},{ValueB},{ValueC})"
             };

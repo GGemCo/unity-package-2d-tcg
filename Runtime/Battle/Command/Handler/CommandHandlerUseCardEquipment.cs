@@ -18,21 +18,19 @@ namespace GGemCo2DTcg
         {
             if (context == null)
                 return CommandResult.Fail("Error_Tcg_InvalidContext");
-
+            
             var attackerZone = cmd.attackerZone;
             var attacker = cmd.attackerBattleDataCardInField;
             var targetZone = cmd.targetZone;
             var target   = cmd.targetBattleDataCardInField;
+            
             var card = cmd.attackerBattleDataCardInHand;
             if (card == null)
                 return CommandResult.Fail("Error_Tcg_NoCard");
-
-            var targetCardIndex = 0;
-            var targetCardWindowUId = UIWindowConstants.WindowUid.None;
-
+            
             var actor = context.GetSideState(cmd.Side);
             var opponent = context.GetOpponentState(cmd.Side);
-
+            
             var ability = BuildOnPlayAbilityDefinition(card);
             TcgBattleDataCardInField explicitTarget = null;
             if (ability.IsValid && ability.tcgAbilityTriggerType == TcgAbilityConstants.TcgAbilityTriggerType.OnPlay)
@@ -44,21 +42,18 @@ namespace GGemCo2DTcg
                         return CommandResult.Fail("Error_Tcg_TargetRequired");
                 }
             }
-
+            
             // 1) 마나 차감
             if (!actor.TryConsumeMana(card.Cost))
                 return CommandResult.Fail("Error_Tcg_NotEnoughMana");
-
+            
             // 2) 손에서 제거
             if (!actor.Hand.TryRemove(card, out int fromIndex))
                 return CommandResult.Fail("Error_Tcg_NoCardInHand");
-
+            
             var steps = new List<TcgPresentationStep>(6);
-
-            // 장비는 현재 패키지에서 "장착 슬롯" UI/데이터가 분리되어 있지 않으므로,
-            // 1) OnPlay 능력 실행(버프/디버프/효과)
-            // 2) 카드 소모(Grave) 처리
-            // 로 최소 기능을 제공합니다.
+            
+            // 스펠은 즉시 능력 실행 후 소모
             if (explicitTarget == null && ability.IsValid)
             {
                 explicitTarget = ResolveExplicitTarget(
@@ -68,8 +63,9 @@ namespace GGemCo2DTcg
                     target,
                     targetZone);
             }
-
-            // 1) 공통: 타겟 카드로 이동
+            
+            // 1) 공통: 캐스팅/투사체 연출
+            // - 효과(피해/회복/버프 등)는 Ability 기반 Step에서 처리합니다.
             steps.Add(new TcgPresentationStep(
                 TcgPresentationConstants.TcgPresentationStepType.MoveCardToTarget,
                 cmd.Side,
@@ -77,10 +73,11 @@ namespace GGemCo2DTcg
                 fromIndex: fromIndex,
                 toIndex: explicitTarget != null ? target.Index : -1,
                 toZone: explicitTarget != null ? targetZone : ConfigCommonTcg.TcgZone.None));
-
-            // 2) Ability 임팩트(AbilityType별 연출 Step 자동 추가)
+            
+            // 2) Ability 임팩트(AbilityType별 연출 Step 자동 추가). HandlerAbilityDamage
             TryRunOnPlayAbility(context, cmd.Side, attackerZone, fromIndex, targetZone, target.Index, ability, steps);
-
+            
+            // 3) 후처리: 소모(Grave)
             steps.Add(new TcgPresentationStep(
                 TcgPresentationConstants.TcgPresentationStepType.MoveCardToGrave,
                 cmd.Side,

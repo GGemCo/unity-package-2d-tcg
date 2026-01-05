@@ -26,10 +26,10 @@
             /// <summary>카드를 드로우합니다.</summary>
             Draw,
 
-            /// <summary>공격력을 증가시키는 버프를 적용합니다.</summary>
+            /// <summary>공격력을 증가, 하락시키는 버프를 적용합니다.</summary>
             BuffAttack,
 
-            /// <summary>체력을 증가시키는 버프를 적용합니다.</summary>
+            /// <summary>체력을 증가, 하락시키는 버프를 적용합니다.</summary>
             BuffHealth,
 
             /// <summary>마나를 획득합니다.</summary>
@@ -38,7 +38,7 @@
             /// <summary>추가 행동 또는 행동 기회를 부여합니다.</summary>
             ExtraAction,
 
-            /// <summary>공격력과 체력을 동시에 증가시키는 버프를 적용합니다.</summary>
+            /// <summary>공격력과 체력을 동시에 증가, 하락시키는 버프를 적용합니다.</summary>
             BuffAttackHealth
         }
 
