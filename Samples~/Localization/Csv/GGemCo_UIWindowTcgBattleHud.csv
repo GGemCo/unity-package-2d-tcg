@@ -1,0 +1,5 @@
+Key,Shared Comments,English(en),English(en) Comments,Korean(ko),Korean(ko) Comments
+"Text_TurnPlayer","","My Turn","","나의 턴",""
+"Text_TurnEnemy","","Enemy Turn","","상대 턴",""
+"Text_RemainingTime","","Remaining Time: {0:00}:{1:00}","","남은 시간: {0:00}:{1:00}",""
+"Text_RemainingTurns","","Remaining Turns: {0}","","남은 턴 수: {0}",""

@@ -298,8 +298,7 @@ namespace GGemCo2DTcg
            int heroCardUid = myDeckData.GetHeroCardUidByDeckIndex(_deckIndex);
            if (heroCardUid <= 0)
            {
-               // todo. localization
-               SceneGame.systemMessageManager.ShowMessageError("영웅 카드를 추가해주세요.");
+               SceneGame.systemMessageManager.ShowMessageError("System_Tcg_AddHeroCard");
                return;
            }
            
@@ -309,9 +308,8 @@ namespace GGemCo2DTcg
             PopupMetadata popupMetadata = new PopupMetadata
             {
                 PopupType = PopupManager.Type.Default,
-                // todo. localization
-                Title = "저장", 
-                Message = "저장되었습니다.", 
+                Title = "System_Tcg_Save", 
+                Message = "System_Tcg_SaveCompleted.", 
             };
             _popupManager.ShowPopup(popupMetadata);
         }

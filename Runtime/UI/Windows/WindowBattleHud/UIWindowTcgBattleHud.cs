@@ -2,6 +2,7 @@
 using GGemCo2DCore;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 namespace GGemCo2DTcg
@@ -10,9 +11,11 @@ namespace GGemCo2DTcg
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)]
         [Tooltip("남은 시간")]
-        public TMP_Text textTimeRemainOfTurn;
+        [SerializeField] 
+        private LocalizeStringEvent localizeRemainingTime;
         [Tooltip("남은 턴수")]
-        public TMP_Text textCountRemainOfTurn;
+        [SerializeField] 
+        private LocalizeStringEvent localizeRemainingTurns;
         [Tooltip("전투 강제 종료 버튼")]
         public Button buttonBattleExit;
         
@@ -34,6 +37,14 @@ namespace GGemCo2DTcg
         private Coroutine _turnTimerCoroutine;
         private int _turnTimeLimitSeconds;
         private int _remainingSeconds;
+        
+        // localization
+        private string _localizationPlayerTurn;
+        private string _localizationEnemyTurn;
+        // Arguments 배열을 재사용해서 매번 new를 피합니다.
+        private readonly object[] _timeArgs = new object[2];
+        private readonly object[] _turnArgs = new object[1];
+        
         protected override void Awake()
         {
             base.Awake();
@@ -42,6 +53,12 @@ namespace GGemCo2DTcg
             gameObjectEndTurn?.SetActive(false);
             // Player 전용 처리
             buttonTurnOff?.onClick.AddListener(OnClickTurnOff);
+            
+            if (localizeRemainingTime != null)
+                localizeRemainingTime.StringReference.Arguments = _timeArgs;
+
+            if (localizeRemainingTurns != null)
+                localizeRemainingTurns.StringReference.Arguments = _turnArgs;
         }
         protected void OnDestroy()
         {
@@ -54,6 +71,9 @@ namespace GGemCo2DTcg
         {
             base.Start();
             _battleManager = TcgPackageManager.Instance.battleManager;
+
+            _localizationPlayerTurn = LocalizationManager.Instance.GetUIWindowTcgBattleHudByKey("Text_TurnPlayer");
+            _localizationEnemyTurn = LocalizationManager.Instance.GetUIWindowTcgBattleHudByKey("Text_TurnEnemy");
         }
 
         private void OnClickBattleExit()
@@ -78,9 +98,8 @@ namespace GGemCo2DTcg
             fadeOption.fadeOut.updateInteractableOnComplete = true;
             fadeOption.fadeOut.updateBlocksRaycastsOnComplete = true;
 
-            // todo localization
             if (textTurnStartSide != null)
-                textTurnStartSide.text = side == ConfigCommonTcg.TcgPlayerSide.Player ? "나의 턴" : "상대 턴";
+                textTurnStartSide.text = side == ConfigCommonTcg.TcgPlayerSide.Player ? _localizationPlayerTurn : _localizationEnemyTurn;
 
             yield return UiFadeSequenceUtility.FadeInHoldFadeOut(this, gameObjectEndTurn,
                 fadeInDuration, holdDuration,
@@ -105,12 +124,12 @@ namespace GGemCo2DTcg
             if (_turnTimeLimitSeconds <= 0)
             {
                 StopTurnTimer();
-                SetTimeText(string.Empty);
+                SetTimeText(0);
                 return;
             }
 
             _remainingSeconds = _turnTimeLimitSeconds;
-            SetTimeText(FormatTime(_remainingSeconds));
+            SetTimeText(_remainingSeconds);
 
             if (_turnTimerCoroutine != null)
             {
@@ -136,45 +155,39 @@ namespace GGemCo2DTcg
             {
                 yield return new WaitForSecondsRealtime(1f);
                 _remainingSeconds--;
-                SetTimeText(FormatTime(_remainingSeconds));
+                SetTimeText(_remainingSeconds);
             }
 
             // 0초 표시까지 갱신
-            SetTimeText(FormatTime(0));
+            SetTimeText(0);
             _turnTimerCoroutine = null;
             _battleManager.OnUiRequestEndTurn();
         }
 
-        private void SetTimeText(string value)
+        private void SetTimeText(int totalSeconds)
         {
-            if (textTimeRemainOfTurn != null)
-                textTimeRemainOfTurn.text = value;
-        }
-
-        private static string FormatTime(int totalSeconds)
-        {
+            if (localizeRemainingTime == null) return;
+            
             if (totalSeconds < 0) totalSeconds = 0;
 
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            // todo. localization
-            return $"남은 시간: {minutes:00}:{seconds:00}";
+            _timeArgs[0] = minutes; // 테이블에서 {0:00}
+            _timeArgs[1] = seconds; // 테이블에서 {1:00}
+
+            localizeRemainingTime.RefreshString();
         }
 
         private void SetRemainTurnCount(int remainTurns, int maxTurns)
         {
-            if (textCountRemainOfTurn == null)
+            if (localizeRemainingTurns == null)
                 return;
 
-            if (maxTurns <= 0)
-            {
-                textCountRemainOfTurn.text = string.Empty;
-                return;
-            }
+            if (remainTurns < 0 || maxTurns <= 0) remainTurns = 0;
+            
+            _turnArgs[0] = remainTurns;
 
-            if (remainTurns < 0) remainTurns = 0;
-            // todo. localization
-            textCountRemainOfTurn.text = $"남은 턴 수: {remainTurns}";
+            localizeRemainingTurns.RefreshString();
         }
 
         public void RefreshRemainTurnCount(int currentTurnCount, int maxTurns)

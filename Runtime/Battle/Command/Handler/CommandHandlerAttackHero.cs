@@ -35,9 +35,6 @@ namespace GGemCo2DTcg
 
             if (!attacker.CanAttack)
             {
-                // todo. localization
-                // _systemMessageManager.ShowMessageWarning("그 캐릭터는 이미 공격을 마쳤습니다.");
-                // _systemMessageManager.ShowMessageWarning("이번 턴에 낸 카드는 곧바로 공격할 수 없습니다.");
                 return CommandResult.Fail("Error_Tcg_NoAttackedInThisTurn");
             }
 

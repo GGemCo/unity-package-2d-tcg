@@ -34,6 +34,9 @@ namespace GGemCo2DTcg
             = new Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler>(16);
 
         public bool IsBattleRunning => _session != null && !_session.IsBattleEnded;
+        
+        // localization
+        private readonly Dictionary<ConfigCommonTcg.TcgPlayerSide, string> _messageForWinner = new Dictionary<ConfigCommonTcg.TcgPlayerSide, string>(2);
 
         public void Initialize(TcgPackageManager packageManager, SystemMessageManager systemMessageManager)
         {
@@ -48,6 +51,10 @@ namespace GGemCo2DTcg
             _uiController = new TcgBattleUiController();
 
             InitializeDefaultCommandHandlers();
+
+            var message = LocalizationManager.Instance.GetSystemByKey("System_Tcg_BattleEnded");
+            _messageForWinner.Add(ConfigCommonTcg.TcgPlayerSide.Player, $"{message}\n{LocalizationManager.Instance.GetSystemByKey("System_Tcg_WinnerPlayer")}");
+            _messageForWinner.Add(ConfigCommonTcg.TcgPlayerSide.Enemy, $"{message}\n{LocalizationManager.Instance.GetSystemByKey("System_Tcg_WinnerAi")}");
         }
 
         /// <summary>
@@ -73,8 +80,7 @@ namespace GGemCo2DTcg
             }
             if (metaData.playerDeckIndex < 0)
             {
-                // todo. localization
-                _systemMessageManager.ShowMessageError("먼저 덱을 생성하고, 카드를 추가해주세요.");
+                _systemMessageManager.ShowMessageError("System_Tcg_CreateDeckFirst");
                 return;
             }
 
@@ -397,21 +403,11 @@ namespace GGemCo2DTcg
             // 여기서 바로 EndBattleForce() 를 호출할지, 
             // 결과 UI에서 나갈 때까지 세션을 유지할지 정책에 따라 결정
             
-            // todo. localization
-            var message = "전투가 종료되었습니다.";
-            if (winner == ConfigCommonTcg.TcgPlayerSide.Player)
-            {
-                message += "\n승자는 플레이어 입니다.";
-            }
-            else if (winner == ConfigCommonTcg.TcgPlayerSide.Enemy)
-            {
-                message += "\n승자는 AI 입니다.";
-            }
             PopupMetadata popupMetadata = new PopupMetadata
             {
                 PopupType  = PopupManager.Type.Default,
-                Title = "전투 종료",
-                Message = message,
+                Title = "System_Tcg_BattleEndTitle",
+                Message = _messageForWinner.GetValueOrDefault(winner, ""),
                 MessageColor = Color.yellow,
                 OnConfirm = EndBattleForce,
                 IsClosableByClick = false
