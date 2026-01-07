@@ -152,15 +152,16 @@ namespace GGemCo2DTcg
             // 1) End-of-Turn 트리거
             ResolveEndOfTurnEffects();
 
-            // 2) 턴 수 증가
-            Context.TurnCount++;
-
-            // 3) ActiveSide 전환
+            // 2) ActiveSide 전환
             Context.ActiveSide =
                 (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
                     ? ConfigCommonTcg.TcgPlayerSide.Enemy
                     : ConfigCommonTcg.TcgPlayerSide.Player;
 
+            // 3) 턴 수 증가
+            if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
+                Context.TurnCount++;
+            
             // 4) (선택) 공격 가능 상태 초기화
             if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
             {
@@ -446,6 +447,9 @@ namespace GGemCo2DTcg
 
         #region Battle End
 
+        /// <summary>
+        /// 강제로 전투를 종료합니다. (씬 전환 등)
+        /// </summary>
         public void ForceEnd(ConfigCommonTcg.TcgPlayerSide winner)
         {
             IsBattleEnded = true;
@@ -493,22 +497,23 @@ namespace GGemCo2DTcg
             bool playerEmpty = (playerHandCount <= 0 && playerFieldCount <= 0 && playerDeckCount <= 0);
             bool enemyEmpty = (enemyHandCount <= 0 && enemyFieldCount <= 0 && enemyDeckCount <= 0);
 
-            if (!playerEmpty && !enemyEmpty) return;
-
-            IsBattleEnded = true;
-
-            if (playerEmpty && !enemyEmpty)
-                Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
-            else if (enemyEmpty && !playerEmpty)
-                Winner = ConfigCommonTcg.TcgPlayerSide.Player;
-            else
+            if (playerEmpty || enemyEmpty)
             {
-                if (playerHp > enemyHp) Winner = ConfigCommonTcg.TcgPlayerSide.Player;
-                else if (enemyHp > playerHp) Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
-                else Winner = ConfigCommonTcg.TcgPlayerSide.Draw;
-            }
+                IsBattleEnded = true;
 
-            TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
+                if (playerEmpty && !enemyEmpty)
+                    Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
+                else if (enemyEmpty && !playerEmpty)
+                    Winner = ConfigCommonTcg.TcgPlayerSide.Player;
+                else
+                {
+                    if (playerHp > enemyHp) Winner = ConfigCommonTcg.TcgPlayerSide.Player;
+                    else if (enemyHp > playerHp) Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
+                    else Winner = ConfigCommonTcg.TcgPlayerSide.Draw;
+                }
+                TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
+                return;
+            }
         }
 
         #endregion

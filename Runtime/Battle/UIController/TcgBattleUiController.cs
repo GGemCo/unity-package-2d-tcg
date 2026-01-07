@@ -135,6 +135,9 @@ namespace GGemCo2DTcg
                 new HandlerAbilityGainMana(),
                 new HandlerAbilityExtraAction(),
             });
+            
+            // 전투 시작 시점의 턴 타이머 시작
+            _battleHud?.StartTurnTimer(settings != null ? settings.turnTimeLimitSeconds : 0);
         }
         public void PlayPresentationAndRefresh(
             TcgBattleDataMain context,
@@ -232,6 +235,12 @@ namespace GGemCo2DTcg
 
             _handPlayer.SetMana(player.Mana.Current, player.Mana.Max);
             _handEnemy.SetMana(enemy.Mana.Current, enemy.Mana.Max);
+            // 턴 제한 정보(HUD)
+            if (_battleHud != null)
+            {
+                var maxTurns = _ctx?.Settings != null ? _ctx.Settings.maxTurns : 0;
+                _battleHud.RefreshRemainTurnCount(context.TurnCount, maxTurns);
+            }
         }
         private void BeginInteractionLock()
         {

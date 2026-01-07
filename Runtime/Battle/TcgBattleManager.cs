@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Codice.CM.Common.Tree.Partial;
 using GGemCo2DCore;
 using UnityEngine;
 
@@ -114,9 +113,9 @@ namespace GGemCo2DTcg
             DrawCards(playerSide, _tcgSettings.startingHandCardCount);
             DrawCards(enemySide,  _tcgSettings.startingHandCardCount);
             
-            // UI 바인딩 및 초기 갱신
-            _uiController.BindBattleManager(this, _session, _tcgSettings);
+            // UI 바인딩 및 초기 갱신. 순서 중요. BindBattleManager 에서 Hud 윈도우를 사용하고 한다.
             _uiController.ShowAll(true);
+            _uiController.BindBattleManager(this, _session, _tcgSettings);
             _uiController.RefreshAll(_session.Context);
         }
 
@@ -353,9 +352,38 @@ namespace GGemCo2DTcg
                 // Enemy 턴 자동 실행
                 _traceBuffer.Clear();
                 _session.ExecuteEnemyTurnWithTrace(_traceBuffer);
+                
+                _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer, onCompleted: () =>
+                {
+                    if (_session == null) return;
+                    if (_session.IsBattleEnded) return;
 
-                _uiController?.PlayPresentationAndRefresh(_session.Context, _traceBuffer);
+                    // Enemy 턴 종료 + 연출 종료 이후, 턴 제한 체크
+                    TryEndBattleByTurnLimitAfterEnemyTurn();
+                });
             });
+        }
+        private void TryEndBattleByTurnLimitAfterEnemyTurn()
+        {
+            if (_tcgSettings == null) return;
+
+            int maxTurns = _tcgSettings.maxTurns;
+            if (maxTurns <= 0) return;
+
+            int remain = maxTurns - _session.Context.TurnCount;
+            if (remain > 0) return;
+
+            // 정책: 턴 제한 종료 시 승패 판정(예시: HP 비교, 같으면 Draw)
+            int playerHp = _session.Context.Player.Field.Hero.Health;
+            int enemyHp  = _session.Context.Enemy.Field.Hero.Health;
+
+            ConfigCommonTcg.TcgPlayerSide winner;
+            if (playerHp > enemyHp) winner = ConfigCommonTcg.TcgPlayerSide.Player;
+            else if (enemyHp > playerHp) winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
+            else winner = ConfigCommonTcg.TcgPlayerSide.Draw;
+
+            _session.ForceEnd(winner);
+            OnBattleEnded(winner);
         }
 
         public void OnBattleEnded(ConfigCommonTcg.TcgPlayerSide winner)
