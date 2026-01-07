@@ -18,6 +18,7 @@ namespace GGemCo2DTcg
         private SaveDataManagerTcg _saveDataManagerTcg;
         private SystemMessageManager _systemMessageManager;
         private GGemCoTcgSettings _tcgSettings;
+        private GGemCoTcgUICutsceneSettings _uiCutsceneSettings;
         private TableTcgCard _tableTcgCard;
 
         // 서비스들
@@ -40,6 +41,7 @@ namespace GGemCo2DTcg
             _saveDataManagerTcg = _packageManager.saveDataManagerTcg;
             _systemMessageManager = systemMessageManager;
             _tcgSettings = AddressableLoaderSettingsTcg.Instance.tcgSettings;
+            _uiCutsceneSettings = AddressableLoaderSettingsTcg.Instance.uiCutsceneSettings;
             _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
 
             _deckController = new TcgBattleDeckController(_saveDataManagerTcg, _tcgSettings, _tableTcgCard);
@@ -115,7 +117,7 @@ namespace GGemCo2DTcg
             
             // UI 바인딩 및 초기 갱신. 순서 중요. BindBattleManager 에서 Hud 윈도우를 사용하고 한다.
             _uiController.ShowAll(true);
-            _uiController.BindBattleManager(this, _session, _tcgSettings);
+            _uiController.BindBattleManager(this, _session, _tcgSettings, _uiCutsceneSettings);
             _uiController.RefreshAll(_session.Context);
         }
 

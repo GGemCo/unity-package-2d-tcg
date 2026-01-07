@@ -21,9 +21,10 @@ namespace GGemCo2DTcg
         {
             None,
             TcgSettings,
+            TcgUICutsceneSettings,
             TcgWeightShuffleSettings,
             TcgPhaseShuffleSettings,
-            TcgAiPreset
+            TcgAiPreset,
         }
         
         public static class TcgSettings
@@ -31,6 +32,12 @@ namespace GGemCo2DTcg
             public const string FileName = BaseName + "Settings";
             public const string MenuName = BasePathSettings + FileName;
             public const int Ordering = (int)MenuOrdering.TcgSettings;
+        }
+        public static class TcgUICutsceneSettings
+        {
+            public const string FileName = BaseName + "UICutsceneSettings";
+            public const string MenuName = BasePathSettings + FileName;
+            public const int Ordering = (int)MenuOrdering.TcgUICutsceneSettings;
         }
         public static class TcgWeightShuffleSettings
         {

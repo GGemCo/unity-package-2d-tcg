@@ -46,7 +46,7 @@ namespace GGemCo2DTcg
             yield return UiFadeUtility.FadeOutImmediately(attackerWindow, attackerSlot.gameObject);
             
             // 대상보다 조금 왼쪽 아래로 "바로" 이동 
-            var snapPos = defenderIcon.transform.position + ctx.Settings.moveToTargetLeftDownOffset;
+            var snapPos = defenderIcon.transform.position + ctx.UICutsceneSettings.moveToTargetLeftDownOffset;
             iconTr.position = snapPos;
         }
     }

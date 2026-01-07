@@ -27,6 +27,7 @@ namespace GGemCo2DTcg
         public UIWindowTcgBattleHud BattleHud { get; }
         
         public GGemCoTcgSettings Settings { get; }
+        public GGemCoTcgUICutsceneSettings UICutsceneSettings { get; }
 
         /// <summary>
         /// 연출 실행에 필요한 세션 및 UI 참조를 구성합니다.
@@ -45,7 +46,8 @@ namespace GGemCo2DTcg
             UIWindowTcgHandPlayer handPlayer,
             UIWindowTcgHandEnemy handEnemy,
             UIWindowTcgBattleHud battleHud,
-            GGemCoTcgSettings settings)
+            GGemCoTcgSettings settings,
+            GGemCoTcgUICutsceneSettings uiCutsceneSettings)
         {
             Session = session;
             FieldEnemy = fieldEnemy;
@@ -54,6 +56,7 @@ namespace GGemCo2DTcg
             HandEnemy = handEnemy;
             BattleHud = battleHud;
             Settings = settings;
+            UICutsceneSettings = uiCutsceneSettings;
         }
 
         /// <summary>

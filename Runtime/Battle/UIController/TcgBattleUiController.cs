@@ -109,14 +109,14 @@ namespace GGemCo2DTcg
         /// <param name="manager">전투 로직/명령을 제공하는 매니저.</param>
         /// <param name="session">현재 전투 세션.</param>
         /// <param name="settings">TCG 설정.</param>
-        public void BindBattleManager(TcgBattleManager manager, TcgBattleSession session, GGemCoTcgSettings settings)
+        public void BindBattleManager(TcgBattleManager manager, TcgBattleSession session, GGemCoTcgSettings settings, GGemCoTcgUICutsceneSettings uiCutsceneSettings)
         {
             if (!IsReady || manager == null || session == null) return;
 
             _session = session;
 
             // 연출 핸들러들이 참조할 UI/세션 묶음 컨텍스트
-            _ctx = new TcgPresentationContext(_session, _fieldEnemy, _fieldPlayer, _handPlayer, _handEnemy, _battleHud, settings);
+            _ctx = new TcgPresentationContext(_session, _fieldEnemy, _fieldPlayer, _handPlayer, _handEnemy, _battleHud, settings, uiCutsceneSettings);
 
             // 커맨드 결과의 PresentationSteps를 타입별 핸들러로 순차 실행
             _runner = new TcgPresentationRunner(new ITcgPresentationHandler[]

@@ -69,22 +69,22 @@ namespace GGemCo2DTcg
             yield return UiFadeUtility.FadeOutImmediately(attackerWindow, attackerSlot.gameObject);
             
             // ---- 1) 대상보다 조금 왼쪽 아래로 "바로" 이동 ----
-            var snapPos = targetPos + ctx.Settings.GetMoveToTargetLeftDownOffset(attackerSide);
+            var snapPos = targetPos + ctx.UICutsceneSettings.GetMoveToTargetLeftDownOffset(attackerSide);
             iconTr.position = snapPos;
 
             // ---- 2) 뒤로 천천히 이동했다가 ----
-            var backPos = snapPos + new Vector3(0, ctx.Settings.GetAttackUnitBackDistance(attackerSide), 0);
+            var backPos = snapPos + new Vector3(0, ctx.UICutsceneSettings.GetAttackUnitBackDistance(attackerSide), 0);
 
             var defaultMoveOption = MoveOptions.Default;
-            defaultMoveOption.easeType = ctx.Settings.attackUnitBackEasing;
+            defaultMoveOption.easeType = ctx.UICutsceneSettings.attackUnitBackEasing;
             yield return UiMoveTransform.MoveTo(attackerWindow, iconTr, backPos,
-                ctx.Settings.attackUnitBackDuration, defaultMoveOption);
+                ctx.UICutsceneSettings.attackUnitBackDuration, defaultMoveOption);
 
             // ---- 3) 빠른 속도로 상대 카드를 치는 듯한 느낌 ----
             defaultMoveOption = MoveOptions.Default;
-            defaultMoveOption.easeType = ctx.Settings.attackUnitHitEasing;
+            defaultMoveOption.easeType = ctx.UICutsceneSettings.attackUnitHitEasing;
             yield return UiMoveTransform.MoveTo(attackerWindow, iconTr, snapPos,
-                ctx.Settings.attackUnitHitDuration, defaultMoveOption);
+                ctx.UICutsceneSettings.attackUnitHitDuration, defaultMoveOption);
 
             // 체력 업데이트
             if (attackerIcon is UIIconCard attackerCardIcon)
@@ -100,7 +100,7 @@ namespace GGemCo2DTcg
                 ShowEffect(defenderIcon, EffectUidHit);
             }
             
-            yield return new WaitForSeconds(ctx.Settings.attackUnitShowDamageDiffDuration);
+            yield return new WaitForSeconds(ctx.UICutsceneSettings.attackUnitShowDamageDiffDuration);
 
             if (damageToAttacker > 0)
             {

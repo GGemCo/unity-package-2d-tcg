@@ -44,21 +44,21 @@ namespace GGemCo2DTcg
                 yield return UiFadeUtility.FadeOutImmediately(attackerHandWindow, attackerSlot.gameObject);
             
                 // ---- 1) 대상보다 조금 왼쪽 아래로 "바로" 이동 ----
-                var snapPos = targetPos + ctx.Settings.moveToTargetLeftDownOffset;
+                var snapPos = targetPos + ctx.UICutsceneSettings.moveToTargetLeftDownOffset;
 
                 // ---- 2) 뒤로 천천히 이동했다가 ----
-                var backPos = snapPos + new Vector3(0, ctx.Settings.attackUnitBackDistance, 0);
+                var backPos = snapPos + new Vector3(0, ctx.UICutsceneSettings.attackUnitBackDistance, 0);
 
                 var defaultMoveOption = MoveOptions.Default;
-                defaultMoveOption.easeType = ctx.Settings.attackUnitBackEasing;
+                defaultMoveOption.easeType = ctx.UICutsceneSettings.attackUnitBackEasing;
                 yield return UiMoveTransform.MoveTo(attackerHandWindow, iconTr, backPos,
-                    ctx.Settings.attackUnitBackDuration, defaultMoveOption);
+                    ctx.UICutsceneSettings.attackUnitBackDuration, defaultMoveOption);
 
                 // ---- 3) 빠른 속도로 상대 카드를 치는 듯한 느낌 ----
                 defaultMoveOption = MoveOptions.Default;
-                defaultMoveOption.easeType = ctx.Settings.attackUnitHitEasing;
+                defaultMoveOption.easeType = ctx.UICutsceneSettings.attackUnitHitEasing;
                 yield return UiMoveTransform.MoveTo(attackerHandWindow, iconTr, snapPos,
-                    ctx.Settings.attackUnitHitDuration, defaultMoveOption);
+                    ctx.UICutsceneSettings.attackUnitHitDuration, defaultMoveOption);
             }
 
             // 타겟이 없으면 넘어가기

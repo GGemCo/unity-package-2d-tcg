@@ -27,7 +27,7 @@ namespace GGemCo2DTcg
                 yield break;
             }
             
-            yield return new WaitForSeconds(ctx.Settings.handToGraveFadeOutDelayTime);
+            yield return new WaitForSeconds(ctx.UICutsceneSettings.handToGraveFadeOutDelayTime);
             
             var iconTr = attackerIcon.transform;
             iconTr.SetParent(attackerSlot.transform, worldPositionStays: false);

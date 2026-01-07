@@ -16,8 +16,9 @@ namespace GGemCo2DTcg
         public static AddressableLoaderSettingsTcg Instance { get; private set; }
 
         [HideInInspector] public GGemCoTcgSettings tcgSettings;
+        [HideInInspector] public GGemCoTcgUICutsceneSettings uiCutsceneSettings;
 
-        public delegate void DelegateLoadSettings(GGemCoTcgSettings tcgSettings);
+        public delegate void DelegateLoadSettings(GGemCoTcgSettings tcgSettings, GGemCoTcgUICutsceneSettings uiCutsceneSettings);
         public event DelegateLoadSettings OnLoadSettings;
         
         private readonly HashSet<AsyncOperationHandle> _activeHandles = new HashSet<AsyncOperationHandle>();
@@ -57,16 +58,18 @@ namespace GGemCo2DTcg
             try
             {
                 // 여러 개의 설정을 병렬적으로 로드
-                var taskAttackCombo = LoadSettingsAsync<GGemCoTcgSettings>(ConfigAddressableSettingTcg.TcgSettings.Key);
+                var taskTcgSettings = LoadSettingsAsync<GGemCoTcgSettings>(ConfigAddressableSettingTcg.TcgSettings.Key);
+                var taskTcgUICutsceneSettings = LoadSettingsAsync<GGemCoTcgUICutsceneSettings>(ConfigAddressableSettingTcg.TcgUICutsceneSettings.Key);
 
                 // 모든 작업이 완료될 때까지 대기
-                await Task.WhenAll(taskAttackCombo);
+                await Task.WhenAll(taskTcgSettings, taskTcgUICutsceneSettings);
 
                 // 결과 저장
-                tcgSettings = taskAttackCombo.Result;
+                tcgSettings = taskTcgSettings.Result;
+                uiCutsceneSettings = taskTcgUICutsceneSettings.Result;
 
                 // 이벤트 호출
-                OnLoadSettings?.Invoke(tcgSettings);
+                OnLoadSettings?.Invoke(tcgSettings, uiCutsceneSettings);
             }
             catch (Exception ex)
             {

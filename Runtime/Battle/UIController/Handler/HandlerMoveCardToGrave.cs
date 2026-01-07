@@ -29,9 +29,9 @@ namespace GGemCo2DTcg
                 yield break;
             }
             
-            yield return new WaitForSeconds(ctx.Settings.handToGraveFadeOutDelayTime);
+            yield return new WaitForSeconds(ctx.UICutsceneSettings.handToGraveFadeOutDelayTime);
 
-            if (ctx.Settings.handToGraveUseBurnDissolve)
+            if (ctx.UICutsceneSettings.handToGraveUseBurnDissolve)
             {
                 var uiBurnDissolvePlayer = attackerIcon.GetComponent<UiBurnDissolvePlayer>();
                 if (uiBurnDissolvePlayer != null)
@@ -42,9 +42,9 @@ namespace GGemCo2DTcg
             else
             {
                 var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
-                defaultFadeOption.easeType = ctx.Settings.handToGraveFadeOutEasing;
+                defaultFadeOption.easeType = ctx.UICutsceneSettings.handToGraveFadeOutEasing;
                 defaultFadeOption.startAlpha = 1f;
-                yield return UiFadeUtility.FadeOut(attackerWindow, attackerIcon.gameObject, ctx.Settings.handToGraveFadeOutDuration, defaultFadeOption);
+                yield return UiFadeUtility.FadeOut(attackerWindow, attackerIcon.gameObject, ctx.UICutsceneSettings.handToGraveFadeOutDuration, defaultFadeOption);
             }
 
             var iconTr = attackerIcon.transform;

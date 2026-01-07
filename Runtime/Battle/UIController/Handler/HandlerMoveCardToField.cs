@@ -59,8 +59,8 @@ namespace GGemCo2DTcg
             if (targetSlot != null)
             {
                 var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
-                defaultFadeOption.easeType = ctx.Settings.handToFieldFadeInEasing;
-                yield return UiFadeUtility.FadeIn(fieldWindow, targetSlot.gameObject, ctx.Settings.handToFieldFadeInDuration, defaultFadeOption);
+                defaultFadeOption.easeType = ctx.UICutsceneSettings.handToFieldFadeInEasing;
+                yield return UiFadeUtility.FadeIn(fieldWindow, targetSlot.gameObject, ctx.UICutsceneSettings.handToFieldFadeInDuration, defaultFadeOption);
             }
             
             yield return new WaitForSeconds(0.05f);
