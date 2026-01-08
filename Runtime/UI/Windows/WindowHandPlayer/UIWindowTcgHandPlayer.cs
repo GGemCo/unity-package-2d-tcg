@@ -7,19 +7,21 @@ namespace GGemCo2DTcg
 {
     /// <summary>
     /// 플레이어가 현재 보유한 핸드 UI를 담당하는 윈도우입니다.
-    /// <para>- 턴 종료 버튼 처리</para>
     /// <para>- 마나 텍스트 및 마나 토글(구슬) 표시</para>
     /// <para>- 플레이어 전용 아이콘/드래그 전략 제공</para>
     /// </summary>
     public class UIWindowTcgHandPlayer : UIWindowTcgHandBase
     {
-
+        [Header(UIWindowConstants.TitleHeaderIndividual)]
         [Tooltip("마나 토글 컴포넌트를 넣을 Transform")]
         public Transform containerToggleMana;
 
         [Tooltip("마나 토글 프리팹")]
         public GameObject prefabToggleMana;
 
+        /// <summary>
+        /// 생성된 마나 토글 목록입니다. 인덱스가 마나 슬롯(0..N-1)에 대응합니다.
+        /// </summary>
         private readonly List<Toggle> _toggleManaList = new List<Toggle>();
 
         /// <summary>
@@ -42,20 +44,22 @@ namespace GGemCo2DTcg
         protected override IDragDropStrategy CreateDragDropStrategy() =>
             new DragDropStrategyHandPlayer();
 
-
         /// <summary>
-        /// 플레이어 전용 초기화(턴 종료 버튼/마나 토글 생성)를 수행합니다.
+        /// 플레이어 전용 초기화(마나 토글 생성)를 수행합니다.
         /// </summary>
         protected override void Awake()
         {
             base.Awake();
-
             CreateToggleMana();
         }
 
         /// <summary>
         /// 전투에서 사용될 최대 마나 수만큼 마나 토글 UI를 생성하고 초기 상태로 설정합니다.
         /// </summary>
+        /// <remarks>
+        /// NOTE: <see cref="AddressableLoaderSettingsTcg"/> 또는 프리팹/컨테이너가 준비되지 않은 경우
+        /// 토글 생성이 스킵될 수 있습니다.
+        /// </remarks>
         private void CreateToggleMana()
         {
             if (!AddressableLoaderSettingsTcg.Instance) return;

@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace GGemCo2DTcg
 {
+    /// <summary>
+    /// TCG 전투 필드(UI) 윈도우의 공통 베이스 클래스입니다.
+    /// 영웅 슬롯/아이콘 및 필드 슬롯들의 아이콘 바인딩/갱신 로직을 제공하며,
+    /// Player/Enemy 등 Side 별 차이는 파생 클래스에서 UID/전략/아이콘을 결정합니다.
+    /// </summary>
     public abstract class UIWindowTcgFieldBase : UIWindow
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)]
@@ -11,44 +16,82 @@ namespace GGemCo2DTcg
 
         [Tooltip("영웅 아이콘")]
         public UIIconCard iconHero;
-        
-        public Easing.EaseType fadeInEasing  = Easing.EaseType.EaseOutSine;
+
+        /// <summary>필드(또는 슬롯) 표시 시 페이드 인에 사용할 이징 타입.</summary>
+        public Easing.EaseType fadeInEasing = Easing.EaseType.EaseOutSine;
+
+        /// <summary>페이드 인 지속 시간(초).</summary>
         public float fadeInDuration = 0.6f;
-        
-        public Easing.EaseType fadeOutEasing  = Easing.EaseType.EaseOutSine;
+
+        /// <summary>필드(또는 슬롯) 숨김 시 페이드 아웃에 사용할 이징 타입.</summary>
+        public Easing.EaseType fadeOutEasing = Easing.EaseType.EaseOutSine;
+
+        /// <summary>페이드 아웃 지속 시간(초).</summary>
         public float fadeOutDuration = 0.6f;
+
+        /// <summary>페이드 아웃 시작 전 대기 시간(초).</summary>
         public float fadeOutDelayTime = 0.5f;
-        
-        // 1) "대상보다 조금 왼쪽 아래" 오프셋 (월드 좌표 기준)
+
+        /// <summary>
+        /// 타격 연출 시 대상 기준 "조금 왼쪽 아래"로 이동시키는 오프셋(월드 좌표 기준).
+        /// </summary>
         public Vector3 leftDownOffset = new Vector3(-24f, -18f, 0f);
 
-        // 2) "뒤로" 이동 거리(타겟에서 멀어지는 방향으로)
-        public Easing.EaseType backEasing  = Easing.EaseType.EaseOutSine;
+        /// <summary>타격 연출 중 뒤로 물러나는 이동 이징 타입.</summary>
+        public Easing.EaseType backEasing = Easing.EaseType.EaseOutSine;
+
+        /// <summary>타격 연출 시 타겟에서 멀어지는(뒤로) 이동 거리.</summary>
         public float backDistance = 28f;
+
+        /// <summary>뒤로 이동 연출 지속 시간(초).</summary>
         public float backDuration = 0.5f;
 
-        public Easing.EaseType hitEasing  = Easing.EaseType.EaseInQuintic;
-        public float hitDuration  = 0.2f; // 빠르게 타격
-        
-        // 각 Side 별 UID (Player/Enemy 가 다름)
+        /// <summary>타격(히트) 순간 연출에 사용할 이징 타입.</summary>
+        public Easing.EaseType hitEasing = Easing.EaseType.EaseInQuintic;
+
+        /// <summary>타격(히트) 연출 지속 시간(초).</summary>
+        public float hitDuration = 0.2f; // 빠르게 타격
+
+        /// <summary>
+        /// 이 윈도우가 사용할 Window UID를 반환합니다. (예: Player/Enemy 필드)
+        /// </summary>
         protected abstract UIWindowConstants.WindowUid WindowUid { get; }
-        
+
+        /// <summary>
+        /// 아이콘 풀에서 사용할 SetIcon 처리기(핸들러)를 생성합니다.
+        /// </summary>
+        /// <returns>아이콘 세팅 로직을 담당하는 핸들러.</returns>
         protected abstract ISetIconHandler CreateSetIconHandler();
+
+        /// <summary>
+        /// 드래그/드롭 처리 방식을 결정하는 전략 객체를 생성합니다.
+        /// </summary>
+        /// <returns>드래그/드롭 전략.</returns>
         protected abstract IDragDropStrategy CreateDragDropStrategy();
 
         /// <summary>
         /// 파생 클래스에서 실제로 사용할 영웅 아이콘 타입을 캐싱해 반환합니다.
+        /// (예: Player/Enemy에 따라 iconHero 또는 별도 프리팹/타입을 선택)
         /// </summary>
         /// <returns>영웅으로 사용할 <see cref="UIIconCard"/>.</returns>
         protected abstract UIIconCard GetHeroIcon();
-        
+
+        /// <summary>
+        /// 현재 윈도우에서 아이콘 드래그가 가능한지 여부를 나타냅니다.
+        /// (예: Enemy 필드는 드래그 불가)
+        /// </summary>
         private bool _possibleDrag;
-        
+
+        /// <summary>
+        /// 윈도우 초기화 시점에 UID/핸들러/전략을 설정하고, Side에 따라 드래그 가능 여부를 결정합니다.
+        /// </summary>
         protected override void Awake()
         {
+            // 테이블 로더가 준비되지 않은 상황에서는 초기화를 진행하지 않습니다.
             if (TableLoaderManager.Instance == null)
                 return;
 
+            // UIWindow 기반에서 사용하는 컨테이너가 미할당이면 진행 불가.
             if (GcLogger.IsNullUnity(containerIcon, nameof(containerIcon))) return;
 
             uid = WindowUid;
@@ -57,12 +100,16 @@ namespace GGemCo2DTcg
 
             IconPoolManager.SetSetIconHandler(CreateSetIconHandler());
             DragDropHandler.SetStrategy(CreateDragDropStrategy());
+
+            // 기본은 드래그 가능, Enemy 필드는 드래그 불가.
             _possibleDrag = true;
             if (WindowUid == UIWindowConstants.WindowUid.TcgFieldEnemy)
                 _possibleDrag = false;
         }
+
         /// <summary>
         /// 시작 시점에 영웅 슬롯/아이콘의 기본 바인딩을 완료합니다.
+        /// Awake에서 초기화되는 컴포넌트들의 값을 변경하기 위해 Start에서 처리합니다.
         /// </summary>
         protected override void Start()
         {
@@ -91,7 +138,7 @@ namespace GGemCo2DTcg
             iconHero.index = ConfigCommonTcg.IndexHeroSlot;
             iconHero.slotIndex = ConfigCommonTcg.IndexHeroSlot;
         }
-        
+
         /// <summary>
         /// 인덱스에 해당하는 슬롯을 반환합니다. 영웅 슬롯 인덱스는 별도 처리합니다.
         /// </summary>
@@ -114,36 +161,49 @@ namespace GGemCo2DTcg
             return base.GetIconByIndex(index);
         }
 
+        /// <summary>
+        /// 전투 데이터(Side)를 기반으로 필드 UI를 갱신합니다.
+        /// 영웅 카드 표시를 처리한 뒤, 필드 카드 목록을 슬롯에 바인딩하고 아이콘 상태(드래그/스탯)를 갱신합니다.
+        /// </summary>
+        /// <param name="battleDataSide">플레이어/적 Side의 전투 데이터.</param>
         public void RefreshField(TcgBattleDataSide battleDataSide)
         {
             if (GcLogger.IsNull(battleDataSide, nameof(battleDataSide))) return;
 
             // 영웅 카드 표시(공통 처리)
             SetHeroCard(battleDataSide.Field.Hero);
-            
+
             for (int i = 0; i < maxCountIcon; i++)
             {
                 var slot = GetSlotByIndex(i);
                 if (GcLogger.IsNull(slot, nameof(slot))) continue;
+
                 if (i < battleDataSide.Field.Cards.Count)
                 {
                     slot.gameObject.SetActive(true);
                     var card = battleDataSide.Field.Cards[i];
-                
+
                     var uiIcon = SetIconCount(i, card.Uid, 1);
-                    if (!uiIcon) { i++; continue; }
+                    if (!uiIcon)
+                    {
+                        // NOTE: 기존 코드의 동작을 보존합니다. (여기서 i++ 후 continue는 다음 인덱스를 스킵합니다)
+                        i++;
+                        continue;
+                    }
 
                     // AI쪽은 드래그 되지 않도록 처리
                     uiIcon.SetDrag(_possibleDrag);
                     uiIcon.gameObject.transform.SetParent(slot.transform, false);
                     uiIcon.gameObject.transform.localPosition = Vector3.zero;
-                    
+
                     card.SetIndex(i);
-                    // GcLogger.Log($"window: {WindowUid}, uid: {card.Uid}, index: {i}");
+
                     if (slot.CanvasGroup)
                     {
                         slot.CanvasGroup.alpha = 1f;
                     }
+
+                    // 공격/체력 표시 갱신
                     var uiIconCard = uiIcon.GetComponent<UIIconCard>();
                     if (uiIconCard != null)
                     {
@@ -157,10 +217,10 @@ namespace GGemCo2DTcg
                 }
             }
         }
-        
+
         /// <summary>
         /// 영웅 카드(아이콘)를 갱신합니다.
-        /// 영웅이 없거나 사망한 경우 아이콘을 비활성화합니다.
+        /// 영웅이 없거나 사망(HP 0 이하)한 경우 아이콘을 비활성화합니다.
         /// </summary>
         /// <param name="heroData">영웅 전투 데이터.</param>
         private void SetHeroCard(TcgBattleDataCardInField heroData)
@@ -192,7 +252,7 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 카드형 아이콘(UIIconCard)의 공격력/체력 표시를 갱신합니다.
+        /// 카드형 아이콘(<see cref="UIIconCard"/>)의 공격력/체력 표시를 갱신합니다.
         /// </summary>
         /// <param name="uiIcon">갱신 대상 아이콘.</param>
         /// <param name="attack">표시할 공격력.</param>
@@ -205,6 +265,5 @@ namespace GGemCo2DTcg
             uiIconCard.UpdateAttack(attack);
             uiIconCard.UpdateHealth(health);
         }
-
     }
 }

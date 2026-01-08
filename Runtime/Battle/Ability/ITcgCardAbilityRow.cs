@@ -12,12 +12,12 @@
         /// <summary>
         /// 능력 데이터의 고유 식별자(ID)입니다.
         /// </summary>
-        int uid { get; }
+        int Uid { get; }
 
         /// <summary>
         /// 능력의 기본 타입(효과 종류)입니다.
         /// </summary>
-        TcgAbilityConstants.TcgAbilityType abilityType { get; }
+        TcgAbilityConstants.TcgAbilityType AbilityType { get; }
 
         /// <summary>
         /// 능력이 발동되는 트리거 타입입니다.
@@ -25,7 +25,7 @@
         /// <remarks>
         /// 예: 소환 시, 공격 시, 사망 시 등
         /// </remarks>
-        TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType { get; }
+        TcgAbilityConstants.TcgAbilityTriggerType TcgAbilityTriggerType { get; }
 
         /// <summary>
         /// 능력이 적용되는 대상 타입입니다.
@@ -33,7 +33,7 @@
         /// <remarks>
         /// 예: 자신, 적 유닛, 모든 유닛 등
         /// </remarks>
-        TcgAbilityConstants.TcgAbilityTargetType tcgAbilityTargetType { get; }
+        TcgAbilityConstants.TcgAbilityTargetType TcgAbilityTargetType { get; }
 
         /// <summary>
         /// 능력에 사용되는 첫 번째 파라미터 값입니다.
@@ -41,16 +41,16 @@
         /// <remarks>
         /// 데미지, 회복량, 수치 보정 값 등 능력 타입에 따라 의미가 달라집니다.
         /// </remarks>
-        int paramA { get; }
+        int ParamA { get; }
 
         /// <summary>
         /// 능력에 사용되는 두 번째 파라미터 값입니다.
         /// </summary>
-        int paramB { get; }
+        int ParamB { get; }
 
         /// <summary>
         /// 능력에 사용되는 세 번째 파라미터 값입니다.
         /// </summary>
-        int paramC { get; }
+        int ParamC { get; }
     }
 }
