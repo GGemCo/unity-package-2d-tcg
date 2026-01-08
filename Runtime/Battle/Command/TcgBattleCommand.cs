@@ -276,7 +276,7 @@ namespace GGemCo2DTcg
 
             // NOTE: targetBattleDataCardInField가 null일 수 있는 입력이라면 NRE 위험이 있습니다.
             //       현재 계약상 null이 들어오지 않는다고 가정합니다.
-            if (targetBattleDataCardInField.Index < 0) return null;
+            if (targetBattleDataCardInField == null || targetBattleDataCardInField.Index < 0) return null;
 
             switch (targetType)
             {

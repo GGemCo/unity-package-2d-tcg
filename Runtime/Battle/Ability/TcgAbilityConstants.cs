@@ -42,7 +42,9 @@
             /// <summary>마나를 획득합니다.</summary>
             GainMana,
 
-            /// <summary>추가 행동 또는 행동 기회를 부여합니다.</summary>
+            /// <summary>추가 행동 또는 행동 기회를 부여합니다.
+            /// todo 미개발
+            /// </summary>
             ExtraAction
         }
 
