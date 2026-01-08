@@ -305,11 +305,14 @@ namespace GGemCo2DTcg
             bool result = _playerDataTcg.SetDefaultDeckIndex(_deckIndex);
             if (!result) return;
             
+            if (_windowTcgMyDeck)
+                _windowTcgMyDeck.SetDefaultDeck(_deckIndex);
+            
             PopupMetadata popupMetadata = new PopupMetadata
             {
                 PopupType = PopupManager.Type.Default,
                 Title = "System_Tcg_Save", 
-                Message = "System_Tcg_SaveCompleted.", 
+                Message = "System_Tcg_SaveCompleted", 
             };
             _popupManager.ShowPopup(popupMetadata);
         }

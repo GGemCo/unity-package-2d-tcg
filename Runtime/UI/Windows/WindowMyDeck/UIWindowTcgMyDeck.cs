@@ -15,10 +15,13 @@ namespace GGemCo2DTcg
         public Button buttonCreateNew;
 
         private MyDeckData _myDeckData;
+        private PlayerDataTcg _playerDataTcg;
 
         private UIWindowInputField _windowInputField;
         private UIWindowTcgMyDeckCard _windowTcgMyDeckCard;
         private string _titleInputField;
+        // 디폴트로 설정한 덱 아이콘
+        private UIIconMyDeck _defaultIconMyDeck;
         
         protected override void Awake()
         {
@@ -44,6 +47,7 @@ namespace GGemCo2DTcg
             if (SceneGame != null && TcgPackageManager.Instance.saveDataManagerTcg != null)
             {
                 _myDeckData = TcgPackageManager.Instance.saveDataManagerTcg.MyDeck;
+                _playerDataTcg = TcgPackageManager.Instance.saveDataManagerTcg.PlayerTcg;
             }
             _windowInputField = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowInputField>(UIWindowConstants.WindowUid.InputField);
             _windowTcgMyDeckCard = SceneGame.uIWindowManager.GetUIWindowByUid<UIWindowTcgMyDeckCard>(UIWindowConstants.WindowUid.TcgMyDeckCard);
@@ -78,6 +82,8 @@ namespace GGemCo2DTcg
                 uiIcon.ChangeInfoByUid(data.index, 1, 1);
                 uiIcon.SetDrag(false);
             }
+            if (_playerDataTcg != null)
+                SetDefaultDeck(_playerDataTcg.defaultDeckIndex);
         }
 
         private void OnClickCreateNew()
@@ -117,8 +123,29 @@ namespace GGemCo2DTcg
         {
             bool result = _myDeckData.RemoveDeck(index);
             if (!result) return;
+            // 순서 중요. Detach 를 하고, _defaultIconMyDeck 값이 있으면 null 처리
             DetachIcon(index);
+            if (_defaultIconMyDeck && _defaultIconMyDeck.index == index)
+            {
+                result = _playerDataTcg.SetDefaultDeckIndex(-1);
+                if (result)
+                    _defaultIconMyDeck = null;
+            }
             LoadMyDeckData();
+        }
+
+        public void SetDefaultDeck(int index)
+        {
+            if (index < 0) return;
+            if (_defaultIconMyDeck && _defaultIconMyDeck.index == index) return;
+            
+            UIIcon uiIcon = GetIconByIndex(index);
+            if (GcLogger.IsNull(uiIcon, nameof(uiIcon))) return;
+            UIIconMyDeck uiIconMyDeck = uiIcon as UIIconMyDeck;
+            if (GcLogger.IsNull(uiIconMyDeck, nameof(uiIconMyDeck))) return;
+            if (_defaultIconMyDeck != null) _defaultIconMyDeck.SetDefault(false);
+            uiIconMyDeck.SetDefault(true);
+            _defaultIconMyDeck = uiIconMyDeck;
         }
     }
 }

@@ -108,5 +108,10 @@ namespace GGemCo2DTcg
         {
             _windowTcgMyDeck?.RemoveDeck(index);
         }
+
+        public void SetDefault(bool isDefault)
+        {
+            ImageIcon.color = isDefault ? Color.yellow : Color.white;
+        }
     }
 }
