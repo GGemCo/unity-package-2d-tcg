@@ -88,25 +88,25 @@ namespace GGemCo2DTcg
 
             // 3) 공통: 캐스팅/투사체 연출
             // - 실제 효과(피해/회복/버프 등)는 Ability 기반 Step에서 처리합니다.
-            // NOTE: explicitTarget을 사용해 타겟 유무를 판정하지만, 인덱스는 target.Index를 사용합니다.
-            //       explicitTarget과 target이 다를 수 있는 설계라면 explicitTarget.Index로 전달하는 정합성 개선이 필요합니다.
-            steps.Add(new TcgPresentationStep(
-                TcgPresentationConstants.TcgPresentationStepType.MoveCardToTarget,
-                cmd.Side,
-                fromZone: attackerZone,
-                fromIndex: fromIndex,
-                toIndex: explicitTarget != null ? target.Index : -1,
-                toZone: explicitTarget != null ? targetZone : ConfigCommonTcg.TcgZone.None));
+            if (target != null)
+            {
+                steps.Add(new TcgPresentationStep(
+                    TcgPresentationConstants.TcgPresentationStepType.MoveCardToTarget,
+                    cmd.Side,
+                    fromZone: attackerZone,
+                    fromIndex: fromIndex,
+                    toIndex: target.Index,
+                    toZone: targetZone));
+            }
 
             // 4) Ability 임팩트(AbilityType별 연출 Step 자동 추가)
-            // NOTE: targetIndex로 target.Index를 전달합니다(위 NOTE와 동일한 정합성 이슈 가능).
             TcgAbilityRunner.TryRunOnPlayAbility(
                 context,
                 cmd.Side,
                 attackerZone,
                 fromIndex,
                 targetZone,
-                target.Index,
+                explicitTarget?.Index ?? -1,
                 ability,
                 steps);
 

@@ -98,24 +98,25 @@ namespace GGemCo2DTcg
 
             // 3) 공통 연출: 손패 카드의 시전/투사체 이동(타겟이 없으면 None/-1로 처리)
             // - 실제 효과(피해/회복/버프 등)는 Ability 기반 Step에서 처리합니다.
-            steps.Add(new TcgPresentationStep(
-                TcgPresentationConstants.TcgPresentationStepType.MoveCardToTarget,
-                cmd.Side,
-                fromZone: attackerZone,
-                fromIndex: fromIndex,
-                toIndex: explicitTarget != null ? target.Index : -1,
-                toZone: explicitTarget != null ? targetZone : ConfigCommonTcg.TcgZone.None));
+            if (target != null)
+            {
+                steps.Add(new TcgPresentationStep(
+                    TcgPresentationConstants.TcgPresentationStepType.MoveCardToTarget,
+                    cmd.Side,
+                    fromZone: attackerZone,
+                    fromIndex: fromIndex,
+                    toIndex: target.Index,
+                    toZone: targetZone));
+            }
 
             // 4) 도메인: OnPlay Ability 실행 + (발행된 AbilityPresentationEvent를) Step으로 변환하여 동일 타임라인에 누적
-            // NOTE: 현재 호출은 targetIndex로 cmd.targetBattleDataCardInField.Index를 전달합니다.
-            //       explicitTarget이 target과 다를 수 있는 설계라면, explicitTarget.Index로 전달하는 방식도 고려할 수 있습니다.
             TcgAbilityRunner.TryRunOnPlayAbility(
                 context,
                 cmd.Side,
                 attackerZone,
                 fromIndex,
                 targetZone,
-                target.Index,
+                explicitTarget?.Index ?? -1,
                 ability,
                 steps);
 
