@@ -1,17 +1,21 @@
 ﻿namespace GGemCo2DTcg
 {
     /// <summary>
-    /// TCG Ability 시스템에서 공통으로 사용하는 상수 및 열거형 정의 모음입니다.
-    /// 테이블 데이터와 런타임 로직을 연결하는 기준 값으로 사용됩니다.
+    /// TCG Ability 시스템 전반에서 공통으로 사용하는 상수 및 열거형 정의 모음입니다.
     /// </summary>
+    /// <remarks>
+    /// - 테이블 데이터(문자열/정수)와 런타임 도메인 로직을 연결하는 기준 값으로 사용됩니다.
+    /// - Ability 빌더, 핸들러 선택, UI 연출 분기 등 여러 계층에서 참조됩니다.
+    /// </remarks>
     public static class TcgAbilityConstants
     {
         /// <summary>
         /// 테이블 기반 Ability 실행을 위한 상위 분류 타입입니다.
-        /// 
-        /// - 테이블에서는 문자열(예: "Damage", "Heal")로 관리됩니다.
-        /// - 런타임에서는 이 값을 기준으로 Ability 처리 로직(핸들러)을 선택합니다.
         /// </summary>
+        /// <remarks>
+        /// - 테이블에서는 문자열(예: "Damage", "Heal")로 관리될 수 있습니다.
+        /// - 런타임에서는 이 값을 기준으로 Ability 핸들러를 선택합니다.
+        /// </remarks>
         public enum TcgAbilityType
         {
             /// <summary>능력이 없거나 정의되지 않은 상태입니다.</summary>
@@ -26,15 +30,15 @@
             /// <summary>카드를 드로우합니다.</summary>
             Draw,
 
-            /// <summary>공격력을 증가, 하락시키는 버프를 적용합니다.</summary>
+            /// <summary>공격력을 증가 또는 감소시키는 버프를 적용합니다.</summary>
             BuffAttack,
 
-            /// <summary>체력을 증가, 하락시키는 버프를 적용합니다.</summary>
+            /// <summary>체력을 증가 또는 감소시키는 버프를 적용합니다.</summary>
             BuffHealth,
 
-            /// <summary>공격력과 체력을 동시에 증가, 하락시키는 버프를 적용합니다.</summary>
+            /// <summary>공격력과 체력을 동시에 증가 또는 감소시키는 버프를 적용합니다.</summary>
             BuffAttackHealth,
-            
+
             /// <summary>마나를 획득합니다.</summary>
             GainMana,
 
@@ -43,10 +47,12 @@
         }
 
         /// <summary>
-        /// Ability가 적용될 수 있는 대상의 종류를 정의합니다.
-        /// 
-        /// 전투 시스템 구현에 따라 더 세분화하거나 조합하여 사용할 수 있습니다.
+        /// Ability가 적용될 수 있는 대상의 범위 및 종류를 정의합니다.
         /// </summary>
+        /// <remarks>
+        /// 전투 시스템 구현에 따라 더 세분화하거나,
+        /// 다중 타겟/선택 타겟 개념과 조합해 확장할 수 있습니다.
+        /// </remarks>
         public enum TcgAbilityTargetType
         {
             /// <summary>대상이 없거나 정의되지 않은 상태입니다.</summary>
@@ -81,8 +87,12 @@
         }
 
         /// <summary>
-        /// 카드 능력(Ability) 및 지속 효과, 이벤트 효과가 발동되는 시점을 정의합니다.
+        /// 카드 능력(Ability), 지속 효과, 이벤트 효과가 발동되는 시점을 정의합니다.
         /// </summary>
+        /// <remarks>
+        /// - 카드 플레이, 턴 흐름, 전투 이벤트 등 다양한 타이밍에서 사용됩니다.
+        /// - 하나의 Ability가 여러 트리거를 가질 경우, 별도 정의 또는 복합 구조로 확장할 수 있습니다.
+        /// </remarks>
         public enum TcgAbilityTriggerType
         {
             /// <summary>트리거가 없거나 정의되지 않은 상태입니다.</summary>

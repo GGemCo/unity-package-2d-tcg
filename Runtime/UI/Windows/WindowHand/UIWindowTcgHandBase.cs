@@ -5,14 +5,15 @@ using UnityEngine;
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// TCG 핸드 공통 베이스 윈도우(플레이어/Enemy 공용).
-    /// <para>- 영웅/핸드 카드 표시</para>
+    /// TCG 핸드 공통 베이스 윈도우(플레이어/Enemy 공용)입니다.
+    /// <para>- 핸드 카드 표시</para>
     /// <para>- 마나 텍스트 기본 표시</para>
     /// <para>- 아이콘 핸들러/드래그 전략은 파생 클래스에서 제공</para>
     /// </summary>
     public abstract class UIWindowTcgHandBase : UIWindow
     {
         [Header(UIWindowConstants.TitleHeaderIndividual)]
+        [Tooltip("현재 마나/최대 마나 표시 텍스트 (예: 3/10)")]
         public TMP_Text textCurrentMana;
 
         /// <summary>
@@ -33,7 +34,8 @@ namespace GGemCo2DTcg
         protected abstract IDragDropStrategy CreateDragDropStrategy();
 
         /// <summary>
-        /// Enemy는 드래그 불가, Player는 드래그 가능하도록 여부를 계산합니다.
+        /// 이 윈도우에서 드래그가 가능한지 여부입니다.
+        /// Enemy 핸드는 드래그 불가, Player 핸드는 드래그 가능하도록 계산합니다.
         /// </summary>
         private bool PossibleDrag => WindowUid != UIWindowConstants.WindowUid.TcgHandEnemy;
 
@@ -72,10 +74,11 @@ namespace GGemCo2DTcg
             // Intentionally left blank.
         }
 
-        #region Hand / Hero 표시
+        #region Hand 표시
 
         /// <summary>
-        /// 주어진 전투 사이드 데이터로 영웅/핸드 UI를 갱신합니다.
+        /// 주어진 전투 사이드 데이터로 핸드 UI를 갱신합니다.
+        /// 핸드 카드 목록을 슬롯에 바인딩하고 아이콘 상태(드래그/스탯)를 갱신합니다.
         /// </summary>
         /// <param name="battleDataSide">표시할 사이드의 전투 데이터.</param>
         public void RefreshHand(TcgBattleDataSide battleDataSide)
@@ -86,7 +89,6 @@ namespace GGemCo2DTcg
                 return;
             }
 
-            // 핸드 카드 표시
             for (int i = 0; i < maxCountIcon; i++)
             {
                 var slot = GetSlotByIndex(i);
@@ -99,7 +101,10 @@ namespace GGemCo2DTcg
                     var card = battleDataSide.Hand.Cards[i];
                     var uiIcon = SetIconCount(i, card.Uid, 1);
                     if (!uiIcon) continue;
+
+                    // 슬롯/아이콘 기본 표시 상태 세팅
                     slot.SetAlpha(1);
+
                     // Enemy(AI) 쪽은 드래그 불가 처리
                     uiIcon.SetDrag(PossibleDrag);
                     uiIcon.gameObject.transform.SetParent(slot.transform, false);
@@ -117,7 +122,7 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 카드형 아이콘(UIIconCard)의 공격력/체력 표시를 갱신합니다.
+        /// 카드형 아이콘(<see cref="UIIconCard"/>)의 공격력/체력 표시를 갱신합니다.
         /// </summary>
         /// <param name="uiIcon">갱신 대상 아이콘.</param>
         /// <param name="attack">표시할 공격력.</param>

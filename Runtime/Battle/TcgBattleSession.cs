@@ -5,30 +5,55 @@ using GGemCo2DCore;
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// 한 번의 전투 진행(턴, 커맨드 실행, 승패 판정, 트리거 처리)을 담당하는 도메인 클래스.
-    /// UI/MonoBehaviour/Scene 에 의존하지 않도록 설계합니다.
+    /// 한 판의 전투 진행(턴 흐름, 커맨드 실행, 트리거 처리, 승패 판정)을 담당하는 도메인 세션입니다.
     /// </summary>
+    /// <remarks>
+    /// UI/MonoBehaviour/Scene에 의존하지 않도록 설계된 도메인 레이어의 핵심 객체이며,
+    /// 외부에서는 커맨드 실행 및 턴 진행 API를 통해 세션을 조작합니다.
+    /// </remarks>
     public sealed class TcgBattleSession : IDisposable
     {
         /// <summary>
-        /// Ability 실행 시점(Begin/End)을 UI 레이어에 알리기 위한 이벤트.
-        /// UI는 이 이벤트를 구독하여 <see cref="TcgAbilityConstants.TcgAbilityType"/>별 연출을 재생할 수 있습니다.
+        /// Ability 실행 시점(Begin/End)을 UI 레이어에 알리기 위한 이벤트입니다.
         /// </summary>
+        /// <remarks>
+        /// UI는 본 이벤트를 구독하여 <see cref="TcgAbilityConstants.TcgAbilityType"/>별 연출을 재생할 수 있습니다.
+        /// 또한, 세션 내부에서는 동일 이벤트를 Step으로 변환해 단일 타임라인에 합류시키는 용도로도 사용합니다.
+        /// </remarks>
         public event Action<TcgAbilityPresentationEvent> AbilityPresentation;
 
+        /// <summary>
+        /// 전투의 현재 상태(플레이어/적 사이드, 손패/필드, 턴 수 등)를 보유하는 컨텍스트입니다.
+        /// </summary>
         public TcgBattleDataMain Context { get; }
 
+        /// <summary>
+        /// 현재 턴이 플레이어 턴인지 여부입니다.
+        /// </summary>
         public bool IsPlayerTurn => Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player;
 
+        /// <summary>
+        /// 전투가 종료되었는지 여부입니다.
+        /// </summary>
         public bool IsBattleEnded { get; private set; }
 
+        /// <summary>
+        /// 전투 승자입니다(무승부 포함). 외부 노출 정책에 따라 private로 유지됩니다.
+        /// </summary>
         private ConfigCommonTcg.TcgPlayerSide Winner { get; set; }
 
         private readonly Dictionary<ConfigCommonTcg.TcgBattleCommandType, ITcgBattleCommandHandler> _commandHandlers;
         private readonly ITcgPlayerController _playerController;
         private readonly ITcgPlayerController _enemyController;
 
+        /// <summary>
+        /// 컨트롤러가 생성한 커맨드를 임시로 담는 버퍼입니다.
+        /// </summary>
         private readonly List<TcgBattleCommand> _commandBuffer = new List<TcgBattleCommand>(32);
+
+        /// <summary>
+        /// 실행 대기 중인 커맨드 큐입니다(후속 커맨드 포함).
+        /// </summary>
         private readonly List<TcgBattleCommand> _executionQueue = new List<TcgBattleCommand>(64);
 
         private readonly GGemCoTcgSettings _tcgSettings;
@@ -41,23 +66,33 @@ namespace GGemCo2DTcg
         // (note) AbilityPresentation 이벤트 발행은 아래 PublishAbilityPresentation()을 통해 일괄 처리합니다.
 
         /// <summary>
-        /// 현재 도메인 로직에서 생성된 <see cref="TcgPresentationStep"/>을 누적할 대상입니다.
-        ///
+        /// 현재 도메인 로직에서 생성된 <see cref="TcgPresentationStep"/>을 누적할 대상 리스트입니다.
+        /// </summary>
+        /// <remarks>
         /// 목적:
         /// - 커맨드 실행 중(OnPlay Ability 포함) 발생하는 추가 트리거(OnDraw/OnTurnStart/OnTurnEnd 등)까지
-        ///   동일한 타임라인에서 재생될 수 있도록, 세션 레벨에서 "현재 누적 대상"을 제공합니다.
-        /// </summary>
+        ///   동일한 타임라인에서 재생될 수 있도록 “현재 누적 대상”을 세션 레벨에서 제공합니다.
+        /// - UI 레이어는 커맨드 단위의 PresentationSteps만 재생하더라도,
+        ///   세션이 누적한 Ability Step이 함께 포함되면 단일 러너에서 자연스럽게 이어서 재생할 수 있습니다.
+        /// </remarks>
         private List<TcgPresentationStep> _presentationStepsSink;
 
         /// <summary>
         /// 세션이 실행하는 Ability/Trigger에서 생성되는 연출 Step을 지정한 리스트로 누적하도록 설정합니다.
-        /// using 스코프에서 자동으로 원복됩니다.
         /// </summary>
+        /// <param name="steps">연출 Step을 누적할 대상 리스트입니다.</param>
+        /// <returns>스코프 종료 시 이전 누적 대상으로 복원하는 <see cref="IDisposable"/>입니다.</returns>
+        /// <remarks>
+        /// using 스코프 내에서만 캡처가 유효하며, 스코프 종료 시 자동으로 원복됩니다.
+        /// </remarks>
         internal IDisposable BeginPresentationCapture(List<TcgPresentationStep> steps)
         {
             return new PresentationCaptureScope(this, steps);
         }
 
+        /// <summary>
+        /// PresentationStep 누적 대상 전환을 스코프로 관리하기 위한 내부 헬퍼입니다.
+        /// </summary>
         private sealed class PresentationCaptureScope : IDisposable
         {
             private readonly TcgBattleSession _session;
@@ -79,6 +114,17 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// 전투 세션을 생성하고, 컨텍스트/컨트롤러/트리거 구독을 초기화합니다.
+        /// </summary>
+        /// <param name="playerSide">플레이어 사이드 상태입니다.</param>
+        /// <param name="enemySide">적 사이드 상태입니다.</param>
+        /// <param name="commandHandlers">커맨드 타입별 실행 핸들러 테이블입니다.</param>
+        /// <param name="playerController">플레이어 입력/행동 결정을 담당하는 컨트롤러입니다.</param>
+        /// <param name="enemyController">적(AI) 행동 결정을 담당하는 컨트롤러입니다.</param>
+        /// <param name="settings">전투 규칙/수치 설정입니다.</param>
+        /// <param name="systemMessageManager">실패 메시지 등 시스템 메시지 표시를 위한 매니저입니다.</param>
+        /// <exception cref="ArgumentNullException">필수 의존성이 null이면 발생합니다.</exception>
         public TcgBattleSession(
             TcgBattleDataSide playerSide,
             TcgBattleDataSide enemySide,
@@ -110,6 +156,9 @@ namespace GGemCo2DTcg
             SubscribeDrawEvents();
         }
 
+        /// <summary>
+        /// 드로우 이벤트를 구독하여 OnDraw 트리거 처리를 세션에서 수행하도록 연결합니다.
+        /// </summary>
         private void SubscribeDrawEvents()
         {
             // 플레이어
@@ -121,6 +170,9 @@ namespace GGemCo2DTcg
             Context.Enemy.CardDrawn += _onEnemyCardDrawn;
         }
 
+        /// <summary>
+        /// 드로우 이벤트 구독을 해제합니다.
+        /// </summary>
         private void UnsubscribeDrawEvents()
         {
             if (Context?.Player != null && _onPlayerCardDrawn != null)
@@ -135,6 +187,10 @@ namespace GGemCo2DTcg
 
         #region Turn Flow
 
+        /// <summary>
+        /// 적(AI) 턴의 행동을 결정하고 커맨드를 실행하여 트레이스를 누적합니다.
+        /// </summary>
+        /// <param name="traces">실행된 커맨드 트레이스를 누적할 리스트입니다(선택).</param>
         public void ExecuteEnemyTurnWithTrace(List<TcgBattleCommandTrace> traces)
         {
             if (IsBattleEnded) return;
@@ -145,6 +201,17 @@ namespace GGemCo2DTcg
             ExecuteCommandsWithTrace(_commandBuffer, traces);
         }
 
+        /// <summary>
+        /// 현재 턴을 종료하고 다음 턴으로 진행합니다.
+        /// </summary>
+        /// <remarks>
+        /// 처리 순서(요약):
+        /// 1) 턴 종료 트리거 처리
+        /// 2) ActiveSide 전환 및 턴 수 증가(플레이어 턴 시작 기준)
+        /// 3) (선택) 공격 가능 상태 초기화
+        /// 4) 마나 증가/회복 및 턴 시작 드로우
+        /// 5) 턴 시작 트리거 처리
+        /// </remarks>
         public void EndTurn()
         {
             if (IsBattleEnded) return;
@@ -158,10 +225,10 @@ namespace GGemCo2DTcg
                     ? ConfigCommonTcg.TcgPlayerSide.Enemy
                     : ConfigCommonTcg.TcgPlayerSide.Player;
 
-            // 3) 턴 수 증가
+            // 3) 턴 수 증가(플레이어 턴 시작 시점에 증가)
             if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
                 Context.TurnCount++;
-            
+
             // 4) (선택) 공격 가능 상태 초기화
             if (Context.ActiveSide == ConfigCommonTcg.TcgPlayerSide.Player)
             {
@@ -177,6 +244,9 @@ namespace GGemCo2DTcg
             ResolveStartOfTurnEffects();
         }
 
+        /// <summary>
+        /// 턴 종료 시점에 발동하는 트리거(OnTurnEnd)를 처리합니다.
+        /// </summary>
         private void ResolveEndOfTurnEffects()
         {
             if (IsBattleEnded) return;
@@ -187,6 +257,9 @@ namespace GGemCo2DTcg
             ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnEnd, sourceCardInHand: null);
         }
 
+        /// <summary>
+        /// 턴 시작 시점에 발동하는 트리거(OnTurnStart)를 처리합니다.
+        /// </summary>
         private void ResolveStartOfTurnEffects()
         {
             if (IsBattleEnded) return;
@@ -197,14 +270,22 @@ namespace GGemCo2DTcg
             ResolveTriggersForSide(activeSide, TcgAbilityConstants.TcgAbilityTriggerType.OnTurnStart, sourceCardInHand: null);
         }
 
+        /// <summary>
+        /// 턴 시작 드로우를 수행합니다.
+        /// </summary>
+        /// <remarks>
+        /// <c>DrawOneCard()</c> 내부에서 CardDrawn 이벤트가 발생하며,
+        /// 세션이 이를 받아 OnDraw 트리거(<see cref="TcgAbilityConstants.TcgAbilityTriggerType.OnDraw"/>)를 처리합니다.
+        /// </remarks>
         private void DrawStartOfTurnCard()
         {
             var side = Context.GetSideState(Context.ActiveSide);
             side.DrawOneCard();
-            // DrawOneCard() 내부에서 CardDrawn 이벤트가 발생하고,
-            // 그 이벤트를 세션이 받아 OnDraw 트리거를 처리합니다.
         }
 
+        /// <summary>
+        /// 턴 종료 후(플레이어 턴 시작 시점) 마나 한도 증가 및 마나 회복을 수행합니다.
+        /// </summary>
         private void IncreaseMaxManaByTurnOff()
         {
             if (Context.ActiveSide != ConfigCommonTcg.TcgPlayerSide.Player)
@@ -221,12 +302,16 @@ namespace GGemCo2DTcg
 
         #endregion
 
-        #region Trigger Loop (Requested)
+        #region Trigger Loop
 
         /// <summary>
         /// 특정 Side가 카드를 드로우했을 때(손패에 들어갔을 때) 호출됩니다.
-        /// - Permanent/Event 의 OnDraw 트리거를 처리합니다.
         /// </summary>
+        /// <param name="side">카드를 드로우한 사이드 상태입니다.</param>
+        /// <param name="drawnCardInHand">손패에 들어온 카드 인스턴스입니다.</param>
+        /// <remarks>
+        /// Permanent/Event의 <see cref="TcgAbilityConstants.TcgAbilityTriggerType.OnDraw"/> 트리거를 처리합니다.
+        /// </remarks>
         private void OnSideCardDrawn(TcgBattleDataSide side, TcgBattleDataCardInHand drawnCardInHand)
         {
             if (IsBattleEnded) return;
@@ -237,8 +322,16 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 지정된 Side의 Permanent/Event 존을 순회하며 triggerType에 해당하는 Ability를 실행합니다.
+        /// 지정된 Side의 Permanent/Event 존을 순회하며 <paramref name="tcgAbilityTriggerType"/>에 해당하는 Ability를 실행합니다.
         /// </summary>
+        /// <param name="ownerSide">트리거 소유 사이드입니다.</param>
+        /// <param name="tcgAbilityTriggerType">처리할 트리거 타입입니다.</param>
+        /// <param name="sourceCardInHand">OnDraw 등에서 트리거의 소스가 되는 카드(없으면 null)입니다.</param>
+        /// <remarks>
+        /// - Permanent는 만료/제거가 발생할 수 있어 뒤에서부터 순회합니다.
+        /// - Event는 발동 후 소비(consume)될 수 있어 뒤에서부터 순회합니다.
+        /// - 각 Ability 실행 후 <see cref="TryCheckBattleEnd"/>로 종료 조건을 점검합니다.
+        /// </remarks>
         private void ResolveTriggersForSide(
             TcgBattleDataSide ownerSide,
             TcgAbilityConstants.TcgAbilityTriggerType tcgAbilityTriggerType,
@@ -273,7 +366,7 @@ namespace GGemCo2DTcg
                         continue;
                     }
 
-                    if (p.Definition.tcgAbilityTriggerType != tcgAbilityTriggerType)
+                    if (p.Definition.TcgAbilityTriggerType != tcgAbilityTriggerType)
                         continue;
 
                     // IntervalTurn 규칙 (1이면 매번, 2 이상이면 N턴마다)
@@ -291,7 +384,7 @@ namespace GGemCo2DTcg
                         p.Stacks = p.Definition.maxStacks;
 
                     var casterZone = p.AttackerZone;
-                    var (targetZone, targetIndex) = ResolveTriggerTarget(ownerSide, opponentSide, p.Definition.tcgAbilityTargetType);
+                    var (targetZone, targetIndex) = ResolveTriggerTarget(ownerSide, opponentSide, p.Definition.TcgAbilityTargetType);
                     if (targetIndex < 0)
                         (targetZone, targetIndex) = ResolveFallbackTarget(ownerSide);
 
@@ -331,10 +424,10 @@ namespace GGemCo2DTcg
                     var e = events[i];
                     if (e == null) continue;
 
-                    if (e.Definition.tcgAbilityTriggerType != tcgAbilityTriggerType)
+                    if (e.Definition.TcgAbilityTriggerType != tcgAbilityTriggerType)
                         continue;
 
-                    var (targetZone, targetIndex) = ResolveTriggerTarget(ownerSide, opponentSide, e.Definition.tcgAbilityTargetType);
+                    var (targetZone, targetIndex) = ResolveTriggerTarget(ownerSide, opponentSide, e.Definition.TcgAbilityTargetType);
                     if (targetIndex < 0)
                         (targetZone, targetIndex) = ResolveFallbackTarget(ownerSide);
 
@@ -357,11 +450,13 @@ namespace GGemCo2DTcg
             // -------------------------
             // Local helpers
             // -------------------------
+
             (ConfigCommonTcg.TcgZone zone, int index) ResolveFallbackTarget(TcgBattleDataSide side)
             {
                 var z = (side.Side == ConfigCommonTcg.TcgPlayerSide.Player)
                     ? ConfigCommonTcg.TcgZone.FieldPlayer
                     : ConfigCommonTcg.TcgZone.FieldEnemy;
+
                 return (z, ConfigCommonTcg.IndexHeroSlot);
             }
 
@@ -390,6 +485,16 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// Ability 정의를 실행하고, 실행 과정에서 발생하는 연출 이벤트를 발행합니다.
+        /// </summary>
+        /// <param name="ability">실행할 Ability 정의입니다.</param>
+        /// <param name="side">캐스터(소유) 사이드입니다.</param>
+        /// <param name="casterZone">캐스터가 위치한 존입니다.</param>
+        /// <param name="casterIndex">캐스터 인덱스입니다(없으면 -1).</param>
+        /// <param name="targetZone">대상 존입니다.</param>
+        /// <param name="targetIndex">대상 인덱스입니다.</param>
+        /// <param name="sourceInstance">Permanent/Event 등 트리거 소스 인스턴스입니다(디버그/추적 용도).</param>
         private void RunAbilityById(
             in TcgAbilityDefinition ability,
             ConfigCommonTcg.TcgPlayerSide side,
@@ -403,8 +508,8 @@ namespace GGemCo2DTcg
             if (side == ConfigCommonTcg.TcgPlayerSide.None) return;
 
             // caster/target 정보가 일부 없는 트리거(예: Event)도 존재할 수 있으므로,
-            // 여기서 과도하게 차단하지 않고 AbilityRunner/Handler의 규칙에 맡깁니다.
-            // (단, zone이 None이면 Context에서 타겟을 해석할 수 없으므로 최소한의 기본값을 보정합니다.)
+            // 과도하게 차단하지 않고 AbilityRunner/Handler의 규칙에 맡깁니다.
+            // (단, zone이 None이거나 index가 음수이면 최소한의 기본값을 보정합니다.)
             if (targetZone == ConfigCommonTcg.TcgZone.None || targetIndex < 0)
             {
                 targetZone = (side == ConfigCommonTcg.TcgPlayerSide.Player)
@@ -417,6 +522,7 @@ namespace GGemCo2DTcg
             {
                 new TcgAbilityData { ability = ability }
             };
+
             TcgAbilityRunner.RunAbility(
                 Context,
                 side,
@@ -431,6 +537,10 @@ namespace GGemCo2DTcg
             TryCheckBattleEnd();
         }
 
+        /// <summary>
+        /// Ability 연출 이벤트를 발행하고, 필요 시 <see cref="TcgPresentationStep"/>으로 변환해 누적합니다.
+        /// </summary>
+        /// <param name="ev">발행할 Ability 연출 이벤트입니다.</param>
         internal void PublishAbilityPresentation(TcgAbilityPresentationEvent ev)
         {
             // 1) 외부 구독자(디버그/로그/별도 UI)
@@ -448,14 +558,23 @@ namespace GGemCo2DTcg
         #region Battle End
 
         /// <summary>
-        /// 강제로 전투를 종료합니다. (씬 전환 등)
+        /// 전투를 강제로 종료합니다(씬 전환 등).
         /// </summary>
+        /// <param name="winner">강제 지정할 승자입니다.</param>
         public void ForceEnd(ConfigCommonTcg.TcgPlayerSide winner)
         {
             IsBattleEnded = true;
             Winner = winner;
         }
 
+        /// <summary>
+        /// 현재 전투의 종료 조건을 검사하고, 종료 시 승자를 결정합니다.
+        /// </summary>
+        /// <remarks>
+        /// 종료 정책:
+        /// 1) 영웅 HP가 0 이하인 경우(동시 0 이하면 무승부)
+        /// 2) HP 종료가 아닐 때, 손패/필드/덱이 모두 비면(카드 고갈) 종료
+        /// </remarks>
         public void TryCheckBattleEnd()
         {
             if (IsBattleEnded) return;
@@ -511,6 +630,7 @@ namespace GGemCo2DTcg
                     else if (enemyHp > playerHp) Winner = ConfigCommonTcg.TcgPlayerSide.Enemy;
                     else Winner = ConfigCommonTcg.TcgPlayerSide.Draw;
                 }
+
                 TcgPackageManager.Instance.battleManager.OnBattleEnded(Winner);
                 return;
             }
@@ -520,6 +640,11 @@ namespace GGemCo2DTcg
 
         #region Command Execution
 
+        /// <summary>
+        /// 단일 커맨드를 실행하고, 실행 결과 트레이스를 <paramref name="traces"/>에 기록합니다.
+        /// </summary>
+        /// <param name="command">실행할 커맨드입니다.</param>
+        /// <param name="traces">실행 트레이스를 누적할 리스트입니다(선택). 전달 시 내부에서 Clear 합니다.</param>
         public void ExecuteCommandWithTrace(in TcgBattleCommand command, List<TcgBattleCommandTrace> traces)
         {
             if (IsBattleEnded) return;
@@ -531,6 +656,11 @@ namespace GGemCo2DTcg
             ProcessExecutionQueue(traces);
         }
 
+        /// <summary>
+        /// 여러 커맨드를 순서대로 실행하고, 실행 결과 트레이스를 <paramref name="traces"/>에 기록합니다.
+        /// </summary>
+        /// <param name="commands">실행할 커맨드 목록입니다.</param>
+        /// <param name="traces">실행 트레이스를 누적할 리스트입니다(선택). 전달 시 내부에서 Clear 합니다.</param>
         private void ExecuteCommandsWithTrace(List<TcgBattleCommand> commands, List<TcgBattleCommandTrace> traces)
         {
             if (IsBattleEnded) return;
@@ -543,6 +673,10 @@ namespace GGemCo2DTcg
             ProcessExecutionQueue(traces);
         }
 
+        /// <summary>
+        /// 실행 큐를 소진할 때까지 커맨드를 처리합니다(후속 커맨드 포함).
+        /// </summary>
+        /// <param name="traces">실행 트레이스를 누적할 리스트입니다(선택).</param>
         private void ProcessExecutionQueue(List<TcgBattleCommandTrace> traces)
         {
             while (_executionQueue.Count > 0 && !IsBattleEnded)
@@ -566,6 +700,10 @@ namespace GGemCo2DTcg
             }
         }
 
+        /// <summary>
+        /// 커맨드 실행 결과를 해석하여 메시지 표시 및 후속 커맨드를 처리합니다.
+        /// </summary>
+        /// <param name="result">커맨드 실행 결과입니다.</param>
         private void HandleCommandResult(CommandResult result)
         {
             if (result == null) return;
@@ -584,6 +722,9 @@ namespace GGemCo2DTcg
 
         #endregion
 
+        /// <summary>
+        /// 세션을 종료하며, 이벤트 구독/컨트롤러 자원을 해제합니다.
+        /// </summary>
         public void Dispose()
         {
             UnsubscribeDrawEvents();
@@ -595,12 +736,20 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 특정 Side 에 해당하는 상태를 반환합니다.
+        /// 지정한 Side에 해당하는 상태를 반환합니다.
         /// </summary>
+        /// <param name="side">조회할 사이드입니다.</param>
+        /// <returns>요청한 사이드의 상태를 반환합니다.</returns>
         public TcgBattleDataSide GetSideState(ConfigCommonTcg.TcgPlayerSide side)
         {
             return Context.GetSideState(side);
         }
+
+        /// <summary>
+        /// 지정한 Side의 상대편 상태를 반환합니다.
+        /// </summary>
+        /// <param name="side">기준 사이드입니다.</param>
+        /// <returns>상대편 사이드의 상태를 반환합니다.</returns>
         public TcgBattleDataSide GetOpponentState(ConfigCommonTcg.TcgPlayerSide side)
         {
             return Context.GetOpponentState(side);

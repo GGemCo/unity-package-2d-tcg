@@ -4,22 +4,42 @@ using UnityEngine;
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// 초/중/후반 구간별 코스트 가중치를 적용하는 셔플 전략.
-    /// 
-    /// 동작 순서:
-    /// 1. 전체 덱을 Fisher–Yates 로 완전 랜덤 셔플한다.
-    /// 2. 덱 앞쪽 Config.FrontLoadedCount 장만 다시 재배열한다.
-    ///    - 이 영역을 초/중/후반 구간으로 나누고
-    ///    - 각 구간에 대해 코스트 가중치 기반 랜덤 순서를 생성한다.
-    /// 3. FrontLoadedCount 이후의 카드는 1번에서 셔플된 순서를 그대로 유지한다.
-    /// 
-    /// 결과적으로:
-    /// - "최대 마나를 얻기 전까지 드로우될 카드들"은
-    ///   초/중/후반 코스트 가중치가 반영된 순서로 배치되고,
-    /// - 그 이후 카드들은 완전 랜덤 순서가 유지된다.
+    /// 초/중/후반(Phase) 구간별 코스트 가중치를 반영하여 덱 앞부분을 재배열하는 셔플 전략입니다.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 이 전략은 “최대 마나에 도달하기 전까지 드로우될 카드 구간”(<c>FrontLoadedCount</c>)에만
+    /// 페이즈별 코스트 가중치를 적용하고, 그 이후 구간은 완전 랜덤 셔플 결과를 유지합니다.
+    /// </para>
+    /// <para><b>동작 순서</b></para>
+    /// <list type="number">
+    ///   <item><description>전체 덱을 Fisher–Yates 방식으로 완전 랜덤 셔플합니다.</description></item>
+    ///   <item><description>덱 앞쪽 <c>FrontLoadedCount</c> 장만 다시 재배열합니다(초/중/후반 분할 후, 각 구간을 가중 랜덤 재배치).</description></item>
+    ///   <item><description><c>FrontLoadedCount</c> 이후의 카드는 1단계 셔플 결과(완전 랜덤 순서)를 그대로 유지합니다.</description></item>
+    /// </list>
+    /// <para><b>결과</b></para>
+    /// <para>
+    /// 초반 드로우될 카드들은 페이즈별 코스트 분포 의도를 반영한 순서로 배치되며,
+    /// 중후반 이후 카드들은 편향 없이 랜덤성이 보존됩니다.
+    /// </para>
+    /// </remarks>
     public class ShuffleStrategyPhaseWeighted : IShuffleStrategy
     {
+        /// <summary>
+        /// 전달된 덱을 제자리(in-place)에서 셔플합니다.
+        /// </summary>
+        /// <typeparam name="TCard">셔플 대상 카드 타입입니다.</typeparam>
+        /// <param name="cards">셔플 대상 카드 리스트입니다. 호출 후 순서가 변경됩니다.</param>
+        /// <param name="metaData">
+        /// 셔플에 필요한 메타데이터입니다.
+        /// <para>- <c>Config</c>: FrontLoadedCount 및 페이즈 가중치 설정</para>
+        /// <para>- <c>SeedManager</c>: 셔플 랜덤 시드 적용</para>
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// 입력이 유효하지 않으면(리스트가 null/길이 1 이하, Config/SeedManager 없음) 아무 동작도 하지 않습니다.
+        /// </para>
+        /// </remarks>
         public void Shuffle<TCard>(List<TCard> cards, ShuffleMetaData metaData)
             where TCard : ICardInfo
         {
@@ -91,9 +111,21 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 지정된 구간 [start, start+length) 에 대해
-        /// weightSelector 를 기반으로 가중 무작위 순서를 생성합니다.
+        /// 지정된 구간을 가중치 기반 무작위 순서로 재배열합니다.
         /// </summary>
+        /// <typeparam name="TCard">셔플 대상 카드 타입입니다.</typeparam>
+        /// <param name="cards">전체 덱 리스트입니다.</param>
+        /// <param name="start">재배열을 시작할 인덱스(포함)입니다.</param>
+        /// <param name="length">재배열할 카드 수입니다.</param>
+        /// <param name="weightSelector">카드로부터 가중치 값을 선택하는 함수입니다.</param>
+        /// <remarks>
+        /// <para>
+        /// 구간은 <c>[start, start + length)</c>이며, 구간 밖의 카드 순서는 변경하지 않습니다.
+        /// </para>
+        /// <para>
+        /// 내부적으로 구간을 복사한 뒤 <see cref="WeightedReorder{TCard}"/> 결과로 다시 덮어씁니다.
+        /// </para>
+        /// </remarks>
         private void ReorderRange<TCard>(
             List<TCard> cards,
             int start,
@@ -112,8 +144,28 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
-        /// 리스트 전체를 "가중치 기반 랜덤 순서"로 재배치합니다.
+        /// 리스트 전체를 “가중치 기반 랜덤 순서”로 재배치한 새 리스트를 생성합니다.
         /// </summary>
+        /// <typeparam name="TCard">재배치 대상 카드 타입입니다.</typeparam>
+        /// <param name="source">재배치할 원본 리스트입니다.</param>
+        /// <param name="weightSelector">카드별 가중치를 반환하는 함수입니다.</param>
+        /// <returns>가중 무작위 선택을 반복하여 생성된 재배치 결과 리스트입니다.</returns>
+        /// <remarks>
+        /// <para>
+        /// 구현 방식은 “남은 카드 집합에서 가중치 룰렛 선택을 반복”하는 형태입니다.
+        /// 즉, 각 단계에서 <c>weightSelector</c>가 반환한 가중치에 비례하여 1장을 뽑아 결과에 추가하고,
+        /// 뽑힌 카드는 후보에서 제거합니다.
+        /// </para>
+        /// <para>
+        /// 가중치가 0 이하인 카드는 선택 대상에서 제외되며,
+        /// 남은 카드의 가중치 합이 0 이하가 되는 순간(= 모두 0 이하) 이후에는
+        /// 남은 카드들을 현재 순서 그대로 결과에 추가합니다.
+        /// </para>
+        /// <para>
+        /// NOTE: 난수는 <see cref="Random.Range(float, float)"/>를 사용하므로,
+        /// 외부에서 시드를 동일하게 적용하면 재현 가능한 결과를 얻을 수 있습니다(환경/플랫폼 의존성은 Unity 규칙을 따름).
+        /// </para>
+        /// </remarks>
         private List<TCard> WeightedReorder<TCard>(
             List<TCard> source,
             System.Func<TCard, float> weightSelector)

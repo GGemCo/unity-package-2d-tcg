@@ -5,11 +5,11 @@ namespace GGemCo2DTcg
 {
     /// <summary>
     /// 테이블 기반 Ability 실행기입니다.
-    /// 
+    ///
     /// - <c>tcg_card_*</c> 테이블에서 로드된 Ability 정의를 기반으로 실행합니다.
     /// - <see cref="TcgAbilityConstants.TcgAbilityType"/>에 따라 등록된 핸들러를 선택하여 호출합니다.
     /// - 실행 전/후에 <see cref="TcgAbilityPresentationEvent"/>를 발행할 수 있어,
-    ///   UI 연출 레이어를 도메인 로직과 분리하여 연결할 수 있습니다.
+    ///   UI 연출 레이어를 도메인 로직과 분리한 채로 연결할 수 있습니다.
     /// </summary>
     public static class TcgAbilityRunner
     {
@@ -29,13 +29,31 @@ namespace GGemCo2DTcg
 
         /// <summary>
         /// 프로젝트에서 제공하는 기본 Ability 핸들러들을 등록합니다.
-        /// AbilityType은 반드시 “연출 StepType”을 가진다(없으면 명시적 NoPresentation)
-        /// 원칙: TcgAbilityType은 UI가 있는 프로젝트라면 표준 StepType을 갖는다
-        /// 예외: 정말 연출이 필요 없는 타입은 NoPresentation로 문서에 명시하고 의도적으로 Factory에서 false를 반환한다
-        /// “1 Ability → 1 Step”이 기본, 단 복합 Ability는 “1 Ability → N Step” 허용
-        /// BuffAttackHealth 같은 복합 효과는 실제 연출도 두 번(공격/체력) 처리하는 것이 자연스러움
-        /// 따라서 Factory는 “다중 Step 생성”을 지원해야 유지보수/확장이 쉬움
         /// </summary>
+        /// <remarks>
+        /// 설계 규칙(문서화):
+        /// <list type="bullet">
+        /// <item>
+        /// <description>
+        /// UI가 존재하는 프로젝트에서는 대부분의 <see cref="TcgAbilityConstants.TcgAbilityType"/>이
+        /// 표준 연출 단계(StepType)에 매핑된다는 전제를 둡니다.
+        /// </description>
+        /// </item>
+        /// <item>
+        /// <description>
+        /// 연출이 정말로 필요 없는 타입은 <c>NoPresentation</c> 등으로 의도를 명시하고,
+        /// Step 생성 팩토리에서 의도적으로 false를 반환하도록 합니다.
+        /// </description>
+        /// </item>
+        /// <item>
+        /// <description>
+        /// 기본은 “1 Ability → 1 Step”이지만,
+        /// 복합 Ability(예: BuffAttackHealth)는 “1 Ability → N Step”을 허용합니다.
+        /// 따라서 Step 생성 팩토리는 다중 Step 생성을 지원하는 것을 권장합니다.
+        /// </description>
+        /// </item>
+        /// </list>
+        /// </remarks>
         private static void RegisterDefaultHandlers()
         {
             RegisterHandler(TcgAbilityConstants.TcgAbilityType.Damage, new TcgAbilityHandlersBasic.Damage());
@@ -74,6 +92,25 @@ namespace GGemCo2DTcg
             Handlers[type] = handler;
         }
 
+        /// <summary>
+        /// 지정된 Ability 목록을 순차 실행합니다.
+        /// </summary>
+        /// <param name="battleDataMain">전투 진행에 필요한 메인 전투 데이터입니다.</param>
+        /// <param name="casterSide">Ability를 시전한 플레이어의 진영(Side)입니다.</param>
+        /// <param name="casterZone">시전자(Caster)가 위치한 Zone입니다.</param>
+        /// <param name="casterIndex">Caster Zone 내에서의 인덱스 값입니다.</param>
+        /// <param name="targetZone">대상(Target)이 위치한 Zone입니다.</param>
+        /// <param name="targetIndex">Target Zone 내에서의 인덱스 값입니다.</param>
+        /// <param name="abilityDataList">실행할 Ability 데이터 목록입니다.</param>
+        /// <param name="tcgAbilityTriggerType">Ability 실행 트리거 유형입니다.</param>
+        /// <param name="presentationEvent">
+        /// UI 연출을 위한 이벤트 콜백입니다.
+        /// 제공된 경우 Ability 실행 직전/직후(<see cref="TcgAbilityPresentationEvent.Phase"/>)에 호출됩니다.
+        /// </param>
+        /// <remarks>
+        /// 이 메서드는 도메인 로직(Ability 처리)을 수행하며,
+        /// UI 연출은 <paramref name="presentationEvent"/>를 통해 외부로 위임합니다.
+        /// </remarks>
         public static void RunAbility(
             TcgBattleDataMain battleDataMain,
             ConfigCommonTcg.TcgPlayerSide casterSide,
@@ -104,8 +141,14 @@ namespace GGemCo2DTcg
                     continue;
                 }
 
-                var ctx = new TcgAbilityContext(battleDataMain, casterSide, casterZone, casterIndex,
-                    targetZone, targetIndex, ability);
+                var ctx = new TcgAbilityContext(
+                    battleDataMain,
+                    casterSide,
+                    casterZone,
+                    casterIndex,
+                    targetZone,
+                    targetIndex,
+                    ability);
 
                 // UI 연출 훅: 실행 직전
                 presentationEvent?.Invoke(new TcgAbilityPresentationEvent(
@@ -118,10 +161,10 @@ namespace GGemCo2DTcg
                     targetIndex: targetIndex,
                     abilityTriggerType: tcgAbilityTriggerType));
 
-                // Ability 시스템 처리. UI 연출이 아님.
+                // Ability 시스템 처리(도메인 로직). UI 연출이 아님.
                 handler.Execute(ctx);
 
-                // UI 연출 처리
+                // UI 연출 훅: 실행 직후
                 presentationEvent?.Invoke(new TcgAbilityPresentationEvent(
                     TcgAbilityPresentationEvent.Phase.End,
                     ability: ability,
@@ -134,7 +177,26 @@ namespace GGemCo2DTcg
                     userData: null));
             }
         }
-        
+
+        /// <summary>
+        /// 카드 사용(OnPlay) 시점에 단일 Ability를 실행하고, 생성된 연출 Step을 누적합니다.
+        /// </summary>
+        /// <param name="battleDataMain">전투 진행에 필요한 메인 전투 데이터입니다.</param>
+        /// <param name="casterSide">Ability를 시전한 플레이어의 진영(Side)입니다.</param>
+        /// <param name="casterZone">시전자(Caster)가 위치한 Zone입니다.</param>
+        /// <param name="casterIndex">Caster Zone 내에서의 인덱스 값입니다.</param>
+        /// <param name="targetZone">대상(Target)이 위치한 Zone입니다.</param>
+        /// <param name="targetIndex">Target Zone 내에서의 인덱스 값입니다.</param>
+        /// <param name="ability">실행할 Ability 정의입니다.</param>
+        /// <param name="steps">
+        /// Ability 연출을 커맨드 기반 연출과 동일 타임라인에서 재생하기 위한 Step 누적 리스트입니다.
+        /// null인 경우 Step 변환은 수행하지 않습니다.
+        /// </param>
+        /// <remarks>
+        /// Ability 실행 중 발행되는 <see cref="TcgAbilityPresentationEvent"/>를
+        /// <see cref="TcgAbilityPresentationStepFactory"/>를 통해 <see cref="TcgPresentationStep"/>으로 변환하여
+        /// <paramref name="steps"/>에 누적합니다.
+        /// </remarks>
         public static void TryRunOnPlayAbility(
             TcgBattleDataMain battleDataMain,
             ConfigCommonTcg.TcgPlayerSide casterSide,
@@ -153,6 +215,7 @@ namespace GGemCo2DTcg
             {
                 new TcgAbilityData { ability = ability }
             };
+
             var session = battleDataMain.Owner as TcgBattleSession;
 
             // Ability 기반 UI 연출도 커맨드 기반 연출과 동일한 타임라인에서 재생될 수 있도록,
@@ -181,6 +244,5 @@ namespace GGemCo2DTcg
                 tcgAbilityTriggerType: TcgAbilityConstants.TcgAbilityTriggerType.OnPlay,
                 presentationEvent: session != null ? PresentationEventBridge : null);
         }
-
     }
 }

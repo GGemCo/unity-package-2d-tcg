@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace GGemCo2DTcg
+﻿namespace GGemCo2DTcg
 {
     public class CommandHandlerBase
     {

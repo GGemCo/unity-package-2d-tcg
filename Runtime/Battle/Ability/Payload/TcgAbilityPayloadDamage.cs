@@ -1,21 +1,30 @@
 namespace GGemCo2DTcg
 {
     /// <summary>
-    /// Ability 실행 결과를 UI 연출(프레젠테이션) 레이어로 전달하기 위한 구조화된 페이로드입니다.
-    /// 
-    /// - 도메인 로직은 UI에 의존하지 않으며, UI는 이 정보를 기반으로
-    ///   Damage/Heal 팝업, 버프 아이콘, 마나/드로우 강조 등 연출을 선택적으로 재생할 수 있습니다.
-    /// - 값이 필요 없는 경우(예: 단순 트리거 표시)는 0 또는 null로 전달될 수 있습니다.
+    /// Ability 실행 결과 중 피해(Damage) 정보를
+    /// UI 연출(프레젠테이션) 레이어로 전달하기 위한 페이로드입니다.
     /// </summary>
+    /// <remarks>
+    /// - 도메인 로직은 UI에 직접 의존하지 않으며,
+    ///   UI는 이 페이로드를 기반으로 Damage 팝업, 이펙트, 강조 연출 등을 선택적으로 재생할 수 있습니다.
+    /// - 단순 트리거용 연출의 경우 값이 의미 없을 수 있으며,
+    ///   이때는 0을 전달하는 방식으로 표현할 수 있습니다.
+    /// </remarks>
     public sealed class TcgAbilityPayloadDamage
     {
         /// <summary>
-        /// 기본 파라미터(주로 ParamA). UI에서 숫자 팝업 등에 사용할 수 있습니다.
+        /// 피해량을 나타내는 값입니다.
         /// </summary>
+        /// <remarks>
+        /// UI에서는 이 값을 사용해 숫자 팝업, 애니메이션 강도 등을 결정할 수 있습니다.
+        /// </remarks>
         public int DamageValue { get; }
 
-        public TcgAbilityPayloadDamage(
-            int damageValue)
+        /// <summary>
+        /// 피해 연출용 페이로드를 생성합니다.
+        /// </summary>
+        /// <param name="damageValue">표시 또는 처리할 피해 수치입니다.</param>
+        public TcgAbilityPayloadDamage(int damageValue)
         {
             DamageValue = damageValue;
         }
