@@ -1,0 +1,5 @@
+Key,Shared Comments,English(en),English(en) Comments,Korean(ko),Korean(ko) Comments
+"lifetime_duration_turns_format","","Lasts for {Turns} turns","","{Turns}턴 동안 지속",""
+"lifetime_trigger_count_format","","Expires after {Count} triggers","","{Count}회 발동 후 소멸",""
+"lifetime_durability_format","","Durability {Durability}","","내구도 {Durability}",""
+"lifetime_indefinite_format","","Lasts for the battle","","전투 중 지속",""

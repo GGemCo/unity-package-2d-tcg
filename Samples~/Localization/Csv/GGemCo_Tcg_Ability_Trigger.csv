@@ -1,0 +1,4 @@
+Key,Shared Comments,English(en),English(en) Comments,Korean(ko),Korean(ko) Comments
+"trigger_OnPlay_prefix","","When played, ","","사용 시 ",""
+"trigger_OnTurnStart_prefix","","At the start of the turn, ","","턴 시작마다 ",""
+"trigger_OnTurnEnd_prefix","","At the end of the turn, ","","턴 종료마다 ",""

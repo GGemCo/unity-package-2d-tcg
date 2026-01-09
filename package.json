@@ -17,6 +17,11 @@
         "displayName": "UIWindows",
         "description": "UI 윈도우 프리팹 샘플 리소스 입니다.\nAssets/GGemCo 폴더에 모든 파일을 이동 시킨 후 사용해주세요.\n디자인을 변경해서 사용할 수 있습니다.",
         "path": "Samples~/UIWindows"
+      },
+      {
+        "displayName": "Localization",
+        "description": "TCG 패키지에 사용되는 Localization 샘플 파일입니다. CSV 파일과 String Collection Table 파일이 있습니다.",
+        "path": "Samples~/Localization"
       }
     ],
 	"keywords": [

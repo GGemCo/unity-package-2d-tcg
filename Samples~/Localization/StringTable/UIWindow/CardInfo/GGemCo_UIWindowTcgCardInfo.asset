@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
+  m_Name: GGemCo_UIWindowTcgCardInfo
+  m_EditorClassIdentifier: 
+  m_SharedTableData: {fileID: 11400000, guid: 472de29102797ba4a8487309fdb1828e, type: 2}
+  m_Tables:
+  - {fileID: 11400000, guid: 3f7e0f82fddabf0409a6c3ff033a3b33, type: 2}
+  - {fileID: 11400000, guid: 41dc6dd1fc30b2e4dba21178e1b2363b, type: 2}
+  m_Extensions:
+  - rid: 1357584042286383285
+  m_Group: String Table
+  references:
+    version: 2
+    RefIds:
+    - rid: 1357584042286383285
+      type: {class: CsvExtension, ns: UnityEditor.Localization.Plugins.CSV, asm: Unity.Localization.Editor}
+      data:
+        m_Collection: {fileID: 11400000}
+        m_ColumnsList:
+        - rid: 1357584042286383286
+        - rid: 1357584042286383287
+        - rid: 1357584042286383288
+        m_ConnectedFile: com.ggemco.2d.tcg/Samples~/Localization/Csv/UIWindow/GGemCo_UIWindowTcgCardInfo.csv
+    - rid: 1357584042286383286
+      type: {class: KeyIdColumns, ns: UnityEditor.Localization.Plugins.CSV.Columns, asm: Unity.Localization.Editor}
+      data:
+        m_IncludeId: 0
+        m_IncludeSharedComments: 1
+        m_KeyFieldName: Key
+        m_IdFieldName: Id
+        m_CommentFieldName: Shared Comments
+    - rid: 1357584042286383287
+      type: {class: LocaleColumns, ns: UnityEditor.Localization.Plugins.CSV.Columns, asm: Unity.Localization.Editor}
+      data:
+        m_LocaleIdentifier:
+          m_Code: en
+        m_FieldName: English(en)
+        m_CommentFieldName: English(en) Comments
+        m_IncludeComments: 1
+    - rid: 1357584042286383288
+      type: {class: LocaleColumns, ns: UnityEditor.Localization.Plugins.CSV.Columns, asm: Unity.Localization.Editor}
+      data:
+        m_LocaleIdentifier:
+          m_Code: ko
+        m_FieldName: Korean(ko)
+        m_CommentFieldName: Korean(ko) Comments
+        m_IncludeComments: 1
