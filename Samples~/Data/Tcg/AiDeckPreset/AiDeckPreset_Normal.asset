@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32fb3eb41cb7487494aa03b83cefa57a, type: 3}
+  m_Name: AiDeckPreset_Normal
+  m_EditorClassIdentifier: 
+  presetId: AI_Normal_Default
+  displayName: AI Normal Deck
+  difficulty: 1
+  deckSize: 25
+  fixedCardRules:
+  - cardUid: 1005
+    minCopies: 1
+    maxCopies: 1
+  filterRules:
+  - type: 1
+    minGrade: 1
+    maxGrade: 2
+    minCost: 1
+    maxCost: 4
+    count: 14
+    allowDuplicateSameCard: 1
+  - type: 2
+    minGrade: 1
+    maxGrade: 2
+    minCost: 2
+    maxCost: 4
+    count: 6
+    allowDuplicateSameCard: 1
+  - type: 4
+    minGrade: 1
+    maxGrade: 2
+    minCost: 3
+    maxCost: 5
+    count: 3
+    allowDuplicateSameCard: 0
+  randomSeedMode: 0
+  fixedSeed: 0
