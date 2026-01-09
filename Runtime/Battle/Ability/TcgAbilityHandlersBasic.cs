@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GGemCo2DCore;
 
 namespace GGemCo2DTcg
@@ -79,8 +80,30 @@ namespace GGemCo2DTcg
                 var drawCount = Math.Max(0, context.ParamA);
                 if (drawCount <= 0) return;
 
+                var side = context.CasterBattleDataSide;
+                if (side == null) return;
+
+                // UI 연출을 위해 "실제로 손패에 추가된 카드/인덱스"를 수집합니다.
+                // (오버드로우/피로 등으로 일부 드로우가 손패에 들어가지 않을 수 있습니다.)
+                var addedCards = new List<TcgBattleDataCardInHand>(drawCount);
+                var addedIndices = new List<int>(drawCount);
+
                 for (int i = 0; i < drawCount; i++)
-                    context.CasterBattleDataSide?.DrawOneCard();
+                {
+                    var result = side.DrawOneCard();
+                    if (!result.AddedToHand)
+                        continue;
+
+                    addedCards.Add(result.CardInHand);
+                    addedIndices.Add(result.HandIndex);
+                }
+
+                // 프리젠테이션 레이어에서 사용할 수 있도록 컨텍스트에 보관합니다.
+                // Runner가 End Phase 이벤트의 UserData로 전달합니다.
+                context.PresentationUserData = new TcgAbilityUserDataDraw(
+                    requestedDrawCount: drawCount,
+                    addedCards: addedCards,
+                    addedHandIndices: addedIndices);
             }
         }
 
