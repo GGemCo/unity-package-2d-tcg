@@ -1,0 +1,4 @@
+﻿Uid	Race	Tribe	TargetType	Attack	Health	Keywords
+6001	None	None	AllAllies	10	100	None
+6002	None	None	AllAllies	7	100	None
+6003	None	None	AllAllies	8	100	None

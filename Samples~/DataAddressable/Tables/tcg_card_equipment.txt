@@ -1,0 +1,6 @@
+﻿Uid	AbilityType	TargetType	ParamA	ParamB	ParamC
+3001	BuffAttack	AllyCreature	3	0	0
+3002	BuffAttack	AllyHero	3	0	0
+3003	BuffHealth	EnemyCreature	-2	0	0
+3004	BuffHealth	EnemyHero	-5	0	0
+3005	BuffAttackHealth	AllyCreature	2	3	0

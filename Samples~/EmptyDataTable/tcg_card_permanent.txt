@@ -1,0 +1,1 @@
+﻿Uid	AbilityType	TriggerType	TargetType	ParamA	ParamB	ParamC	IntervalTurn	MaxStacks	LifetimeType	LifetimeParamA	LifetimeParamB

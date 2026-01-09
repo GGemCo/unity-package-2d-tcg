@@ -1,0 +1,6 @@
+﻿Uid	AbilityType	TargetType	ParamA	ParamB	ParamC
+2001	Damage	EnemyHero	3	0	0
+2002	Heal	AllyHero	5	0	0
+2003	Damage	EnemyCreature	2	0	0
+2004	Damage	AnyCreature	4	0	0
+2005	Damage	EnemyCreature	6	0	0

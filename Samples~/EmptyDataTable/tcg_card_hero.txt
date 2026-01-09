@@ -1,0 +1,1 @@
+﻿Uid	Race	Tribe	TargetType	Attack	Health	Keywords

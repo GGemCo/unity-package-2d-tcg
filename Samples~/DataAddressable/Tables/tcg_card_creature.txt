@@ -1,0 +1,6 @@
+﻿Uid	Attack	Health	Keywords
+1001	10	99	Lightning Surge, Flying, Overcharge
+1002	10	10	Fortified, Unstoppable, Heavy
+1003	10	4	Burn, Haste, Molten Core
+1004	10	7	Regenerate, Nature Bond, Shield Growth
+1005	10	3	Stealth, Pierce, Ambush

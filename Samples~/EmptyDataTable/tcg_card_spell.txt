@@ -1,0 +1,1 @@
+﻿Uid	AbilityType	TargetType	ParamA	ParamB	ParamC
