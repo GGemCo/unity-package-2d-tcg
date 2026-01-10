@@ -1,0 +1,36 @@
+﻿Uid	Name	UseInGame	DefaultActive	Ordering	IsInteraction	OpenWindowUid	CloseWindowUid	PrefabName
+1	Hud	N	Y	1	N	0	0	UIWindowHud
+2	인벤토리	N	N	50	Y	4	4	UIWindowInventory
+3	아이템 정보창	N	N	60	N	0	0	UIWindowItemInfo
+4	장비창	N	N	51	N	0	0	UIWindowEquip
+5	플레이어 정보창	N	N	52	N	0	0	UIWindowPlayerStatInfo
+6	아이템 나누기	N	N	13	N	0	0	UIWindowItemSplit
+7	플레이어 버프정보창	N	Y	4	N	0	0	UIWindowPlayerBuffInfo
+8	퀵슬롯	N	Y	3	N	0	0	UIWindowQuickSlot
+9	스킬	N	N	5	N	0	0	UIWindowSkill
+10	스킬 정보창	N	N	12	N	0	0	UIWindowSkillInfo
+11	인터렉션 대화창	N	N	10	N	0	0	UIWindowInteractionDialogue
+12	상점	N	N	6	Y	0	0	UIWindowShop
+13	아이템 구매	N	N	16	Y	0	0	UIWindowItemBuy
+14	창고	N	N	8	Y	0	0	UIWindowStash
+15	상점 판매	N	N	7	Y	0	0	UIWindowShopSale
+16	아이템 강화	N	N	9	Y	0	0	UIWindowItemUpgrade
+17	아이템 분해	N	N	11	Y	0	0	UIWindowItemSalvage
+18	아이템 제작	N	N	14	Y	0	0	UIWindowItemCraft
+19	퀘스트 대사	N	N	20	N	0	0	UIWindowDialogue
+20	Hud 퀘스트 목록	N	Y	2	N	0	0	UIWindowHudQuest
+21	퀘스트 보상 목록	N	N	15	N	0	0	UIWindowQuestReward
+22	세이브 데이터 불러오기	N	N	100	N	0	0	UIWindowLoadSaveData
+23	옵션	Y	N	101	N	0	0	UIWindowOption
+24	시뮬레이션 퀵슬롯	N	Y	3	N	0	0	UIWindowQuickSlotSimulation
+25	텍스트 입력 팝업	Y	N	102	N	0	0	UIWindowInputField
+26	tcg 게임 메뉴	Y	Y	1	N	0	0	UIWindowTcgGameMenu
+27	tcg 콜랙션 리스트	Y	N	2	N	28	28,29	UIWindowTcgCardCollection
+28	tcg 마이 덱 리스트	Y	N	3	N	0	27	UIWindowTcgMyDeck
+29	tcg 마이 덱 카드 리스트	Y	N	4	N	0	0	UIWindowTcgMyDeckCard
+30	tcg 카드 정보창	Y	N	5	N	0	0	UIWindowTcgCardInfo
+31	tcg 핸드 Enemy	Y	N	6	N	33	33	UIWindowTcgHandEnemy
+32	tcg 핸드 Player	Y	N	7	N	34	34	UIWindowTcgHandPlayer
+33	tcg 필드 Enemy	Y	N	8	N	0	0	UIWindowTcgFieldEnemy
+34	tcg 필드 Player	Y	N	9	N	0	0	UIWindowTcgFieldPlayer
+35	tcg 대결 hud	Y	N	10	N	0	0	UIWindowTcgBattleHud
