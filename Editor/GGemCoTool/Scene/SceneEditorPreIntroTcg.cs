@@ -43,7 +43,7 @@ namespace GGemCo2DTcgEditor
         /// <summary>
         /// 필수 항목 셋팅
         /// </summary>
-        private void SetupRequiredObjects()
+        public void SetupRequiredObjects()
         {
             string sceneName = nameof(ScenePreIntro);
             GGemCo2DCore.ScenePreIntro scene = CreateUIComponent.Find(sceneName, ConfigPackageInfo.PackageType.Core)?.GetComponent<ScenePreIntro>();

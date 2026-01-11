@@ -34,13 +34,13 @@ namespace GGemCo2DTcgEditor
         /// <summary>
         /// Addressable 설정하기
         /// </summary>
-        private void Setup()
+        public void Setup(EditorSetupContext ctx = null)
         {
             // AddressableSettings 가져오기 (없으면 생성)
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
             if (!settings)
             {
-                Debug.LogWarning("Addressable 설정을 찾을 수 없습니다. 새로 생성합니다.");
+                HelperLog.Warn("Addressable 설정을 찾을 수 없습니다. 새로 생성합니다.", ctx);
                 settings = CreateAddressableSettings();
             }
 
@@ -49,7 +49,7 @@ namespace GGemCo2DTcgEditor
 
             if (!group)
             {
-                Debug.LogError($"'{targetGroupName}' 그룹을 설정할 수 없습니다.");
+                HelperLog.Error($"'{targetGroupName}' 그룹을 설정할 수 없습니다.", ctx);
                 return;
             }
 
@@ -62,17 +62,24 @@ namespace GGemCo2DTcgEditor
             // 설정 저장
             settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, null, true);
             AssetDatabase.SaveAssets();
-            EditorUtility.DisplayDialog(Title, "Addressable 설정 완료", "OK");
+            if (ctx != null)
+            {
+                HelperLog.Info("[Addressable] Setting 스크립터블 오브젝트 설정 완료", ctx);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog(Title, "[Addressable] Setting 스크립터블 오브젝트 설정 완료", "OK");
+            }
         }
 
-        private void Add(AddressableAssetSettings settings, AddressableAssetGroup group, AddressableAssetInfo addressableAssetInfo)
+        private void Add(AddressableAssetSettings settings, AddressableAssetGroup group, AddressableAssetInfo addressableAssetInfo, EditorSetupContext ctx = null)
         {
             string assetPath = addressableAssetInfo.Path;
             // 대상 파일 가져오기
             var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
             if (!asset)
             {
-                Debug.LogError($"파일을 찾을 수 없습니다: {assetPath}");
+                HelperLog.Error($"파일을 찾을 수 없습니다: {assetPath}", ctx);
                 return;
             }
 
@@ -83,11 +90,11 @@ namespace GGemCo2DTcgEditor
             {
                 // 신규 Addressable 항목 추가
                 entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(assetPath), group);
-                Debug.Log($"Addressable 항목을 추가했습니다: {assetPath}");
+                HelperLog.Info($"Addressable 항목을 추가했습니다: {assetPath}", ctx);
             }
             else
             {
-                Debug.Log($"이미 Addressable에 등록된 항목입니다: {assetPath}");
+                HelperLog.Info($"이미 Addressable에 등록된 항목입니다: {assetPath}", ctx);
             }
 
             // 키 값 설정
