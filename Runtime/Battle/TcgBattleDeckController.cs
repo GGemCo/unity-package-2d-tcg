@@ -100,6 +100,9 @@ namespace GGemCo2DTcg
             // AI 덱 구성 (현재는 테스트 프리셋 사용)
             List<int> cardUids = new List<int>();
             cardUids.Clear();
+            if (GcLogger.IsNull(_tcgSettings.enemyDeckPreset,
+                    $"{nameof(_tcgSettings.enemyDeckPreset)} 이 없습니다. GGemCoTcgSettings 설정을 확인해 주세요.")) return null;
+            
             cardUids = _tcgSettings.enemyDeckPreset.BuildDeckUids(tableTcgCards);
 
             Dictionary<int, int> cardList = new Dictionary<int, int>();
