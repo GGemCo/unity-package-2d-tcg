@@ -14,8 +14,18 @@
 	},
     "samples": [
       {
+        "displayName": "Data",
+        "description": "TCG 카드, 테두리 샘플 이미지 리소스 입니다.\nAssets/GGemCo/Data 폴더에 모든 파일을 이동 시킨 후 사용해주세요.",
+        "path": "Samples~/Data"
+      },
+      {
+        "displayName": "DataAddressable",
+        "description": "Addressable 에 사용되는 샘플 리소스 입니다.\n사용하기 전에 Data Resource 샘플 리소스를 먼저 Import 해주세요.\nAssets/GGemCo/DataAddressable 폴더에 모든 파일을 이동 시키면 바로 사용할 수 있습니다.",
+        "path": "Samples~/DataAddressable"
+      },
+      {
         "displayName": "UIWindows",
-        "description": "UI 윈도우 프리팹 샘플 리소스 입니다.\nAssets/GGemCo 폴더에 모든 파일을 이동 시킨 후 사용해주세요.\n디자인을 변경해서 사용할 수 있습니다.",
+        "description": "UI 윈도우 프리팹 샘플 리소스 입니다.\nAssets/GGemCo/UIWindows 폴더에 모든 파일을 이동 시킨 후 사용해주세요.\n디자인을 변경해서 사용할 수 있습니다.",
         "path": "Samples~/UIWindows"
       },
       {
