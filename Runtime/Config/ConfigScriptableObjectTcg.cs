@@ -135,12 +135,7 @@ namespace GGemCo2DTcg
         public static readonly Dictionary<string, Type> SettingsTypes = new()
         {
             { TcgSettings.FileName, typeof(GGemCoTcgSettings) },
-
-            // NOTE: 아래 설정들이 실제 ScriptableObject 타입으로 존재한다면 매핑에 추가하는 것을 권장합니다.
-            // { TcgUICutsceneSettings.FileName, typeof(... ) },
-            // { TcgWeightShuffleSettings.FileName, typeof(... ) },
-            // { TcgPhaseShuffleSettings.FileName, typeof(... ) },
-            // { TcgAiPreset.FileName, typeof(... ) },
+            { TcgUICutsceneSettings.FileName, typeof(GGemCoTcgUICutsceneSettings) },
         };
     }
 }
