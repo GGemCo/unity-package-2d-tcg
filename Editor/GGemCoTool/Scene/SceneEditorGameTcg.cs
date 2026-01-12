@@ -135,7 +135,7 @@ namespace GGemCo2DTcgEditor
             }
 
             List<UIWindow> uiWindows =  new List<UIWindow> { null };
-            Dictionary<int, StruckTableWindow> dictionary = tableLoaderManager.LoadWindowTable().GetDatas();
+            Dictionary<int, StruckTableWindow> dictionary = GGemCo2DCoreEditor.TableLoaderManager.LoadWindowTable().GetDatas();
             
             foreach (KeyValuePair<int, StruckTableWindow> outerPair in dictionary)
             {

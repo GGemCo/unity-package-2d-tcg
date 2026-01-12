@@ -12,7 +12,7 @@ namespace GGemCo2DTcgEditor
         }
         public override void Execute(EditorSetupContext ctx)
         {
-            var addressableEditor = ScriptableObject.CreateInstance<AddressableEditor>();
+            var addressableEditor = ctx.addressableEditor;
             var addressableEditorTcg = ScriptableObject.CreateInstance<AddressableEditorTcg>();
             
             // settings 스크립터블 오브젝트, 테이블은 StepSetDefaultAddressableData 클래스에서 처리
