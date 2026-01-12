@@ -43,13 +43,13 @@ namespace GGemCo2DTcgEditor
         /// <summary>
         /// 필수 항목 셋팅
         /// </summary>
-        public void SetupRequiredObjects()
+        public void SetupRequiredObjects(EditorSetupContext ctx = null)
         {
             string sceneName = nameof(SceneLoading);
             GGemCo2DCore.SceneLoading scene = CreateUIComponent.Find(sceneName, ConfigPackageInfo.PackageType.Core)?.GetComponent<SceneLoading>();
             if (scene == null) 
             {
-                GcLogger.LogError($"{sceneName} 이 없습니다.\nGGemCoTool > 설정하기 > 로딩 씬 셋팅하기에서 필수 항목 셋팅하기를 실행해주세요.");
+                HelperLog.Error($"[{nameof(SceneEditorLoadingTcg)}] {sceneName} 이 없습니다.\nGGemCoTool > 설정하기 > 로딩 씬 셋팅하기에서 필수 항목 셋팅하기를 실행해주세요.", ctx);
                 return;
             }
             _objGGemCoCore = GetOrCreateRootPackageGameObject();
@@ -57,6 +57,7 @@ namespace GGemCo2DTcgEditor
             GGemCo2DTcg.SceneLoadingTcg sceneLoadingTcg =
                 CreateOrAddComponent<GGemCo2DTcg.SceneLoadingTcg>(nameof(GGemCo2DTcg.SceneLoadingTcg));
 
+            HelperLog.Info($"[{nameof(SceneEditorLoadingTcg)}] 로딩 씬 필수 셋업 완료", ctx);
             // 반드시 SetDirty 처리해야 저장됨
             EditorUtility.SetDirty(scene);
         }

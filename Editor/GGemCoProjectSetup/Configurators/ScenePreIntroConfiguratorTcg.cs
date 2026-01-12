@@ -7,10 +7,10 @@ namespace GGemCo2DCoreEditor
     /// <summary>PreIntro 씬 필수 구성: Canvas + 로딩 퍼센트 텍스트</summary>
     public class ScenePreIntroConfiguratorTcg : DefaultSceneEditor, ISceneConfigurator
     {
-        public void ConfigureInEditor(bool needSampleResources = false)
+        public void ConfigureInEditor(EditorSetupContext ctx, bool needSampleResources = false)
         {
             var sceneEditorPreIntro = ScriptableObject.CreateInstance<SceneEditorPreIntroTcg>();
-            sceneEditorPreIntro.SetupRequiredObjects();
+            sceneEditorPreIntro.SetupRequiredObjects(ctx);
         }
     }
 }

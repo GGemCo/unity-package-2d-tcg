@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using GGemCo2DCore;
 using GGemCo2DCoreEditor;
+using GGemCo2DTcg;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GGemCo2DTcgEditor
 {
@@ -45,25 +47,53 @@ namespace GGemCo2DTcgEditor
         /// <summary>
         /// 필수 항목 셋팅
         /// </summary>
-        public void SetupRequiredObjects()
+        public void SetupRequiredObjects(EditorSetupContext ctx = null)
         {
             string sceneName = nameof(SceneGame);
             GGemCo2DCore.SceneGame scene = CreateUIComponent.Find(sceneName, ConfigPackageInfo.PackageType.Core)?.GetComponent<SceneGame>();
             if (scene == null) 
             {
-                GcLogger.LogError($"{sceneName} 이 없습니다.\nGGemCoTool > 설정하기 > 게임 씬 셋팅하기에서 필수 항목 셋팅하기를 실행해주세요.");
+                HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] {nameof(SceneGame)} 이 없습니다.\nGGemCoTool > 설정하기 > 게임 씬 셋팅하기에서 필수 항목 셋팅하기를 실행해주세요.", ctx);
                 return;
             }
             _objGGemCoCore = GetOrCreateRootPackageGameObject();
-            // GGemCo2DControl.ControlPackageManager GameObject 만들기
-            GGemCo2DTcg.TcgPackageManager tcgPackageManager =
-                CreateOrAddComponent<GGemCo2DTcg.TcgPackageManager>(nameof(GGemCo2DTcg.TcgPackageManager));
             
-            // ControlPackageManager 은 싱글톤으로 활용하고 있어 root 로 이동
-            tcgPackageManager.gameObject.transform.SetParent(null);
+            SetupTcgPackageManager(scene, ctx);
+            SetupCanvasBlackImage(scene, ctx);
             
+            HelperLog.Info($"[{nameof(SceneEditorGameTcg)}] 게임 씬 필수 셋업 완료", ctx);
             // 반드시 SetDirty 처리해야 저장됨
             EditorUtility.SetDirty(scene);
+        }
+
+        private void SetupCanvasBlackImage(SceneGame scene, EditorSetupContext ctx = null)
+        {
+            var canvasBlack = CreateUIComponent.Find("CanvasBlack", ConfigPackageInfo.PackageType.Core);
+            if (canvasBlack == null)
+            {
+                HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] CanvasBlack 오브젝트가 없습니다.", ctx);
+                return;
+            }
+
+            var image = canvasBlack.transform.GetChild(0).gameObject;
+            if (image == null)
+            {
+                HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] CanvasBlack 하위에 Image 오브젝트가 없습니다.", ctx);
+                return;
+            }
+            var imageComponent = image.GetComponent<Image>();
+            imageComponent.color = new Color(0, 0, 0, 0);
+            HelperLog.Info($"[{nameof(SceneEditorGameTcg)}] CanvasBlackImage 셋업 완료", ctx);
+        }
+
+        private void SetupTcgPackageManager(SceneGame scene, EditorSetupContext ctx = null)
+        {
+            TcgPackageManager tcgPackageManager =
+                CreateOrAddComponent<TcgPackageManager>(nameof(TcgPackageManager));
+            
+            // 싱글톤으로 활용하고 있어 root 로 이동
+            tcgPackageManager.gameObject.transform.SetParent(null);
+            HelperLog.Info($"[{nameof(SceneEditorGameTcg)}] {nameof(TcgPackageManager)} 셋업 완료", ctx);
         }
 
         /// <summary>
@@ -100,7 +130,7 @@ namespace GGemCo2DTcgEditor
             GameObject canvas = CreateUIComponent.Find("Canvas", ConfigPackageInfo.PackageType.Core);
             if (canvas == null)
             {
-                Debug.LogError("GGemCo_Core_Canvas 가 없습니다.");
+                HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] GGemCo_Core_Canvas 가 없습니다.", ctx);
                 return;
             }
 
@@ -121,7 +151,7 @@ namespace GGemCo2DTcgEditor
                 GameObject prefab = FindPrefabByName(ConfigEditor.PathUIWindow, objectName);
                 if (!prefab)
                 {
-                    Debug.LogError($"{objectName} 프리팹이 없습니다.");
+                    HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] {objectName} 프리팹이 없습니다.", ctx);
                     continue;
                 }
                 
@@ -141,7 +171,7 @@ namespace GGemCo2DTcgEditor
                 gameObject = PrefabUtility.InstantiatePrefab(prefab, canvas.transform) as GameObject;
                 if (!gameObject)
                 {
-                    Debug.LogError("프리팹 인스턴스 생성 실패");
+                    HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] {objectName} 프리팹 생성 실패", ctx);
                     continue;
                 }
 
@@ -167,6 +197,7 @@ namespace GGemCo2DTcgEditor
 
             uiWindowManager.SetUIWindow(uiWindows.ToArray());
             scene.SetUIWindowManager(uiWindowManager);
+            HelperLog.Info($"[{nameof(SceneEditorGameTcg)}] UI 윈도우 셋업 완료", ctx);
         }
     }
 }

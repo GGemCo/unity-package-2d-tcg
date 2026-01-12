@@ -16,8 +16,13 @@ namespace GGemCo2DTcgEditor
     /// </summary>
     public sealed class StepSetSceneRequireObjectTcg : SetupStepBase
     {
+        private bool _needSampleResources;
         private readonly List<string> _sceneNames = new List<string> {ConfigDefine.SceneNamePreIntro, ConfigDefine.SceneNameLoading, ConfigDefine.SceneNameGame};
         
+        public StepSetSceneRequireObjectTcg(bool needSampleResources)
+        {
+            _needSampleResources = needSampleResources;
+        }
         public override bool Validate(EditorSetupContext ctx, out string message)
         {
             // 별도 선행 조건은 없음. (열린 씬이 없어도 MonoBehaviour 탐색은 빈 결과)
@@ -45,13 +50,13 @@ namespace GGemCo2DTcgEditor
         public override void Execute(EditorSetupContext ctx)
         {
             ConfigureAndSave(ctx.GetShared<SceneAsset>(ConfigDefine.SceneNamePreIntro),
-                () => ScriptableObject.CreateInstance<ScenePreIntroConfiguratorTcg>().ConfigureInEditor(), ctx);
+                () => ScriptableObject.CreateInstance<ScenePreIntroConfiguratorTcg>().ConfigureInEditor(ctx), ctx);
 
             ConfigureAndSave(ctx.GetShared<SceneAsset>(ConfigDefine.SceneNameLoading),
-                () => ScriptableObject.CreateInstance<SceneLoadingConfiguratorTcg>().ConfigureInEditor(), ctx);
+                () => ScriptableObject.CreateInstance<SceneLoadingConfiguratorTcg>().ConfigureInEditor(ctx), ctx);
 
             ConfigureAndSave(ctx.GetShared<SceneAsset>(ConfigDefine.SceneNameGame),
-                () => ScriptableObject.CreateInstance<SceneGameConfiguratorTcg>().ConfigureInEditor(), ctx);
+                () => ScriptableObject.CreateInstance<SceneGameConfiguratorTcg>().ConfigureInEditor(ctx, _needSampleResources), ctx);
         }
     }
 }

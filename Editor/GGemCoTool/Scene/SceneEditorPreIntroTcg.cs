@@ -43,13 +43,13 @@ namespace GGemCo2DTcgEditor
         /// <summary>
         /// 필수 항목 셋팅
         /// </summary>
-        public void SetupRequiredObjects()
+        public void SetupRequiredObjects(EditorSetupContext ctx = null)
         {
             string sceneName = nameof(ScenePreIntro);
             GGemCo2DCore.ScenePreIntro scene = CreateUIComponent.Find(sceneName, ConfigPackageInfo.PackageType.Core)?.GetComponent<ScenePreIntro>();
             if (scene == null) 
             {
-                GcLogger.LogError($"{sceneName} 이 없습니다.\nGGemCoTool > 설정하기 > Pre인트로 씬 셋팅하기에서 필수 항목 셋팅하기를 실행해주세요.");
+                HelperLog.Error($"[{nameof(SceneEditorPreIntroTcg)}] {sceneName} 이 없습니다.\nGGemCoTool > 설정하기 > Pre인트로 씬 셋팅하기에서 필수 항목 셋팅하기를 실행해주세요.", ctx);
                 return;
             }
             _objGGemCoCore = GetOrCreateRootPackageGameObject();
@@ -57,6 +57,7 @@ namespace GGemCo2DTcgEditor
             GGemCo2DTcg.GameLoaderManagerTcg gameLoaderManagerTcg =
                 CreateOrAddComponent<GGemCo2DTcg.GameLoaderManagerTcg>(nameof(GGemCo2DTcg.GameLoaderManagerTcg));
 
+            HelperLog.Info($"[{nameof(SceneEditorPreIntroTcg)}] 프리 인트로 씬 필수 셋팅 완료", ctx);
             // 반드시 SetDirty 처리해야 저장됨
             EditorUtility.SetDirty(scene);
         }
