@@ -1,4 +1,5 @@
 using System.Collections;
+using GGemCo2DCore;
 using UnityEngine;
 
 namespace GGemCo2DTcg
@@ -34,25 +35,66 @@ namespace GGemCo2DTcg
             if (step.Payload is not TcgAbilityPayloadDraw payload) yield break;
             if (payload.DrawCount <= 0) yield break;
 
-            var window = ctx.GetUIWindow(step.ToZone);
-            if (window == null) yield break;
-
-            // 타겟 아이콘(없으면 영웅 슬롯으로 폴백)
-            var icon = window.GetIconByIndex(step.ToIndex);
-            if (icon == null)
-                icon = window.GetIconByIndex(ConfigCommonTcg.IndexHeroSlot);
-
-            if (icon != null)
+            var attackerHandWindow = ctx.GetUIHandWindowBySide(step.Side);
+            if (attackerHandWindow == null) yield break;
+            
+            // 손패 슬롯은 제거된 것처럼 보이도록 비활성화한다.
+            var attackerSlot = attackerHandWindow.GetSlotByIndex(step.FromIndex);
+            if (attackerSlot)
             {
-                // NOTE: 현재 연출 리소스 재사용을 위해 Heal 이펙트를 사용한다(드로우 전용 이펙트로 교체 가능).
-                ShowEffect(icon, EffectUidHeal);
+                attackerSlot.gameObject.SetActive(false);
+            }
 
-                // 드로우 수치를 팝업으로 표시한다(양수 표기).
-                ShowDamageText(icon, payload.DrawCount);
+            // 사용하지 않는 슬롯부터 채워야 하기 때문에,
+            // Hand 윈도우에서 사용하지 않는 슬롯 중 제일 낮은 슬롯 index 찾기
+            int lowestIndex = 99999999;
+            foreach (var slot in attackerHandWindow.slots)
+            {
+                UISlot uiSlot = slot.GetComponent<UISlot>();
+                if (uiSlot == null) continue;
+                // 사용한 카드 슬롯은 스킵 하기
+                if (uiSlot.index == step.FromIndex) continue;
+                // 보여지고 있는 슬롯은 스킵 하기
+                if (uiSlot.gameObject.activeSelf) continue;
+                if (uiSlot.index < lowestIndex) lowestIndex = uiSlot.index;
+            }
+            
+            // 실제로 추가된 카드 인덱스가 전달된 경우, 해당 카드 아이콘을 우선 강조한다.
+            if (payload.AddedHandIndices != null && payload.AddedHandIndices.Count > 0)
+            {
+                for (int i = 0; i < payload.AddedHandIndices.Count; i++)
+                {
+                    var fromCard = payload.AddedCards[i];
+                    
+                    // 필드 슬롯에 아이콘을 생성/갱신한다(카드 UID 기준).
+                    attackerHandWindow.SetIconCount(lowestIndex, fromCard.Uid, 1);
+                    
+                    // 2) 아이콘 오브젝트를 찾는다 (한 프레임 대기하면 생성/바인딩 안정성이 올라감)
+                    yield return null;
+                    
+                    var targetSlot = attackerHandWindow.GetSlotByIndex(lowestIndex);
+                    if (targetSlot != null)
+                    {
+                        var defaultFadeOption = UiFadeUtility.FadeOptions.Default;
+                        defaultFadeOption.easeType = ctx.UICutsceneSettings.handToFieldFadeInEasing;
+                        defaultFadeOption.startAlpha = 1f;
+                        yield return UiFadeUtility.FadeIn(
+                            attackerHandWindow,
+                            targetSlot.gameObject,
+                            ctx.UICutsceneSettings.handToFieldFadeInDuration,
+                            defaultFadeOption);
+                    }
+                    else
+                    {
+                        yield return new WaitForSeconds(0.05f);
+                    }
+
+                    lowestIndex++;
+                }
             }
 
             // 손패 윈도우 펄스(짧고 확실하게)
-            yield return CoPulseTransform(window.transform, duration: 0.18f, scaleUp: 1.06f);
+            yield return CoPulseTransform(attackerHandWindow.transform, duration: 0.18f, scaleUp: 1.06f);
         }
 
         /// <summary>

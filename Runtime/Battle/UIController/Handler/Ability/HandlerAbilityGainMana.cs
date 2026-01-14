@@ -36,8 +36,10 @@ namespace GGemCo2DTcg
             var window = ctx.GetUIWindow(step.ToZone);
             if (window == null) yield break;
 
+            var handWindow = ctx.GetUIHandWindowBySide(step.Side);
+
             // 1) 우선 처리: Player Hand의 마나 컨테이너(토글 그룹/컨테이너)
-            if (window is UIWindowTcgHandPlayer playerHand && playerHand.containerToggleMana != null)
+            if (handWindow is UIWindowTcgHandPlayer playerHand && playerHand.containerToggleMana != null)
             {
                 var pos = playerHand.containerToggleMana.position;
 

@@ -70,7 +70,7 @@ namespace GGemCo2DTcg
             {
                 Uid = MathHelper.ParseInt(data["Uid"]),
                 AbilityType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityType>(data["AbilityType"]),
-                TcgAbilityTriggerType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTriggerType>(data["TriggerType"]),
+                TcgAbilityTriggerType = TcgAbilityConstants.TcgAbilityTriggerType.OnPlay,
                 TcgAbilityTargetType = EnumHelper.ConvertEnum<TcgAbilityConstants.TcgAbilityTargetType>(data["TargetType"]),
                 ParamA = MathHelper.ParseInt(data["ParamA"]),
                 ParamB = MathHelper.ParseInt(data["ParamB"]),

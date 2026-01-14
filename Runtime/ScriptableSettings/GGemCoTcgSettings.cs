@@ -171,17 +171,6 @@ namespace GGemCo2DTcg
         public int maxTurns = 10;
 
         // ──────────────────────────────────────────────────────────────────────────────
-        // UI 연출
-        // ──────────────────────────────────────────────────────────────────────────────
-        /// <summary>
-        /// UI 연출 관련 타이밍 설정입니다.
-        /// </summary>
-        [Header("UI 연출")]
-        [Tooltip("한개의 Command 종료 후 대기 시간")]
-        [Min(0)]
-        public float timeWaitAfterCommand = 1.0f;
-
-        // ──────────────────────────────────────────────────────────────────────────────
         // Shuffle
         // ──────────────────────────────────────────────────────────────────────────────
         /// <summary>
@@ -238,9 +227,13 @@ namespace GGemCo2DTcg
         /// 에디터 테스트/디버그를 위한 설정 값들입니다. (런타임 빌드에는 포함되지 않을 수 있음)
         /// </summary>
         [Header("테스트용")]
+        [Tooltip("테스트를 위해 고정 Seed 값을 사용할 경우 입력하세요.")]
         public int testSeed;
+        [Tooltip("셔플된 덱 정보를 콘솔에 출력 합니다.")]
         public bool showDeckInfo;
+        [Tooltip("셔플할때 적용된 Seed값과 셔플된 덱 정보를 콘솔에 출력합니다.")]
         public bool showShuffleInfo;
+        [Tooltip("카드 이름 앞에 고유번호 Uid를 출력합니다.")]
         public bool showCardUid;
 
         /// <summary>

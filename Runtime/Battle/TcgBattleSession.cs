@@ -280,8 +280,8 @@ namespace GGemCo2DTcg
         private void DrawStartOfTurnCard()
         {
             var side = Context.GetSideState(Context.ActiveSide);
-            side.DrawOneCard();
-        }
+            _ = side.DrawOneCard();
+}
 
         /// <summary>
         /// 턴 종료 후(플레이어 턴 시작 시점) 마나 한도 증가 및 마나 회복을 수행합니다.

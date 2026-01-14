@@ -353,11 +353,6 @@ namespace GGemCo2DTcg
                 GcLogger.LogError($"{nameof(targetZone)}이 없습니다.");
                 return;
             }
-            if (targetIndex < 0)
-            {
-                GcLogger.LogError($"targetIndex: {targetIndex}");
-                return;
-            }
 
             var actor = _session.Context.GetSideState(side);
             var opponent = _session.Context.GetOpponentState(side);
@@ -370,8 +365,6 @@ namespace GGemCo2DTcg
                 targetBattleDataCardInField = actor.GetBattleDataCardInFieldByIndex(targetIndex, true);
             else if (targetZone == ConfigCommonTcg.TcgZone.FieldEnemy)
                 targetBattleDataCardInField = opponent.GetBattleDataCardInFieldByIndex(targetIndex, true);
-
-            if (targetBattleDataCardInField == null) return;
 
             var command = TcgBattleCommand.UseCardSpell(
                 side,

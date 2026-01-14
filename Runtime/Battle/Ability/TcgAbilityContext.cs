@@ -55,6 +55,16 @@ namespace GGemCo2DTcg
         public int ParamC => Ability.paramC;
 
         /// <summary>
+        /// Ability 실행 결과 중 UI 연출 레이어로 전달할 사용자 데이터입니다.
+        /// </summary>
+        /// <remarks>
+        /// - 도메인 로직(핸들러)은 실행 중 생성한 결과를 이 프로퍼티에 저장할 수 있습니다.
+        /// - 프리젠테이션 레이어는 <see cref="TcgAbilityPresentationEvent.UserData"/>를 통해 이를 전달받아
+        ///   구체적인 연출(예: 손패에 추가된 카드 인덱스 강조)을 수행할 수 있습니다.
+        /// </remarks>
+        public object PresentationUserData { get; set; }
+
+        /// <summary>
         /// Ability 실행을 위한 컨텍스트를 생성합니다.
         /// </summary>
         /// <param name="battleDataMain">전투 전역 상태(메인 데이터)입니다.</param>

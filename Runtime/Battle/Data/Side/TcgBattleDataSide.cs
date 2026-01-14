@@ -242,27 +242,29 @@ namespace GGemCo2DTcg
         /// - 손패가 가득 찼다면 오버드로우(Overdraw) 규칙이 적용됩니다.
         /// - 정상적으로 손패에 추가되면 <see cref="CardDrawn"/> 이벤트가 발생합니다.
         /// </remarks>
-        public void DrawOneCard()
+        public TcgDrawOneCardResult DrawOneCard()
         {
             // 1) 덱 고갈 체크
             if (TcgBattleDataDeck.IsEmpty)
             {
                 HandleFatigue();
-                return;
+                return TcgDrawOneCardResult.CreateFatigue();
             }
 
             // 2) 덱에서 카드 1장 드로우
             var card = TcgBattleDataDeck.DrawTop();
 
             // 3) 손패 초과 여부 체크
-            if (!Hand.TryAdd(card))
+            if (!Hand.TryAdd(card, out int handIndex))
             {
                 HandleOverdraw(card);
-                return;
+                return TcgDrawOneCardResult.CreateOverdraw(card);
             }
 
             // 4) 드로우 트리거(도메인 이벤트)
             CardDrawn?.Invoke(card);
+
+            return TcgDrawOneCardResult.CreateAdded(card, handIndex);
         }
 
         /// <summary>

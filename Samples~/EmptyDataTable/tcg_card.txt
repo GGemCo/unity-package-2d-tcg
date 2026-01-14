@@ -1,0 +1,1 @@
+﻿Uid	Name	Type	Grade	Cost	MaxCopiesPerDeck	ImageFileName	Description	Keyword

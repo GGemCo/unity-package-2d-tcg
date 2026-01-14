@@ -1,0 +1,149 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: GGemCo_Tcg_Ability_Description_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: e07194f3edf77a94ab34be2a25fd7986, type: 2}
+  m_Metadata:
+    m_Items:
+    - rid: 8015722454307307617
+  m_TableData:
+  - m_Id: 1545641984
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390720
+    m_Localized: '{Trigger}Restore {Value} Health to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390721
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390722
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390723
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390724
+    m_Localized: '{Trigger}Give {Target} {Value} Attack.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390725
+    m_Localized: '{Trigger}Give {Target} {Value} Attack.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390726
+    m_Localized: '{Trigger}Give {Target} {Value} Health.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390727
+    m_Localized: '{Trigger}Give {Target} {Value} Health.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390728
+    m_Localized: '{Trigger}Give {Target} {ValueA}/{ValueB}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390729
+    m_Localized: '{Trigger}Gain {Value} mana.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390730
+    m_Localized: '{Trigger}Restore {Value} Health to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390731
+    m_Localized: '{Trigger}Draw {Value} card(s).'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390732
+    m_Localized: '{Trigger}Restore {Value} Health to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390733
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390734
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390735
+    m_Localized: '{Trigger}Gain {Value} extra action(s) this turn.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390736
+    m_Localized: '{Trigger}Give {Target} {Value} Attack.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390737
+    m_Localized: '{Trigger}Deal {Value} damage to {Target}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  - m_Id: 1583390738
+    m_Localized: '{Trigger}Give {Target} {ValueA}/{ValueB}.'
+    m_Metadata:
+      m_Items:
+      - rid: 8015722454307307617
+  references:
+    version: 2
+    RefIds:
+    - rid: 8015722454307307617
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 1545641984
+        - id: 1583390720
+        - id: 1583390721
+        - id: 1583390722
+        - id: 1583390723
+        - id: 1583390724
+        - id: 1583390725
+        - id: 1583390726
+        - id: 1583390727
+        - id: 1583390728
+        - id: 1583390729
+        - id: 1583390730
+        - id: 1583390731
+        - id: 1583390732
+        - id: 1583390733
+        - id: 1583390734
+        - id: 1583390735
+        - id: 1583390736
+        - id: 1583390737
+        - id: 1583390738

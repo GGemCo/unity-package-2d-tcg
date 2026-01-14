@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: GGemCo_Tcg_Card_Name_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: ed8282c91e55d454a85a7441ac439b65, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1490674556928
+    m_Localized: Elder Storm Wyvern
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490687139840
+    m_Localized: Ancient Stone Golem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490687139841
+    m_Localized: Flameborn Beast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490687139842
+    m_Localized: Verdant Forest Guardian
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528448
+    m_Localized: Shadowfang Assassin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528449
+    m_Localized: Arcane Meteorfall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528450
+    m_Localized: Sanctified Healing Bloom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528451
+    m_Localized: Frost Nova Surge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528452
+    m_Localized: Shadow Rift Pulse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528453
+    m_Localized: Stormcaller's Thunder Break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528454
+    m_Localized: Emberforged Greatsword
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528455
+    m_Localized: Aegis of the Dawnshield
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528456
+    m_Localized: Stormcaller's Gauntlet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528457
+    m_Localized: Whispersteel Dagger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528458
+    m_Localized: Verdant Lifebloom Staff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528459
+    m_Localized: Ancient Rune Obelisk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528460
+    m_Localized: Eternal Flame Sanctuary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528461
+    m_Localized: Astral Convergence Gate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528462
+    m_Localized: Verdant Heart Grove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528463
+    m_Localized: Stormbound Crystal Pillar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528464
+    m_Localized: Cataclysmic Skyfall
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528465
+    m_Localized: Temporal Rift Unleashed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528466
+    m_Localized: Sacred Blessing Ceremony
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528467
+    m_Localized: Infernal Eruption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1490695528468
+    m_Localized: Awakening of the Forest Spirit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6244401359659008
+    m_Localized: Arcana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6244401414184960
+    m_Localized: Baldrik
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6244401414184961
+    m_Localized: Elysia
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

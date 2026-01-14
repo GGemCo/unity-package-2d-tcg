@@ -111,6 +111,27 @@ namespace GGemCo2DTcg
         }
 
         /// <summary>
+        /// 손패에 카드를 추가하고, 추가된 손패 인덱스를 반환합니다.
+        /// </summary>
+        /// <param name="cardInHand">추가할 카드 런타임 데이터입니다.</param>
+        /// <param name="index">추가된 카드의 손패 인덱스입니다. 실패 시 -1입니다.</param>
+        /// <returns>추가에 성공하면 true, 실패하면 false입니다.</returns>
+        /// <remarks>
+        /// 반환되는 인덱스는 UI(아이콘 리스트)와 도메인(손패 리스트)을 동기화하는 데 사용될 수 있습니다.
+        /// </remarks>
+        public bool TryAdd(TcgBattleDataCardInHand cardInHand, out int index)
+        {
+            index = -1;
+
+            if (cardInHand == null) return false;
+            if (!CanAdd) return false;
+
+            _cards.Add(cardInHand);
+            index = _cards.Count - 1;
+            return true;
+        }
+
+        /// <summary>
         /// 손패에서 지정한 카드를 제거합니다.
         /// </summary>
         /// <param name="cardInHand">제거할 카드 런타임 데이터입니다.</param>

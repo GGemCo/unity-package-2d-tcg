@@ -1,0 +1,6 @@
+﻿Uid	AbilityType	TriggerType	TargetType	ParamA	ParamB	ParamC	IntervalTurn	MaxStacks	LifetimeType	LifetimeParamA	LifetimeParamB
+4001	GainMana	OnTurnStart	None	1	0	0	1	1	Indefinite	0	0
+4002	Heal	OnTurnEnd	AllyHero	2	0	0	1	1	Durability	1	0
+4003	Draw	OnTurnStart	None	1	0	0	1	1	DurationTurns	2	0
+4004	Heal	OnTurnEnd	AllyCreature	1	0	0	1	2	TriggerCount	3	0
+4005	Damage	OnTurnStart	EnemyCreature	1	0	0	1	1	Indefinite	0	0

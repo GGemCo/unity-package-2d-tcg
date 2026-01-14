@@ -126,17 +126,40 @@ namespace GGemCo2DTcg
 
                 case TcgAbilityConstants.TcgAbilityType.Draw:
                 {
-                    var payload = new TcgAbilityPayloadDraw(ability.paramA);
-                    steps.Add(new TcgPresentationStep(
-                        TcgPresentationConstants.TcgPresentationStepType.AbilityDraw,
-                        side: casterSide,
-                        fromZone: casterZone,
-                        fromIndex: casterIndex,
-                        toZone: targetZone,
-                        toIndex: targetIndex,
-                        payload: payload));
-                    added++;
-                    break;
+                    // 가능한 경우(핸들러가 수집한 경우) 실제 손패에 추가된 카드/인덱스 정보를 함께 전달합니다.
+                    if (ev.UserData is TcgAbilityUserDataDraw ud)
+                    {
+                        var payload = new TcgAbilityPayloadDraw(
+                            ud.RequestedDrawCount,
+                            addedCards: ud.AddedCards,
+                            addedHandIndices: ud.AddedHandIndices);
+
+                        steps.Add(new TcgPresentationStep(
+                            TcgPresentationConstants.TcgPresentationStepType.AbilityDraw,
+                            side: casterSide,
+                            fromZone: casterZone,
+                            fromIndex: casterIndex,
+                            toZone: targetZone,
+                            toIndex: targetIndex,
+                            payload: payload));
+                        added++;
+                        break;
+                    }
+
+                    // 하위 호환: userData가 없으면 요청 장수만 전달합니다.
+                    {
+                        var payload = new TcgAbilityPayloadDraw(ability.paramA);
+                        steps.Add(new TcgPresentationStep(
+                            TcgPresentationConstants.TcgPresentationStepType.AbilityDraw,
+                            side: casterSide,
+                            fromZone: casterZone,
+                            fromIndex: casterIndex,
+                            toZone: targetZone,
+                            toIndex: targetIndex,
+                            payload: payload));
+                        added++;
+                        break;
+                    }
                 }
 
                 case TcgAbilityConstants.TcgAbilityType.GainMana:

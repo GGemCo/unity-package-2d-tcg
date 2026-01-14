@@ -92,7 +92,7 @@ namespace GGemCo2DTcg
 
                 // 턴 종료 커맨드 외에는 커맨드 단위의 간격을 둡니다.
                 if (trace.Command.CommandType != ConfigCommonTcg.TcgBattleCommandType.EndTurn)
-                    yield return new WaitForSeconds(ctx.Settings.timeWaitAfterCommand);
+                    yield return new WaitForSeconds(ctx.UICutsceneSettings.timeWaitAfterCommand);
             }
         }
     }

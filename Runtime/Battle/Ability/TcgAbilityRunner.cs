@@ -174,7 +174,7 @@ namespace GGemCo2DTcg
                     casterIndex: casterIndex,
                     targetZone: targetZone,
                     targetIndex: targetIndex,
-                    userData: null));
+                    userData: ctx.PresentationUserData));
             }
         }
 

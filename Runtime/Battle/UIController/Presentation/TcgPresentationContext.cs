@@ -117,5 +117,14 @@ namespace GGemCo2DTcg
             GcLogger.LogError($"{nameof(UIWindow)}가 없습니다. zone: {zone}");
             return null;
         }
+
+        public UIWindow GetUIHandWindowBySide(ConfigCommonTcg.TcgPlayerSide side)
+        {
+            if (side == ConfigCommonTcg.TcgPlayerSide.Player)
+                return HandPlayer;
+            if (side == ConfigCommonTcg.TcgPlayerSide.Enemy)
+                return HandEnemy;
+            return null;
+        }
     }
 }

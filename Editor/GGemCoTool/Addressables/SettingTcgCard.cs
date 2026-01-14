@@ -26,18 +26,30 @@ namespace GGemCo2DTcgEditor
         }
         public void OnGUI()
         {
-            // Common.OnGUITitle(Title);
-
-            if (GUILayout.Button(Title, GUILayout.Width(_addressableEditor.buttonWidth), GUILayout.Height(_addressableEditor.buttonHeight)))
+            if (TableLoaderManagerTcg.LoadTableTcgCard() == null)
             {
-                Setup();
+                EditorGUILayout.HelpBox($"{ConfigAddressableTableTcg.TableTcgCard} 테이블이 없습니다.", MessageType.Info);
+            }
+            else {
+                if (GUILayout.Button(Title, GUILayout.Width(_addressableEditor.buttonWidth), GUILayout.Height(_addressableEditor.buttonHeight)))
+                {
+                    try
+                    {
+                        Setup();
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogException(e);
+                        EditorUtility.DisplayDialog(Title, "카드 Addressable 설정 중 오류가 발생했습니다.\n자세한 내용은 콘솔 로그를 확인해주세요.", "OK");
+                    }
+                }
             }
         }
         
         /// <summary>
         /// Addressable 설정하기
         /// </summary>
-        private void Setup()
+        public void Setup(EditorSetupContext ctx = null)
         {
             bool result = EditorUtility.DisplayDialog(TextDisplayDialogTitle, TextDisplayDialogMessage, "네", "아니요");
             if (!result) return;
@@ -46,7 +58,7 @@ namespace GGemCo2DTcgEditor
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
             if (!settings)
             {
-                Debug.LogWarning("Addressable 설정을 찾을 수 없습니다. 새로 생성합니다.");
+                HelperLog.Warn("Addressable 설정을 찾을 수 없습니다. 새로 생성합니다.", ctx);
                 settings = CreateAddressableSettings();
             }
 
@@ -58,7 +70,7 @@ namespace GGemCo2DTcgEditor
                 ClearGroupEntries(settings, group);
 
                 // 일러스트 이미지 추가
-                Dictionary<int, StruckTableTcgCard> tcgCards = _addressableEditor.tableTcgCard.GetDatas();
+                Dictionary<int, StruckTableTcgCard> tcgCards = TableLoaderManagerTcg.LoadTableTcgCard().GetDatas();
                 foreach (KeyValuePair<int, StruckTableTcgCard> outerPair in tcgCards)
                 {
                     var info = outerPair.Value;
@@ -73,7 +85,7 @@ namespace GGemCo2DTcgEditor
             }
             else
             {
-                Debug.LogError($"'{targetGroupName}' 그룹을 설정할 수 없습니다.");
+                HelperLog.Error($"'{targetGroupName}' 그룹을 설정할 수 없습니다.", ctx);
             }
             
             // 핸드 카드의 테두리 이미지 추가
@@ -103,16 +115,21 @@ namespace GGemCo2DTcgEditor
             }
             else
             {
-                Debug.LogError($"'{_targetGroupNameBorder}' 그룹을 설정할 수 없습니다.");
+                HelperLog.Error($"'{_targetGroupNameBorder}' 그룹을 설정할 수 없습니다.", ctx);
             }
             
             // 설정 저장
             settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, null, true);
-            AssetDatabase.SaveAssets();
-            // 테이블 다시 로드하기
-            // _addressableEditor.LoadTables();
             
-            EditorUtility.DisplayDialog(Title, "Addressable 설정 완료", "OK");
+            if (ctx != null)
+            {
+                HelperLog.Info("[Addressable] 카드 설정 완료", ctx);
+            }
+            else
+            {
+                AssetDatabase.SaveAssets();
+                EditorUtility.DisplayDialog(Title, "[Addressable] 카드 설정 완료", "OK");
+            }
         }
 
     }

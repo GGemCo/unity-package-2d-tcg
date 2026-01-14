@@ -1,0 +1,29 @@
+﻿Uid	Name	Type	Grade	Cost	MaxCopiesPerDeck	ImageFileName	Description	Keyword
+# Creatur								
+1001	Elder Storm Wyvern	Creature	Legendary	1	2	Creature1	Elder Storm Wyvern	None
+1002	Ancient Stone Golem	Creature	Legendary	1	2	Creature2	Ancient Stone Golem	None
+1003	Flameborn Beast	Creature	Legendary	1	2	Creature3	Flameborn Beast	None
+1004	Verdant Forest Guardian	Creature	Legendary	1	1	Creature4	Verdant Forest Guardian	None
+1005	Shadowfang Assassin	Creature	Legendary	1	1	Creature5	Shadowfang Assassin	None
+# Spell								
+2001	Arcane Meteorfall	Spell	Common	1	2	Spell1	Arcane Meteorfall	None
+2002	Sanctified Healing Bloom	Spell	Common	1	2	Spell2	Sanctified Healing Bloom	None
+2003	Frost Nova Surge	Spell	Magic	1	2	Spell3	Frost Nova Surge	None
+2004	Shadow Rift Pulse	Spell	Epic	1	1	Spell4	Shadow Rift Pulse	None
+2005	Stormcaller's Thunder Break	Spell	Legendary	1	1	Spell5	Stormcaller's Thunder Break	None
+# Equipment								
+3001	Emberforged Greatsword	Equipment	Common	1	2	Equipment1	Emberforged Greatsword	None
+3002	Aegis of the Dawnshield	Equipment	Common	1	2	Equipment2	Aegis of the Dawnshield	None
+3003	Stormcaller's Gauntlet	Equipment	Magic	1	2	Equipment3	Stormcaller's Gauntlet	None
+3004	Whispersteel Dagger	Equipment	Epic	1	1	Equipment4	Whispersteel Dagger	None
+3005	Verdant Lifebloom Staff	Equipment	Legendary	1	1	Equipment5	Verdant Lifebloom Staff	None
+# Permanent								
+4001	Ancient Rune Obelisk	Permanent	Common	1	2	Permanent1	Ancient Rune Obelisk	None
+4002	Eternal Flame Sanctuary	Permanent	Common	1	2	Permanent2	Eternal Flame Sanctuary	None
+4003	Astral Convergence Gate	Permanent	Magic	1	2	Permanent3	Astral Convergence Gate	None
+4004	Verdant Heart Grove	Permanent	Epic	1	1	Permanent4	Verdant Heart Grove	None
+4005	Stormbound Crystal Pillar	Permanent	Legendary	1	1	Permanent5	Stormbound Crystal Pillar	None
+# Hero								
+6001	Arcana	Hero	Common	0	1	Hero1	Arcana	None
+6002	Baldrik	Hero	Common	0	1	Hero2	Baldrik	None
+6003	Elysia	Hero	Common	0	1	Hero3	Elysia	None

@@ -47,6 +47,7 @@ namespace GGemCo2DTcg
             if (SceneGame.Instance.canvasUI == null) return;
 
             var effect = SceneGame.Instance.EffectManager.CreateEffect(effectUid);
+            if (GcLogger.IsNull(effect, $"이펙트를 생성하지 못 햇습니다. effect Uid: {effectUid}")) return;
             effect.gameObject.transform.SetParent(SceneGame.Instance.canvasUI.transform, false);
             effect.transform.position = icon.gameObject.transform.position;
         }
