@@ -49,8 +49,11 @@ namespace GGemCo2DTcgEditor
             {
                 ScriptableObject asset = ScriptableObject.CreateInstance(type);
                 AssetDatabase.CreateAsset(asset, path);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
+                if (ctx == null)
+                {
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
+                }
 
                 Selection.activeObject = asset;
                 EditorUtility.FocusProjectWindow();

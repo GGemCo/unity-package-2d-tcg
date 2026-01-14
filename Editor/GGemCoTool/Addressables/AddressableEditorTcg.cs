@@ -14,8 +14,6 @@ namespace GGemCo2DTcgEditor
         private SettingTableTcg _settingTableTcg;
         private SettingTcgCard _settingTcgCard;
         
-        public TableTcgCard tableTcgCard;
-        
         private Vector2 _scrollPosition;
 
         [MenuItem(ConfigEditorTcg.NameToolSettingAddressable, false, (int)ConfigEditorTcg.ToolOrdering.SettingAddressable)]
@@ -26,17 +24,11 @@ namespace GGemCo2DTcgEditor
         protected override void OnEnable()
         {
             base.OnEnable();
-            LoadTables();
             
             buttonHeight = 40f;
             _settingScriptableObjectTcg = new SettingScriptableObjectTcg(this);
             _settingTableTcg = new SettingTableTcg(this);
             _settingTcgCard = new SettingTcgCard(this);
-        }
-
-        private void LoadTables()
-        {
-            tableTcgCard = tableLoaderManagerTcg.LoadTableTcgCard();
         }
 
         private void OnGUI()
@@ -50,7 +42,6 @@ namespace GGemCo2DTcgEditor
             EditorGUILayout.EndHorizontal();
             
             EditorGUILayout.BeginHorizontal();
-            // _settingUIElementCard.OnGUI();
             _settingTcgCard.OnGUI();
             EditorGUILayout.EndHorizontal();
             

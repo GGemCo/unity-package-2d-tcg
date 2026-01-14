@@ -27,7 +27,15 @@ namespace GGemCo2DTcgEditor
 
             if (GUILayout.Button(Title, GUILayout.Width(_addressableEditor.buttonWidth), GUILayout.Height(_addressableEditor.buttonHeight)))
             {
-                Setup();
+                try
+                {
+                    Setup();
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogException(e);
+                    EditorUtility.DisplayDialog(Title, "데이터 테이블 Addressable 설정 중 오류가 발생했습니다.\n자세한 내용은 콘솔 로그를 확인해주세요.", "OK");
+                }
             }
         }
         
@@ -55,43 +63,12 @@ namespace GGemCo2DTcgEditor
 
             foreach (var addressableAssetInfo in ConfigAddressableTableTcg.All)
             {
-                string assetPath = addressableAssetInfo.Path;
-                // 대상 파일 가져오기
-                var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                if (!asset)
-                {
-                    HelperLog.Error($"파일을 찾을 수 없습니다: {assetPath}", ctx);
-                    continue;
-                }
-
-                // 기존 Addressable 항목 확인
-                AddressableAssetEntry entry = settings.FindAssetEntry(AssetDatabase.AssetPathToGUID(assetPath));
-
-                if (entry == null)
-                {
-                    // 신규 Addressable 항목 추가
-                    entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(assetPath), group);
-                    HelperLog.Info($"Addressable 항목을 추가했습니다: {assetPath}", ctx);
-                }
-                else
-                {
-                    HelperLog.Info($"이미 Addressable에 등록된 항목입니다: {assetPath}", ctx);
-                    continue;
-                }
-
-                // 키 값 설정
-                entry.address = addressableAssetInfo.Key;
-                // 라벨 값 설정
-                entry.SetLabel(ConfigAddressableLabel.Table, true, true);
-
+                Add(settings, group, addressableAssetInfo.Key, addressableAssetInfo.Path, ConfigAddressableLabel.Table);
                 // Debug.Log($"Addressable 키 값 설정: {keyName}");
             }
 
             // 설정 저장
             settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, null, true);
-            AssetDatabase.SaveAssets();
-            // 테이블 다시 로드하기
-            // _addressableEditor.LoadTables();
             
             if (ctx != null)
             {
@@ -99,6 +76,7 @@ namespace GGemCo2DTcgEditor
             }
             else
             {
+                AssetDatabase.SaveAssets();
                 EditorUtility.DisplayDialog(Title, "Addressable 설정 완료", "OK");    
             }
         }

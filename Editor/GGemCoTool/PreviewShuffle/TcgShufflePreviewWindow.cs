@@ -80,12 +80,9 @@ namespace GGemCo2DTcgEditor
         private List<PreviewCard> _lastResult;
         private string _lastLog;
         
-        private TableLoaderManagerTcg _tableLoaderManagerTcg;
-        
         protected void OnEnable()
         {
-            _tableLoaderManagerTcg = new TableLoaderManagerTcg();
-            _cardTableCache = _tableLoaderManagerTcg.LoadTableTcgCard().GetDatas();
+            _cardTableCache = TableLoaderManagerTcg.LoadTableTcgCard().GetDatas();
         }
         
         private void OnGUI()
