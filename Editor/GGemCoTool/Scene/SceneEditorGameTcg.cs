@@ -148,7 +148,7 @@ namespace GGemCo2DTcgEditor
                 }
                 string objectName = info.PrefabName;
                 
-                GameObject prefab = FindPrefabByName(ConfigEditor.PathUIWindow, objectName);
+                GameObject prefab = FindPrefabUIWindowByName(objectName);
                 if (!prefab)
                 {
                     HelperLog.Error($"[{nameof(SceneEditorGameTcg)}] {objectName} 프리팹이 없습니다.", ctx);

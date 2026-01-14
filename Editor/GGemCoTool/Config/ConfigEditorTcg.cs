@@ -6,8 +6,8 @@ namespace GGemCo2DTcgEditor
     {
         public enum ToolOrdering
         {
-            DefaultSetting = 1,
-            AutoSetting,
+            AutoSetting = 1,
+            DefaultSetting,
             SettingAddressable,
             SettingScenePreIntro,
             SettingSceneLoading,
@@ -23,7 +23,7 @@ namespace GGemCo2DTcgEditor
         private const string NameToolGGemCo = ConfigDefine.NameSDK+"ToolTcg/";
         // 기본 셋팅하기
         private const string NameToolSettings = NameToolGGemCo + "설정하기/";
-        public const string NameToolSettingAuto = NameToolSettings + "TCG 자동 셋팅하기";
+        public const string NameToolSettingAuto = NameToolSettings + "자동 셋팅하기";
         public const string NameToolSettingDefault = NameToolSettings + "기본 셋팅하기";
         public const string NameToolSettingAddressable = NameToolSettings + "Addressable 셋팅하기";
         public const string NameToolSettingScenePreIntro = NameToolSettings + "Pre 인트로 씬 셋팅하기";

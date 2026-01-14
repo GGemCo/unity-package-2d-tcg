@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace GGemCo2DTcgEditor
 {
-    public sealed class AutoProjectSetupWindowTcg : AutoProjectSetupWindow
+    public class AutoProjectSetupWindowTcg : AutoProjectSetupWindow
     {
         protected override string Title => "GGemCo TCG Project Setup";
         
         [MenuItem(ConfigEditorTcg.NameToolSettingAuto, false, (int)ConfigEditorTcg.ToolOrdering.AutoSetting)]
-        public static void Open()
+        public new static void Open()
         {
             var window = GetWindow<AutoProjectSetupWindowTcg>();
             window.titleContent = new GUIContent(window.Title);
@@ -22,9 +22,9 @@ namespace GGemCo2DTcgEditor
         /// </summary>
         protected override void DrawOptionsArea()
         {
-            _setAllSampleData = HelperEditorUI.ToggleLeft(
+            setAllSampleData = HelperEditorUI.ToggleLeft(
                 "샘플 TCG 셋팅",
-                _setAllSampleData,
+                setAllSampleData,
                 "샘플 TCG 프로젝트에 맞는 데이터/리소스가 복사/셋업됩니다."
             );
         }
@@ -33,31 +33,31 @@ namespace GGemCo2DTcgEditor
         /// </summary>
         protected override void BuildStepPipeline()
         {
-            bool needSampleResources = _setAllSampleData;
-            _setupSteps.Clear();
+            bool needSampleResources = setAllSampleData;
+            setupSteps.Clear();
 
             // 1. 공통 필수 스텝
-            _setupSteps.Add(new StepCreateSettingScriptableObjectTcg());
-            _setupSteps.Add(new StepCopyEmptyDataTableTcg());
+            setupSteps.Add(new StepCreateSettingScriptableObjectTcg());
+            setupSteps.Add(new StepCopyEmptyDataTableTcg());
             // _setupSteps.Add(new StepCopyDefaultLocalizationTcg());
-            _setupSteps.Add(new StepSetDefaultSettingScriptableObjectTcg());
+            setupSteps.Add(new StepSetDefaultSettingScriptableObjectTcg());
             
             // 3. 옵션: 샘플 RPG 리소스/데이터 셋업
             if (needSampleResources)
             {
-                _setupSteps.Add(new StepCopyAllSampleDataTcg());
-                _setupSteps.Add(new StepSetSettingScriptableObjectTcg());
-                _setupSteps.Add(new StepSetCameraTcg());
+                setupSteps.Add(new StepCopyAllSampleDataTcg());
+                setupSteps.Add(new StepSetSettingScriptableObjectTcg());
+                setupSteps.Add(new StepSetCameraTcg());
             }
             
             // 순서 중요: 씬 셋업 하기
-            _setupSteps.Add(new StepSetSceneRequireObjectTcg(needSampleResources));
+            setupSteps.Add(new StepSetSceneRequireObjectTcg(needSampleResources));
 
             // Addressables를 마지막에 등록
-            _setupSteps.Add(new StepSetDefaultAddressableDataTcg());
+            setupSteps.Add(new StepSetDefaultAddressableDataTcg());
             if (needSampleResources)
             {
-                _setupSteps.Add(new StepSetAddressableDataTcg());
+                setupSteps.Add(new StepSetAddressableDataTcg());
             }
         }
     }

@@ -57,8 +57,6 @@ namespace GGemCo2DTcgEditor
                 
                 HelperLog.Info($"{fileName} ScriptableObject 가 생성되었습니다.", ctx);
             }
-
-            ctx?.Logger.Info($"[Add Setting Scriptable Object] ");
         }
     }
 }
