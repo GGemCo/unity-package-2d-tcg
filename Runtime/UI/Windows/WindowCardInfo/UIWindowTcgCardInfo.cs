@@ -70,21 +70,12 @@ namespace GGemCo2DTcg
             uid = UIWindowConstants.WindowUid.TcgCardInfo;
 
             // 테이블 로더가 아직 준비되지 않았으면 초기화 불가(조기 반환)
-            if (TableLoaderManager.Instance == null) return;
+            if (TableLoaderManagerTcg.Instance == null) return;
 
             _tableTcgCard = TableLoaderManagerTcg.Instance.TableTcgCard;
+            _localizationManagerTcg = LocalizationManagerTcg.Instance;
 
             base.Awake();
-        }
-
-        /// <summary>
-        /// 첫 프레임 시작 시 호출됩니다.
-        /// 로컬라이제이션 매니저 참조를 캐싱합니다.
-        /// </summary>
-        protected override void Start()
-        {
-            base.Start();
-            _localizationManagerTcg = LocalizationManagerTcg.Instance;
         }
 
         /// <summary>
