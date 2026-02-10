@@ -17,41 +17,6 @@ namespace GGemCo2DTcg
         [Tooltip("영웅 아이콘")]
         public UIIconCard iconHero;
 
-        /// <summary>필드(또는 슬롯) 표시 시 페이드 인에 사용할 이징 타입.</summary>
-        public Easing.EaseType fadeInEasing = Easing.EaseType.EaseOutSine;
-
-        /// <summary>페이드 인 지속 시간(초).</summary>
-        public float fadeInDuration = 0.6f;
-
-        /// <summary>필드(또는 슬롯) 숨김 시 페이드 아웃에 사용할 이징 타입.</summary>
-        public Easing.EaseType fadeOutEasing = Easing.EaseType.EaseOutSine;
-
-        /// <summary>페이드 아웃 지속 시간(초).</summary>
-        public float fadeOutDuration = 0.6f;
-
-        /// <summary>페이드 아웃 시작 전 대기 시간(초).</summary>
-        public float fadeOutDelayTime = 0.5f;
-
-        /// <summary>
-        /// 타격 연출 시 대상 기준 "조금 왼쪽 아래"로 이동시키는 오프셋(월드 좌표 기준).
-        /// </summary>
-        public Vector3 leftDownOffset = new Vector3(-24f, -18f, 0f);
-
-        /// <summary>타격 연출 중 뒤로 물러나는 이동 이징 타입.</summary>
-        public Easing.EaseType backEasing = Easing.EaseType.EaseOutSine;
-
-        /// <summary>타격 연출 시 타겟에서 멀어지는(뒤로) 이동 거리.</summary>
-        public float backDistance = 28f;
-
-        /// <summary>뒤로 이동 연출 지속 시간(초).</summary>
-        public float backDuration = 0.5f;
-
-        /// <summary>타격(히트) 순간 연출에 사용할 이징 타입.</summary>
-        public Easing.EaseType hitEasing = Easing.EaseType.EaseInQuintic;
-
-        /// <summary>타격(히트) 연출 지속 시간(초).</summary>
-        public float hitDuration = 0.2f; // 빠르게 타격
-
         /// <summary>
         /// 이 윈도우가 사용할 Window UID를 반환합니다. (예: Player/Enemy 필드)
         /// </summary>
