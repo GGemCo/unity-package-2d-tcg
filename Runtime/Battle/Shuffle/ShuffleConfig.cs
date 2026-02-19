@@ -53,7 +53,14 @@ namespace GGemCo2DTcg
         /// </returns>
         public float GetCostWeight(int cost)
         {
-            return CostWeights.GetValueOrDefault(cost, DefaultCostWeight);
+            float w = CostWeights.TryGetValue(cost, out float v) ? v : DefaultCostWeight;
+
+            // 데이터가 깨졌거나( NaN / Infinity ), 음수 가중치가 들어온 경우 방어합니다.
+            // 가중치가 0이면 해당 코스트는 "가중치 재배열"에 참여하지 않는 것으로 간주됩니다.
+            if (float.IsNaN(w) || float.IsInfinity(w) || w < 0f)
+                return Mathf.Max(0f, DefaultCostWeight);
+
+            return w;
         }
 
         // --------------------------------------------------------------------

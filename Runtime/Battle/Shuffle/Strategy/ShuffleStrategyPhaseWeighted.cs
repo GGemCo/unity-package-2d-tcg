@@ -180,8 +180,9 @@ namespace GGemCo2DTcg
                 for (int i = 0; i < working.Count; i++)
                 {
                     float w = weightSelector(working[i]);
-                    if (w > 0f)
-                        totalWeight += w;
+                    if (float.IsNaN(w) || float.IsInfinity(w) || w <= 0f)
+                        continue;
+                    totalWeight += w;
                 }
 
                 if (totalWeight <= 0f)
@@ -194,20 +195,44 @@ namespace GGemCo2DTcg
                 float r = Random.Range(0f, totalWeight);
                 float acc = 0f;
 
+                int pickedIndex = -1;
                 for (int i = 0; i < working.Count; i++)
                 {
                     float w = weightSelector(working[i]);
-                    if (w <= 0f)
+                    if (float.IsNaN(w) || float.IsInfinity(w) || w <= 0f)
                         continue;
 
                     acc += w;
                     if (acc >= r)
                     {
-                        result.Add(working[i]);
-                        working.RemoveAt(i);
+                        pickedIndex = i;
                         break;
                     }
                 }
+
+                // 누적 오차/비정상 값으로 선택되지 않는 경우를 대비하여 fallback 합니다.
+                if (pickedIndex < 0)
+                {
+                    for (int i = working.Count - 1; i >= 0; i--)
+                    {
+                        float w = weightSelector(working[i]);
+                        if (float.IsNaN(w) || float.IsInfinity(w) || w <= 0f)
+                            continue;
+
+                        pickedIndex = i;
+                        break;
+                    }
+
+                    if (pickedIndex < 0)
+                    {
+                        // 이론상 불가(totalWeight > 0 조건)지만, 안전을 위해 남은 순서를 그대로 사용합니다.
+                        result.AddRange(working);
+                        break;
+                    }
+                }
+
+                result.Add(working[pickedIndex]);
+                working.RemoveAt(pickedIndex);
             }
 
             return result;

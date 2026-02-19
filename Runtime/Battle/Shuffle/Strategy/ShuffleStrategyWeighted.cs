@@ -107,32 +107,74 @@ namespace GGemCo2DTcg
         private List<TCard> WeightedReorder<TCard>(List<TCard> source, ShuffleMetaData context)
             where TCard : ICardInfo
         {
-            List<TCard> working = new List<TCard>(source);
-            List<TCard> result = new List<TCard>();
+            var working = new List<TCard>(source);
+            var result = new List<TCard>(source.Count);
 
             while (working.Count > 0)
             {
                 float totalWeight = 0f;
 
-                // 전체 weight 합
-                foreach (var c in working)
-                    totalWeight += context.Config.GetCostWeight(c.Cost);
-
-                // 랜덤 픽
-                float r = Random.Range(0, totalWeight);
-                float acc = 0f;
-
+                // GetCostWeight() 호출 비용을 줄이고, totalWeight 검증/분포 안정성을 확보하기 위해 weight를 캐시합니다.
+                var weights = new float[working.Count];
                 for (int i = 0; i < working.Count; i++)
                 {
-                    acc += context.Config.GetCostWeight(working[i].Cost);
+                    float w = context.Config.GetCostWeight(working[i].Cost);
+
+                    // NaN / Infinity 는 0으로 취급(루프/선택 안전성)
+                    if (float.IsNaN(w) || float.IsInfinity(w) || w <= 0f)
+                        w = 0f;
+
+                    weights[i] = w;
+                    totalWeight += w;
+                }
+
+                // 모든 weight가 0(또는 비정상)인 경우: 가중치 재배열을 포기하고 균등 랜덤으로 1장 선택합니다.
+                // (이 단계는 1차 Fisher–Yates 셔플 이후에 수행되므로, 결과는 여전히 랜덤성을 유지합니다.)
+                if (float.IsNaN(totalWeight) || float.IsInfinity(totalWeight) || totalWeight <= 0f)
+                {
+                    int pick = Random.Range(0, working.Count);
+                    result.Add(working[pick]);
+                    working.RemoveAt(pick);
+                    continue;
+                }
+
+                float r = Random.Range(0f, totalWeight);
+                float acc = 0f;
+
+                int pickedIndex = -1;
+                for (int i = 0; i < working.Count; i++)
+                {
+                    float w = weights[i];
+                    if (w <= 0f)
+                        continue;
+
+                    acc += w;
                     if (acc >= r)
                     {
-                        // 뽑힌 카드 추가
-                        result.Add(working[i]);
-                        working.RemoveAt(i);
+                        pickedIndex = i;
                         break;
                     }
                 }
+
+                // 부동소수 누적 오차로 인해 선택되지 않는 경우를 대비하여 마지막 유효 항목으로 fallback 합니다.
+                if (pickedIndex < 0)
+                {
+                    for (int i = working.Count - 1; i >= 0; i--)
+                    {
+                        if (weights[i] > 0f)
+                        {
+                            pickedIndex = i;
+                            break;
+                        }
+                    }
+
+                    // 그래도 없으면(이론상 불가): 균등 랜덤
+                    if (pickedIndex < 0)
+                        pickedIndex = Random.Range(0, working.Count);
+                }
+
+                result.Add(working[pickedIndex]);
+                working.RemoveAt(pickedIndex);
             }
 
             return result;

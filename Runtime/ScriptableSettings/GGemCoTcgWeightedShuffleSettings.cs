@@ -128,23 +128,41 @@ namespace GGemCo2DTcg
             if (entries == null)
                 entries = new List<CostWeightEntry>();
 
-            var map = new Dictionary<int, float>(entries.Count);
-            for (int i = 0; i < entries.Count; i++)
+            // 1) 값 보정(클램프) + 음수 cost 제거(필요 시)
+            for (int i = entries.Count - 1; i >= 0; i--)
             {
-                int cost = entries[i].cost;
-                float w = entries[i].weight;
-                if (cost < 0) continue;
-                if (w < 0f) w = 0f;
+                var e = entries[i];
 
-                // 마지막 값 우선
-                map[cost] = w;
+                if (e.cost < 0)
+                {
+                    entries.RemoveAt(i);
+                    continue;
+                }
+
+                if (e.weight < 0f)
+                {
+                    e.weight = 0f;
+                    entries[i] = e; // struct일 경우 반영
+                }
             }
 
-            entries.Clear();
-            foreach (var kv in map)
-                entries.Add(new CostWeightEntry { cost = kv.Key, weight = kv.Value });
-
+            // 2) 정렬만 수행 (중복 cost는 그대로 둠)
             entries.Sort((a, b) => a.cost.CompareTo(b.cost));
+
+#if UNITY_EDITOR
+            // 3) 중복 경고(선택): 사용자가 인지할 수 있게만
+            for (int i = 1; i < entries.Count; i++)
+            {
+                if (entries[i - 1].cost == entries[i].cost)
+                {
+                    Debug.LogWarning(
+                        $"[{name}] CostWeights에 중복 cost({entries[i].cost})가 있습니다. " +
+                        "BuildShuffleConfig에서는 마지막 값이 우선 적용됩니다.",
+                        this);
+                    break;
+                }
+            }
+#endif
         }
     }
 }
