@@ -19,30 +19,20 @@ namespace GGemCo2DTcg
     public sealed class GGemCoTcgPhaseShuffleSettings : ScriptableObject, ITcgShuffleSettingsAsset
     {
         [Header("Phase Split (within FrontLoadedCount)")]
-        /// <summary>
-        /// FrontLoadedCount 구간 중 ‘초반(Early)’에 할당할 비율입니다. (0~1)
-        /// </summary>
+        [Tooltip("FrontLoadedCount 구간 중 ‘초반(Early)’에 할당할 비율입니다. (0~1)")]
         [Range(0f, 1f)] public float earlyPhaseRatio = 0.3f;
 
-        /// <summary>
-        /// FrontLoadedCount 구간 중 ‘중반(Mid)’에 할당할 비율입니다. (0~1)
-        /// </summary>
+        [Tooltip("FrontLoadedCount 구간 중 ‘중반(Mid)’에 할당할 비율입니다. (0~1)")]
         [Range(0f, 1f)] public float midPhaseRatio = 0.4f;
 
         [Header("Cost Weights Per Phase")]
-        /// <summary>
-        /// 초반(Early) 구간에서 코스트별로 적용할 가중치 테이블입니다.
-        /// </summary>
+        [Tooltip("초반(Early) 구간에서 코스트별로 적용할 가중치 테이블입니다.")]
         public PhaseCostWeightTable early = new PhaseCostWeightTable(defaultWeight: 1f);
-
-        /// <summary>
-        /// 중반(Mid) 구간에서 코스트별로 적용할 가중치 테이블입니다.
-        /// </summary>
+        
+        [Tooltip("중반(Mid) 구간에서 코스트별로 적용할 가중치 테이블입니다.")]
         public PhaseCostWeightTable mid   = new PhaseCostWeightTable(defaultWeight: 1f);
-
-        /// <summary>
-        /// 후반(Late) 구간에서 코스트별로 적용할 가중치 테이블입니다.
-        /// </summary>
+        
+        [Tooltip("중반(Mid)후반(Late) 구간에서 코스트별로 적용할 가중치 테이블입니다.")]
         public PhaseCostWeightTable late  = new PhaseCostWeightTable(defaultWeight: 1f);
 
         /// <summary>
@@ -124,14 +114,10 @@ namespace GGemCo2DTcg
     [Serializable]
     public sealed class PhaseCostWeightTable
     {
-        /// <summary>
-        /// 엔트리가 없는 코스트에 적용되는 기본 가중치입니다. (0 이상)
-        /// </summary>
+        [Tooltip("엔트리가 없는 코스트에 적용되는 기본 가중치입니다. (0 이상)")]
         [Min(0f)] public float defaultWeight = 1f;
 
-        /// <summary>
-        /// 코스트별 가중치 엔트리 목록입니다.
-        /// </summary>
+        [Tooltip("코스트별 가중치 엔트리 목록입니다.")]
         [SerializeField] private List<CostWeightEntry> entries = new List<CostWeightEntry>();
 
         /// <summary>
@@ -181,22 +167,40 @@ namespace GGemCo2DTcg
             if (entries == null)
                 entries = new List<CostWeightEntry>();
 
-            // cost 기준으로 마지막 값을 우선 적용하도록 병합
-            var map = new Dictionary<int, float>(entries.Count);
-            for (int i = 0; i < entries.Count; i++)
+            // 1) 값 보정(클램프) + 음수 cost 제거(필요 시)
+            for (int i = entries.Count - 1; i >= 0; i--)
             {
-                int cost = entries[i].cost;
-                float w = entries[i].weight;
-                if (w < 0f) w = 0f;
-                map[cost] = w;
+                var e = entries[i];
+
+                if (e.cost < 0)
+                {
+                    entries.RemoveAt(i);
+                    continue;
+                }
+
+                if (e.weight < 0f)
+                {
+                    e.weight = 0f;
+                    entries[i] = e; // struct일 경우 반영
+                }
             }
 
-            entries.Clear();
-            foreach (var kv in map)
-                entries.Add(new CostWeightEntry { cost = kv.Key, weight = kv.Value });
-
-            // 보기 좋게 cost 오름차순 정렬
+            // 2) 정렬만 수행 (중복 cost는 그대로 둠)
             entries.Sort((a, b) => a.cost.CompareTo(b.cost));
+
+#if UNITY_EDITOR
+            // 3) 중복 경고(선택): 사용자가 인지할 수 있게만
+            for (int i = 1; i < entries.Count; i++)
+            {
+                if (entries[i - 1].cost == entries[i].cost)
+                {
+                    Debug.LogWarning(
+                        $"CostWeights에 중복 cost({entries[i].cost})가 있습니다. " +
+                        "BuildShuffleConfig에서는 마지막 값이 우선 적용됩니다.");
+                    break;
+                }
+            }
+#endif
         }
     }
 
@@ -206,14 +210,10 @@ namespace GGemCo2DTcg
     [Serializable]
     public struct CostWeightEntry
     {
-        /// <summary>
-        /// 대상 카드 코스트 값입니다. (0 이상)
-        /// </summary>
+        [Tooltip("대상 카드 코스트 값입니다. (0 이상)")]
         [Min(0)] public int cost;
 
-        /// <summary>
-        /// 해당 코스트에 적용할 가중치 값입니다. (0 이상)
-        /// </summary>
+        [Tooltip("해당 코스트에 적용할 가중치 값입니다. (0 이상)")]
         [Min(0f)] public float weight;
     }
 }
