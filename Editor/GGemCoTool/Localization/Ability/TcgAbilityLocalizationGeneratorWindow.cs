@@ -65,6 +65,7 @@ namespace GGemCo2DTcgEditor
         private bool _validateAfterGenerate = true;
         private bool _logVerbose = false;
 
+        private Vector2 _scrollMain;
         private Vector2 _scroll;
         private string _lastReport = "";
 
@@ -84,96 +85,117 @@ namespace GGemCo2DTcgEditor
 
         private void OnGUI()
         {
-            EditorGUILayout.LabelField("Ability txt → Localization (Ability + Term Tables)", EditorStyles.boldLabel);
-            EditorGUILayout.Space(6);
-
-            using (new EditorGUILayout.VerticalScope("box"))
+            _scrollMain = EditorGUILayout.BeginScrollView(_scrollMain);
+            try
             {
-                _spellTsv = (TextAsset)EditorGUILayout.ObjectField("Spell txt 파일(tcg_card_spell)", _spellTsv, typeof(TextAsset), false);
-                _equipmentTsv = (TextAsset)EditorGUILayout.ObjectField("Equipment txt 파일(tcg_card_equipment)", _equipmentTsv, typeof(TextAsset), false);
-                _permanentTsv = (TextAsset)EditorGUILayout.ObjectField("Permanent txt 파일(tcg_card_permanent)", _permanentTsv, typeof(TextAsset), false);
-                _eventTsv = (TextAsset)EditorGUILayout.ObjectField("Event txt 파일(tcg_card_event)", _eventTsv, typeof(TextAsset), false);
 
-                _outputFolder = (DefaultAsset)EditorGUILayout.ObjectField("출력 폴더(Assets/)", _outputFolder, typeof(DefaultAsset), false);
+                EditorGUILayout.LabelField("Ability txt → Localization (Ability + Term Tables)",
+                    EditorStyles.boldLabel);
+                EditorGUILayout.Space(6);
 
-                EditorGUILayout.Space(4);
-                _overwriteExisting = EditorGUILayout.ToggleLeft("기존 항목 덮어쓰기. (변경된 내용이 없으면 갱신하지 않습니다.)", _overwriteExisting);
-                _generateTermTables = EditorGUILayout.ToggleLeft("용어 테이블(Trigger/Target) 생성/갱신", _generateTermTables);
-                _validateAfterGenerate = EditorGUILayout.ToggleLeft("생성 후 검증 실행", _validateAfterGenerate);
-                _logVerbose = EditorGUILayout.ToggleLeft("상세 로그 출력(Verbose)", _logVerbose);
-            }
-
-            EditorGUILayout.Space(8);
-
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("생성되는 Localization String Table 이름", EditorStyles.boldLabel);
-                EditorGUILayout.LabelField($"Ability 컬렉션: {AbilityCollectionName}");
-                EditorGUILayout.LabelField($"Trigger 용어 컬렉션: {TriggerCollectionName}");
-                EditorGUILayout.LabelField($"Target 용어 컬렉션: {TargetCollectionName}");
-            }
-
-            EditorGUILayout.Space(8);
-
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("로케일(자동 감지)", EditorStyles.boldLabel);
-
-                var locales = LocalizationEditorSettings.GetLocales();
-                if (locales == null || locales.Count == 0)
+                using (new EditorGUILayout.VerticalScope("box"))
                 {
-                    EditorGUILayout.HelpBox(
-                        "Localization Settings에 Locales가 없습니다.\n" +
-                        "Project Settings > Localization 에서 Locale Generator로 Locales를 먼저 추가해주세요.",
-                        MessageType.Warning);
+                    _spellTsv = (TextAsset)EditorGUILayout.ObjectField("Spell txt 파일(tcg_card_spell)", _spellTsv,
+                        typeof(TextAsset), false);
+                    _equipmentTsv = (TextAsset)EditorGUILayout.ObjectField("Equipment txt 파일(tcg_card_equipment)",
+                        _equipmentTsv, typeof(TextAsset), false);
+                    _permanentTsv = (TextAsset)EditorGUILayout.ObjectField("Permanent txt 파일(tcg_card_permanent)",
+                        _permanentTsv, typeof(TextAsset), false);
+                    _eventTsv = (TextAsset)EditorGUILayout.ObjectField("Event txt 파일(tcg_card_event)", _eventTsv,
+                        typeof(TextAsset), false);
+
+                    _outputFolder = (DefaultAsset)EditorGUILayout.ObjectField("출력 폴더(Assets/)", _outputFolder,
+                        typeof(DefaultAsset), false);
+
+                    EditorGUILayout.Space(4);
+                    _overwriteExisting =
+                        EditorGUILayout.ToggleLeft("기존 항목 덮어쓰기. (변경된 내용이 없으면 갱신하지 않습니다.)", _overwriteExisting);
+                    _generateTermTables =
+                        EditorGUILayout.ToggleLeft("용어 테이블(Trigger/Target) 생성/갱신", _generateTermTables);
+                    _validateAfterGenerate = EditorGUILayout.ToggleLeft("생성 후 검증 실행", _validateAfterGenerate);
+                    _logVerbose = EditorGUILayout.ToggleLeft("상세 로그 출력(Verbose)", _logVerbose);
                 }
-                else
+
+                EditorGUILayout.Space(8);
+
+                using (new EditorGUILayout.VerticalScope("box"))
                 {
-                    EditorGUILayout.LabelField($"등록된 로케일 수: {locales.Count}");
-                    using (new EditorGUI.DisabledScope(true))
+                    EditorGUILayout.LabelField("생성되는 Localization String Table 이름", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"Ability 컬렉션: {AbilityCollectionName}");
+                    EditorGUILayout.LabelField($"Trigger 용어 컬렉션: {TriggerCollectionName}");
+                    EditorGUILayout.LabelField($"Target 용어 컬렉션: {TargetCollectionName}");
+                }
+
+                EditorGUILayout.Space(8);
+
+                using (new EditorGUILayout.VerticalScope("box"))
+                {
+                    EditorGUILayout.LabelField("로케일(자동 감지)", EditorStyles.boldLabel);
+
+                    var locales = LocalizationEditorSettings.GetLocales();
+                    if (locales == null || locales.Count == 0)
                     {
-                        foreach (var locale in locales)
-                            EditorGUILayout.TextField($"{locale.Identifier.Code} ({locale.LocaleName})");
+                        EditorGUILayout.HelpBox(
+                            "Localization Settings에 Locales가 없습니다.\n" +
+                            "Project Settings > Localization 에서 Locale Generator로 Locales를 먼저 추가해주세요.",
+                            MessageType.Warning);
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField($"등록된 로케일 수: {locales.Count}");
+                        using (new EditorGUI.DisabledScope(true))
+                        {
+                            foreach (var locale in locales)
+                                EditorGUILayout.TextField($"{locale.Identifier.Code} ({locale.LocaleName})");
+                        }
+                    }
+
+                    EditorGUILayout.Space(4);
+                    _useEnglishFallbackForNonKorean = EditorGUILayout.ToggleLeft("한국어(ko) 외 로케일은 영어(En) 텍스트를 기본값으로 사용",
+                        _useEnglishFallbackForNonKorean);
+                }
+
+                EditorGUILayout.Space(12);
+
+                using (new EditorGUI.DisabledScope(
+                           (_spellTsv == null && _equipmentTsv == null && _permanentTsv == null && _eventTsv == null) ||
+                           _outputFolder == null))
+                {
+                    if (GUILayout.Button("생성 / 갱신 실행", GUILayout.Height(36)))
+                    {
+                        try
+                        {
+                            GenerateAll();
+                            SavePrefs();
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(e);
+                            EditorUtility.DisplayDialog("Ability 지역화", $"생성 실패:\n{e.Message}", "확인");
+                        }
                     }
                 }
 
-                EditorGUILayout.Space(4);
-                _useEnglishFallbackForNonKorean = EditorGUILayout.ToggleLeft("한국어(ko) 외 로케일은 영어(En) 텍스트를 기본값으로 사용", _useEnglishFallbackForNonKorean);
+                EditorGUILayout.Space(10);
+                EditorGUILayout.LabelField("최근 리포트", EditorStyles.boldLabel);
+
+                _scroll = EditorGUILayout.BeginScrollView(_scroll, GUILayout.ExpandHeight(true));
+                EditorGUILayout.TextArea(_lastReport, GUILayout.ExpandHeight(true));
+                EditorGUILayout.EndScrollView();
+
+                EditorGUILayout.Space(6);
+                EditorGUILayout.HelpBox(
+                    "TSV 컬럼(탭 구분):\n" +
+                    "Uid\tName\tAbilityType\tTriggerType\tTargetType\tParamA\tParamB\tParamC\tDescription\n" +
+                    "- 첫 줄 헤더 및 # 주석 라인은 무시됩니다.\n" +
+                    "- Description 컬럼은 무시됩니다(템플릿은 규칙 기반으로 생성).",
+                    MessageType.Info);
+                EditorGUILayout.Space(20);
             }
-
-            EditorGUILayout.Space(12);
-
-            using (new EditorGUI.DisabledScope((_spellTsv == null && _equipmentTsv == null && _permanentTsv == null && _eventTsv == null) || _outputFolder == null))
+            finally
             {
-                if (GUILayout.Button("생성 / 갱신 실행", GUILayout.Height(36)))
-                {
-                    try
-                    {
-                        GenerateAll();
-                        SavePrefs();
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e);
-                        EditorUtility.DisplayDialog("Ability 지역화", $"생성 실패:\n{e.Message}", "확인");
-                    }
-                }
+                EditorGUILayout.EndScrollView();
             }
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("최근 리포트", EditorStyles.boldLabel);
-
-            _scroll = EditorGUILayout.BeginScrollView(_scroll, GUILayout.ExpandHeight(true));
-            EditorGUILayout.TextArea(_lastReport, GUILayout.ExpandHeight(true));
-            EditorGUILayout.EndScrollView();
-
-            EditorGUILayout.Space(6);
-            EditorGUILayout.HelpBox(
-                "TSV 컬럼(탭 구분):\n" +
-                "Uid\tName\tAbilityType\tTriggerType\tTargetType\tParamA\tParamB\tParamC\tDescription\n" +
-                "- 첫 줄 헤더 및 # 주석 라인은 무시됩니다.\n" +
-                "- Description 컬럼은 무시됩니다(템플릿은 규칙 기반으로 생성).",
-                MessageType.Info);
         }
 
         private void GenerateAll()
