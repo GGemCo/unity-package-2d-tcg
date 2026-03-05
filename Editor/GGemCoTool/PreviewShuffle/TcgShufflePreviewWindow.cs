@@ -58,7 +58,8 @@ namespace GGemCo2DTcgEditor
         private bool includeEnemyHeroCardInDeck = true;
 
         private ConfigCommonTcg.ShuffleMode shuffleMode = ConfigCommonTcg.ShuffleMode.PhaseWeighted;
-        private GGemCoTcgPhaseShuffleSettings shuffleSettings;
+        private GGemCoTcgPhaseShuffleSettings shuffleSettingsPhaseWeighted;
+        private GGemCoTcgWeightedShuffleSettings shuffleSettingsWeighted;
         private bool useFixedSeed;
         private int fixedSeed;
 
@@ -322,11 +323,22 @@ namespace GGemCo2DTcgEditor
                     new GUIContent("ShuffleMode"),
                     shuffleMode);
 
-                shuffleSettings = (GGemCoTcgPhaseShuffleSettings)EditorGUILayout.ObjectField(
-                    new GUIContent("ShuffleSettings", "PhaseWeighted 모드에서 사용되는 ScriptableObject"),
-                    shuffleSettings,
-                    typeof(GGemCoTcgPhaseShuffleSettings),
-                    false);
+                if (shuffleMode == ConfigCommonTcg.ShuffleMode.PhaseWeighted)
+                {
+                    shuffleSettingsPhaseWeighted = (GGemCoTcgPhaseShuffleSettings)EditorGUILayout.ObjectField(
+                        new GUIContent("PhaseShuffleSettings", "PhaseWeighted 모드에서 사용되는 ScriptableObject"),
+                        shuffleSettingsPhaseWeighted,
+                        typeof(GGemCoTcgPhaseShuffleSettings),
+                        false);
+                }
+                else if (shuffleMode == ConfigCommonTcg.ShuffleMode.Weighted)
+                {
+                    shuffleSettingsWeighted = (GGemCoTcgWeightedShuffleSettings)EditorGUILayout.ObjectField(
+                        new GUIContent("WeightedShuffleSettings", "Weighted 모드에서 사용되는 ScriptableObject"),
+                        shuffleSettingsWeighted,
+                        typeof(GGemCoTcgWeightedShuffleSettings),
+                        false);
+                }
 
                 useFixedSeed = EditorGUILayout.ToggleLeft(new GUIContent("Use Fixed Seed"), useFixedSeed);
                 using (new EditorGUI.DisabledScope(!useFixedSeed))
@@ -334,9 +346,13 @@ namespace GGemCo2DTcgEditor
                     fixedSeed = EditorGUILayout.IntField(new GUIContent("Fixed Seed"), fixedSeed);
                 }
 
-                if (shuffleMode == ConfigCommonTcg.ShuffleMode.PhaseWeighted && shuffleSettings == null)
+                if (shuffleMode == ConfigCommonTcg.ShuffleMode.PhaseWeighted && shuffleSettingsPhaseWeighted == null)
                 {
-                    EditorGUILayout.HelpBox("PhaseWeighted 모드에서는 ShuffleSettings가 필요합니다.", MessageType.Warning);
+                    EditorGUILayout.HelpBox($"PhaseWeighted 모드에서는 {nameof(GGemCoTcgPhaseShuffleSettings)}가 필요합니다.", MessageType.Warning);
+                }
+                else if (shuffleMode == ConfigCommonTcg.ShuffleMode.Weighted && shuffleSettingsWeighted == null)
+                {
+                    EditorGUILayout.HelpBox($"Weighted 모드에서는 {nameof(GGemCoTcgWeightedShuffleSettings)}가 필요합니다.", MessageType.Warning);
                 }
             }
         }
@@ -507,10 +523,16 @@ namespace GGemCo2DTcgEditor
             // PhaseWeighted는 ShuffleSettings에서 FrontLoadedCount/가중치 구성을 만든다.
             if (shuffleMode == ConfigCommonTcg.ShuffleMode.PhaseWeighted)
             {
-                if (shuffleSettings == null)
+                if (shuffleSettingsPhaseWeighted == null)
                     return new ShuffleConfig { FrontLoadedCount = 0 };
 
-                return shuffleSettings.BuildShuffleConfig(deckSize, startMana, maxMana, manaPerTurn, initialDraw, drawPerTurn);
+                return shuffleSettingsPhaseWeighted.BuildShuffleConfig(deckSize, startMana, maxMana, manaPerTurn, initialDraw, drawPerTurn);
+            }
+            if (shuffleMode == ConfigCommonTcg.ShuffleMode.Weighted)
+            {
+                if (shuffleSettingsWeighted == null)
+                    return new ShuffleConfig { FrontLoadedCount = 0 };
+                return shuffleSettingsWeighted.BuildShuffleConfig(deckSize, startMana, maxMana, manaPerTurn, initialDraw, drawPerTurn);
             }
 
             // 설정 에셋 없이는 의미가 약하므로 PureRandom으로 안전 폴백
